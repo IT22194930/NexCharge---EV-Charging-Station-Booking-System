@@ -4,6 +4,8 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+import Owners from "./pages/Owners";
 
 function PrivateRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -25,6 +27,20 @@ export default function App() {
         <Route path="/dashboard" element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        } />
+
+        {/* User Management - Backoffice only */}
+        <Route path="/users" element={
+          <PrivateRoute roles={["Backoffice"]}>
+            <Users />
+          </PrivateRoute>
+        } />
+        
+        {/* EV Owner Management - Backoffice only */}
+        <Route path="/owners" element={
+          <PrivateRoute roles={["Backoffice"]}>
+            <Owners />
           </PrivateRoute>
         } />
 
