@@ -14,5 +14,19 @@ namespace EVChargingAPI.Repositories
 		}
 
 		public async Task CreateAsync(User u) => await _users.InsertOneAsync(u);
+
+		public async Task<User?> GetByIdAsync(string id) =>
+			await _users.Find(x => x.Id == id).FirstOrDefaultAsync();
+
+		public async Task<User?> GetByNICAsync(string nic) =>
+			await _users.Find(x => x.NIC == nic).FirstOrDefaultAsync();
+
+		public async Task<List<User>> GetAllAsync() => await _users.Find(_ => true).ToListAsync();
+
+		public async Task UpdateAsync(string id, User u) =>
+			await _users.ReplaceOneAsync(x => x.Id == id, u);
+
+		public async Task DeleteByNicAsync(string nic) =>
+			await _users.DeleteOneAsync(x => x.NIC == nic);
 	}
 }

@@ -23,5 +23,21 @@ namespace EVChargingAPI.Services
             if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return null;
             return _jwt.GenerateToken(user.NIC, user.Role);
         }
+
+        public async Task<User> RegisterEVOwnerAsync(string nic, string fullName, string password)
+        {
+            var existing = await _users.GetByNICAsync(nic);
+            if (existing != null) throw new Exception("User already exists");
+            var user = new User
+            {
+                NIC = nic,
+                FullName = fullName,
+                Role = "EVOwner",
+                IsActive = true,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+            };
+            await _users.CreateAsync(user);
+            return user;
+        }
     }
 }

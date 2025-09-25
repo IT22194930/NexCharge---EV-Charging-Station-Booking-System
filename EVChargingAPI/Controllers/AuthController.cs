@@ -26,6 +26,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                var user = await _auth.RegisterEVOwnerAsync(req.Nic, req.FullName, req.Password);
                 return Ok(new { user.NIC, user.FullName, user.Role });
             }
             catch (Exception ex)
