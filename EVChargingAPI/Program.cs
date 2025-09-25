@@ -57,13 +57,14 @@ builder.Services.AddAuthentication(options =>
 // Add DI registrations (services/repositories)
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<StationRepository>();
 builder.Services.AddScoped<BookingRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserService>();
-
+builder.Services.AddScoped<StationService>();
 builder.Services.AddScoped<BookingService>();
 builder.Services.AddScoped<JwtService>();
-
+builder.Services.AddScoped<QrCodeService>();
 
 var app = builder.Build();
 

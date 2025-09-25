@@ -10,14 +10,14 @@ namespace EVChargingAPI.Services
         private readonly BookingRepository _repo;
         private readonly StationRepository _stations;
         private readonly UserRepository _users;
-        
+        private readonly QrCodeService _qr;
 
         public BookingService(BookingRepository repo, StationRepository stations, UserRepository users, QrCodeService qr)
         {
             _repo = repo;
             _stations = stations;
             _users = users;
-        
+            _qr = qr;
         }
 
         public async Task<Booking> CreateAsync(Booking b)
@@ -67,6 +67,7 @@ namespace EVChargingAPI.Services
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
             // in production: decrement station availableSlots etc.
             existing.Status = "Approved";
+            existing.QrBase64 = _qr.GenerateQrBase64($"booking:{existing.Id}|owner:{existing.OwnerNIC}|station:{existing.StationId}|date:{existing.ReservationDate:o}");
             await _repo.UpdateAsync(id, existing);
             return existing;
         }
