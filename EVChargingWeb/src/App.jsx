@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Owners from "./pages/Owners";
+import Bookings from "./pages/Bookings";
 
 function PrivateRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -22,14 +23,14 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
+        
         {/* Dashboard - accessible by all authenticated users */}
         <Route path="/dashboard" element={
           <PrivateRoute>
             <Dashboard />
           </PrivateRoute>
         } />
-
+        
         {/* User Management - Backoffice only */}
         <Route path="/users" element={
           <PrivateRoute roles={["Backoffice"]}>
@@ -43,9 +44,15 @@ export default function App() {
             <Owners />
           </PrivateRoute>
         } />
-
+        
+        {/* Booking Management - Backoffice, Operator, and EVOwner */}
+        <Route path="/bookings" element={
+          <PrivateRoute roles={["Backoffice", "Operator", "EVOwner"]}>
+            <Bookings />
+          </PrivateRoute>
+        } />
       </Routes>
-    
+      
       {/* Toast Container */}
       <Toaster
         position="top-right"
