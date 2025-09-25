@@ -18,6 +18,8 @@ import com.evcharging.evchargingapp.data.UserRole
 import com.evcharging.evchargingapp.data.model.api.RegisterRequest
 import com.evcharging.evchargingapp.data.model.api.RegisterApiResponse // Changed import from LoginResponse
 import com.evcharging.evchargingapp.databinding.ActivityRegistrationBinding
+import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
+import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
 import kotlinx.coroutines.launch
 import java.io.IOException
 

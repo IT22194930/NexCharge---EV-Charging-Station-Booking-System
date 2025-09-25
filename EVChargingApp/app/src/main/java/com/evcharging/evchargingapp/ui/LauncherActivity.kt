@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen // Correct import
 import com.auth0.android.jwt.JWT
 import com.evcharging.evchargingapp.R
-import com.evcharging.evchargingapp.ui.backoffice.BackOfficeHomeActivity
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
 import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
 
@@ -60,7 +59,7 @@ class LauncherActivity : AppCompatActivity() {
         val intent = when (role?.uppercase()) {
             "EVOWNER" -> Intent(this, EVOwnerHomeActivity::class.java)
             "OPERATOR" -> Intent(this, StationOperatorHomeActivity::class.java)
-            "BACKOFFICE" -> Intent(this, BackOfficeHomeActivity::class.java)
+
 
             else -> {
                 Log.w("LauncherActivity", "Role '$role' not recognized or is null. Defaulting to Login Screen.")

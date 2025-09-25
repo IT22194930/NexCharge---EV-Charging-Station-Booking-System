@@ -18,6 +18,8 @@ import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.databinding.ActivityLoginBinding
 import com.evcharging.evchargingapp.db.UserDao
 import com.evcharging.evchargingapp.ui.HomeActivity
+import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
+import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
