@@ -1,0 +1,55 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.vs/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backend (.NET)
+EVChargingAPI/bin/
+EVChargingAPI/obj/
+EVChargingAPI/.vs/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.exe
+
+# Frontend (Node.js)
+EVChargingWeb/node_modules/
+EVChargingWeb/dist/
+EVChargingWeb/.env
+EVChargingWeb/.env.local
+EVChargingWeb/.env.development.local
+EVChargingWeb/.env.test.local
+EVChargingWeb/.env.production.local
+
+# Build outputs
+**/bin/
+**/obj/
+**/dist/
+**/build/
+
+# Package files
+*.nupkg
+*.tgz
+
+# Temporary files
+*.tmp
+*.temp

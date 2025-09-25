@@ -1,0 +1,52 @@
+# Build artifacts
+bin/
+obj/
+out/
+publish/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+.history/
+
+# Visual Studio for Mac
+.idea/
+*.userprefs
+
+# Logs
+*.log
+logs/
+Debug/
+Release/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Config
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Dotnet generated
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider
+*.iml
+.idea/
+
+# Docker
+docker-compose.override.yml
