@@ -1,0 +1,20 @@
+# IDE files
+.idea/
+*.iml
+.gradle/
+local.properties
+
+# Build outputs
+/build/
+*.apk
+*.aab
+
+# Captures
+/captures/
+
+# Generated C/C++ files
+.externalNativeBuild/
+.cxx/
+
+# OS specific
+.DS_Store

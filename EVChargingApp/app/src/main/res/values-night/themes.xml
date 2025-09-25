@@ -1,0 +1,19 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme for Night Mode. -->
+    <!-- Parent is Theme.Material3.DayNight.NoActionBar, so it will pick up dark theme defaults -->
+    <style name="Base.Theme.EVChargingApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <!-- Set the default window background for night mode -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="windowSplashScreenBackground">@color/background</item>
+
+    </style>
+
+    <!-- If Theme.EVChargingApp in values-night/themes.xml also needs direct customization,
+         it would inherit from Base.Theme.EVChargingApp defined above.
+         Often, the base theme customization is sufficient.
+    <style name="Theme.EVChargingApp" parent="Base.Theme.EVChargingApp" />
+    -->
+</resources>
