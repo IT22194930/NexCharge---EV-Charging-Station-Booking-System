@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 function PrivateRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -19,8 +20,16 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* Dashboard - accessible by all authenticated users */}
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
+
       </Routes>
-      
+    
       {/* Toast Container */}
       <Toaster
         position="top-right"
