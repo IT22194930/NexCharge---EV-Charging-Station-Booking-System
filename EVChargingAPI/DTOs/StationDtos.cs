@@ -1,4 +1,4 @@
-// Author: Peiris M. H. C. (IT22194930)
+// Author: Wickramasooriya W. A. A. L. (IT22126160)
 // Purpose: DTOs for Stations
 namespace EVChargingAPI.DTOs
 {

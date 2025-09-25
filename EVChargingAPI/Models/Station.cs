@@ -1,4 +1,4 @@
-// Author: Peiris M. H. C. (IT22194930)
+// Author: Wickramasooriya W. A. A. L. (IT22126160)
 // Purpose: Charging station model
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
