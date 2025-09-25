@@ -3,5 +3,5 @@
 namespace EVChargingAPI.DTOs
 {
    public record BookingCreateDto(string OwnerNic, string StationId, DateTime ReservationDate);
-   
+   public record BookingUpdateDto(DateTime ReservationDate, string StationId);
 }

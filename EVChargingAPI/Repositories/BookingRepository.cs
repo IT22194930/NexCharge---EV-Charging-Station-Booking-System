@@ -24,6 +24,13 @@ namespace EVChargingAPI.Repositories
         public async Task<List<Booking>> GetUpcomingForStationAsync(string stationId) =>
             await _bookings.Find(x => x.StationId == stationId && x.Status != "Cancelled").ToListAsync();
 
+        public async Task UpdateAsync(string id, Booking b) =>
+            await _bookings.ReplaceOneAsync(x => x.Id == id, b);
+
+        public async Task DeleteAsync(string id) =>
+            await _bookings.DeleteOneAsync(x => x.Id == id);
+
         public async Task<List<Booking>> GetAllAsync() => await _bookings.Find(_ => true).ToListAsync();
     }
 }
+

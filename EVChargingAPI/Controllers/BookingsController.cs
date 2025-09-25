@@ -37,7 +37,17 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        
+        [HttpPut("{id}")]
+        [Authorize(Roles = "EVOwner")]
+        public async Task<IActionResult> Update(string id, [FromBody] BookingUpdateDto dto)
+        {
+            try
+            {
+                var updated = await _service.UpdateAsync(id, new Booking { ReservationDate = dto.ReservationDate, StationId = dto.StationId });
+                return Ok(updated);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
 
         [HttpPost("cancel/{id}")]
         [Authorize(Roles = "EVOwner,Operator,Backoffice")]
@@ -63,7 +73,17 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "EVOwner,Backoffice")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                await _service.DeleteAsync(id);
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
 
         [HttpGet("owner/{ownerNic}")]
         [Authorize(Roles = "EVOwner,Operator,Backoffice")]

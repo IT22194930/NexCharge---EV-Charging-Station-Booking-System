@@ -12,12 +12,12 @@ namespace EVChargingAPI.Services
         private readonly UserRepository _users;
         
 
-        public BookingService(BookingRepository repo, StationRepository stations, UserRepository users)
+        public BookingService(BookingRepository repo, StationRepository stations, UserRepository users, QrCodeService qr)
         {
             _repo = repo;
             _stations = stations;
             _users = users;
-            
+        
         }
 
         public async Task<Booking> CreateAsync(Booking b)
@@ -40,10 +40,46 @@ namespace EVChargingAPI.Services
             return b;
         }
 
-        
+        public async Task<Booking> UpdateAsync(string id, Booking updated)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // Only allow update >=12 hours before reservation
+            if (DateTime.UtcNow > existing.ReservationDate.AddHours(-12))
+                throw new Exception("Cannot modify booking less than 12 hours before reservation");
 
-        
+            existing.ReservationDate = updated.ReservationDate;
+            existing.StationId = updated.StationId;
+            await _repo.UpdateAsync(id, existing);
+            return existing;
+        }
 
-        
+        public async Task CancelAsync(string id)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            if (DateTime.UtcNow > existing.ReservationDate.AddHours(-12))
+                throw new Exception("Cannot cancel booking less than 12 hours before reservation");
+            existing.Status = "Cancelled";
+            await _repo.UpdateAsync(id, existing);
+        }
+
+        public async Task<Booking> ApproveAsync(string id)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // in production: decrement station availableSlots etc.
+            existing.Status = "Approved";
+            await _repo.UpdateAsync(id, existing);
+            return existing;
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // Allow deletion if booking is Cancelled or Pending
+            if (existing.Status == "Approved")
+            {
+                throw new Exception("Cannot delete approved bookings. Please cancel first.");
+            }
+            await _repo.DeleteAsync(id);
+        }
     }
 }
