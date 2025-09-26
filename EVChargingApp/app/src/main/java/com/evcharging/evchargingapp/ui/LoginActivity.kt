@@ -99,13 +99,26 @@ class LoginActivity : AppCompatActivity() {
                         val errorBodyString = response.errorBody()?.string()
                         if (!errorBodyString.isNullOrEmpty()) {
                             val errorJson = JSONObject(errorBodyString)
-                            errorMessage = errorJson.optString("message", "Error (${response.code()}): Invalid credentials or server error.")
+                            errorMessage = errorJson.optString("message", "Invalid credentials. Please check your NIC and password.")
                         } else {
-                            errorMessage = "Login failed. Error code: ${response.code()} ${response.message()}"
+                            // Handle different HTTP status codes
+                            errorMessage = when (response.code()) {
+                                401 -> "Invalid credentials. Please check your NIC and password."
+                                400 -> "Invalid request. Please check your input."
+                                404 -> "User not found. Please check your NIC."
+                                500 -> "Server error. Please try again later."
+                                else -> "Login failed. Please try again."
+                            }
                         }
                     } catch (e: Exception) {
                         Log.e("LoginActivity", "Error parsing error body: ${e.message}")
-                        errorMessage = "Login failed. Error code: ${response.code()}"
+                        errorMessage = when (response.code()) {
+                            401 -> "Invalid credentials. Please check your NIC and password."
+                            400 -> "Invalid request. Please check your input."
+                            404 -> "User not found. Please check your NIC."
+                            500 -> "Server error. Please try again later."
+                            else -> "Login failed. Please try again."
+                        }
                     }
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
                 }
