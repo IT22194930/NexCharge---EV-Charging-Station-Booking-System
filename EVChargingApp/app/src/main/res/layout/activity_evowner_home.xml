@@ -7,25 +7,40 @@
     android:layout_height="match_parent"
     tools:context=".ui.evowner.EVOwnerHomeActivity">
 
-    <TextView
-        android:id="@+id/textViewEvOwnerTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="EV Owner Home"
-        android:textSize="24sp"
+    <!-- Top App Bar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarEvOwner"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:title="NexCharge"
+        app:titleTextColor="?attr/colorOnPrimary"
+        app:menu="@menu/toolbar_evowner_menu"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/buttonEvOwnerLogout" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/buttonEvOwnerLogout"
-        android:layout_width="wrap_content"
+    <!-- Fragment Container -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerEvOwner"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbarEvOwner"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationEvOwner"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationEvOwner"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Logout"
+        android:background="?attr/colorSurface"
+        app:menu="@menu/bottom_navigation_evowner"
+        app:itemIconTint="@color/bottom_nav_color_selector"
+        app:itemTextColor="@color/bottom_nav_color_selector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="32dp"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

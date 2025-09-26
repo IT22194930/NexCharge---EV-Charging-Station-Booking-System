@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitInstance {
 
     //  Replace "API_BASE_URL_HERE" with actual API base URL
-    private const val BASE_URL = "http://10.88.147.203/EVChargingAPI/api/"
+    private const val BASE_URL = "http://192.168.1.63/EVChargingAPI/api/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY // Logs request and response bodies. Use .NONE for production.
