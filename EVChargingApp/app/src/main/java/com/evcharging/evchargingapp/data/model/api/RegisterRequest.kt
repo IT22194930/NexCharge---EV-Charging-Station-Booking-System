@@ -3,13 +3,13 @@ package com.evcharging.evchargingapp.data.model.api
 import com.google.gson.annotations.SerializedName
 
 data class RegisterRequest(
-    @SerializedName("nic") // Ensure this matches the JSON key your API expects
+    @SerializedName("nic") 
     val nic: String,
 
-    @SerializedName("fullName") // Ensure this matches the JSON key your API expects
-    val fullName: String,
+    @SerializedName("FullName") // Changed to match API expectation (PascalCase)
+    val FullName: String,
 
-    @SerializedName("contactNo") // Ensure this matches the JSON key your API expects
+    @SerializedName("contactNo") 
     val contactNo: String,
 
     @SerializedName("password") // Ensure this matches the JSON key your API expects
