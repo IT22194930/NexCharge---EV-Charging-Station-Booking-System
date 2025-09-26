@@ -58,6 +58,9 @@ class LoginActivity : AppCompatActivity() {
         val nic = binding.editTextLoginNic.text.toString().trim()
         val password = binding.editTextLoginPassword.text.toString().trim()
 
+        Log.d("LoginActivity", "Attempting login for NIC: $nic")
+        Log.d("LoginActivity", "Base URL being used: http://192.168.1.63/EVChargingAPI/api/")
+
         if (nic.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please enter NIC and password", Toast.LENGTH_SHORT).show()
             return
@@ -106,6 +109,36 @@ class LoginActivity : AppCompatActivity() {
                     }
                     Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
                 }
+            } catch (e: java.net.SocketTimeoutException) {
+                Log.e("LoginActivity", "Connection timeout: ${e.message}", e)
+                val errorMessage = """
+                    Connection timeout - Cannot reach server.
+                    
+                    Troubleshooting steps:
+                    1. Make sure your API is running on IIS/Web Server
+                    2. Check if API is accessible at: http://192.168.1.63/EVChargingAPI/
+                    3. Verify both devices are on same network
+                    4. Test in browser first
+                    5. Check Windows Firewall settings (port 80)
+                    
+                    Current server: http://192.168.1.63/EVChargingAPI/api/
+                """.trimIndent()
+                Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
+            } catch (e: java.net.ConnectException) {
+                Log.e("LoginActivity", "Connection failed: ${e.message}", e)
+                val errorMessage = """
+                    Cannot connect to server.
+                    
+                    Please check:
+                    1. Is IIS running with EVChargingAPI deployed?
+                    2. Server should be at: http://192.168.1.63/EVChargingAPI/
+                    3. Check Windows Firewall settings
+                    4. Try accessing from browser first
+                """.trimIndent()
+                Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
+            } catch (e: java.net.UnknownHostException) {
+                Log.e("LoginActivity", "Unknown host: ${e.message}", e)
+                Toast.makeText(applicationContext, "Cannot resolve server address. Check network connection.", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
                 Log.e("LoginActivity", "Login exception: ${e.message}", e)
                 Toast.makeText(applicationContext, "Login error: Check network connection.", Toast.LENGTH_LONG).show()

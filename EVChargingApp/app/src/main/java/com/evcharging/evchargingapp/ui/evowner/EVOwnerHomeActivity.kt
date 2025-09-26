@@ -17,6 +17,10 @@ import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerBookingsFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerDashboardFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerProfileFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerReservationsFragment
+import com.evcharging.evchargingapp.utils.LoadingManager
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class EVOwnerHomeActivity : AppCompatActivity() {
 
@@ -37,16 +41,29 @@ class EVOwnerHomeActivity : AppCompatActivity() {
         setupToolbar()
         setupBottomNavigation()
         
-        // Load default fragment (Dashboard)
-        if (savedInstanceState == null) {
-            loadFragment(EVOwnerDashboardFragment.newInstance())
-            binding.bottomNavigationEvOwner.selectedItemId = R.id.nav_dashboard
-        }
+        // Show loading screen while initializing
+        showInitialLoading()
     }
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbarEvOwner)
         supportActionBar?.title = "NexCharge"
+    }
+
+    private fun showInitialLoading() {
+        LoadingManager.show(this, "Welcome to NexCharge")
+        
+        lifecycleScope.launch {
+            // Simulate initialization time
+            delay(1500)
+            
+            // Load default fragment (Dashboard)
+            loadFragment(EVOwnerDashboardFragment.newInstance())
+            binding.bottomNavigationEvOwner.selectedItemId = R.id.nav_dashboard
+            
+            // Hide loading
+            LoadingManager.dismiss()
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -77,6 +94,11 @@ class EVOwnerHomeActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainerEvOwner, fragment)
             .commit()
+    }
+
+    // Public method to switch tabs from fragments
+    fun switchToTab(tabId: Int) {
+        binding.bottomNavigationEvOwner.selectedItemId = tabId
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

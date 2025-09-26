@@ -74,7 +74,7 @@ class RegistrationActivity : AppCompatActivity() {
 
         val registerRequest = RegisterRequest(
             nic = nic,
-            fullName = name,
+            FullName = name,  // Changed to match the model
             contactNo = contactNumber,
             password = password,
             role = defaultRole
