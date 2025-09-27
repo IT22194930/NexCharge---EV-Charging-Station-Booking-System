@@ -1,12 +1,12 @@
 import axios from "axios";
 
-// Base URL configuration - you can switch between local and network URLs
+// Base URL configuration for different environments
 const BASE_URLS = {
   local: "http://localhost:5274/api",
   network: "http://192.168.1.63/EVChargingAPI/api",
 };
 
-const currentBaseURL = BASE_URLS.network; // Change to BASE_URLS.local for local development
+const currentBaseURL = BASE_URLS.local; // Change to BASE_URLS.local for local development
 
 const api = axios.create({
   baseURL: currentBaseURL,
