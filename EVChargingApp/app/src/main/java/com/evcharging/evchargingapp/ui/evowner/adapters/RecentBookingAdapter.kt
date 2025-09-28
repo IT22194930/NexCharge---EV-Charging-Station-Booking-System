@@ -7,42 +7,41 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.evcharging.evchargingapp.data.model.Booking
-import com.evcharging.evchargingapp.databinding.ItemBookingBinding
+import com.evcharging.evchargingapp.databinding.ItemRecentBookingBinding
 
-class BookingAdapter(
+class RecentBookingAdapter(
     private val onBookingClick: (Booking) -> Unit,
-    private val onDeleteClick: (Booking) -> Unit,
-    private val onViewQRClick: (Booking) -> Unit
-) : ListAdapter<Booking, BookingAdapter.BookingViewHolder>(BookingDiffCallback()) {
+    private val onViewQRClick: (Booking) -> Unit,
+    private val onDeleteClick: (Booking) -> Unit
+) : ListAdapter<Booking, RecentBookingAdapter.RecentBookingViewHolder>(RecentBookingDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookingViewHolder {
-        val binding = ItemBookingBinding.inflate(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecentBookingViewHolder {
+        val binding = ItemRecentBookingBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
         )
-        return BookingViewHolder(binding)
+        return RecentBookingViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: BookingViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecentBookingViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class BookingViewHolder(
-        private val binding: ItemBookingBinding
+    inner class RecentBookingViewHolder(
+        private val binding: ItemRecentBookingBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(booking: Booking) {
             binding.apply {
                 // Set booking details
-                textViewStationName.text = booking.stationId // You might want to resolve this to actual station name
+                textViewStationName.text = "Station ${booking.stationId}" // You might want to resolve this to actual station name
                 textViewStatus.text = booking.status.uppercase()
-                textViewDateTime.text = booking.reservationDate
-               
+                textViewDateTime.text = booking.reservationDate.split(" ").firstOrNull() ?: booking.reservationDate
 
                 // Set status color
                 val statusColor = when (booking.status.lowercase()) {
-                    "confirmed" -> android.graphics.Color.parseColor("#4CAF50")
+                    "confirmed", "approved" -> android.graphics.Color.parseColor("#4CAF50")
                     "pending" -> android.graphics.Color.parseColor("#FF9800")
                     "cancelled" -> android.graphics.Color.parseColor("#F44336")
                     "completed" -> android.graphics.Color.parseColor("#2196F3")
@@ -61,28 +60,11 @@ class BookingAdapter(
                 } else {
                     View.GONE
                 }
-
-                // Show different information based on booking status
-                when (booking.status.lowercase()) {
-                    "pending" -> {
-                        textViewCustomerName.text = "Status: Waiting for approval"
-                    }
-                    "confirmed" -> {
-                        textViewCustomerName.text = "Status: Approved - Ready to charge"
-                    }
-                    "completed" -> {
-                        textViewCustomerName.text = "Status: Charging completed"
-                    }
-                    "cancelled" -> {
-                        textViewCustomerName.text = "Status: Booking cancelled"
-                    }
-                    
-                }
             }
         }
     }
 
-    private class BookingDiffCallback : DiffUtil.ItemCallback<Booking>() {
+    private class RecentBookingDiffCallback : DiffUtil.ItemCallback<Booking>() {
         override fun areItemsTheSame(oldItem: Booking, newItem: Booking): Boolean {
             return oldItem.id == newItem.id
         }
