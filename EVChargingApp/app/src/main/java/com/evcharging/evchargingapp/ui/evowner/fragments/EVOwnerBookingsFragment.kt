@@ -235,7 +235,7 @@ class EVOwnerBookingsFragment : Fragment() {
         val stationName = getStationName(booking.stationId)
         val statusMessage = when (booking.status.lowercase()) {
             "pending" -> "Your booking is waiting for station operator approval."
-            "confirmed" -> "Your booking is confirmed! You can start charging."
+            "approved" -> "Your booking is confirmed! You can start charging."
             "completed" -> "Charging session completed successfully."
             "cancelled" -> "This booking has been cancelled."
             else -> "Booking status: ${booking.status}"

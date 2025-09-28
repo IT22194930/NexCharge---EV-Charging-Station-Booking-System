@@ -42,11 +42,11 @@ class BookingAdapter(
 
                 // Set status color
                 val statusColor = when (booking.status.lowercase()) {
-                    "confirmed" -> android.graphics.Color.parseColor("#4CAF50")
-                    "pending" -> android.graphics.Color.parseColor("#FF9800")
-                    "cancelled" -> android.graphics.Color.parseColor("#F44336")
-                    "completed" -> android.graphics.Color.parseColor("#2196F3")
-                    else -> android.graphics.Color.parseColor("#757575")
+                    "approved" -> android.graphics.Color.parseColor("#4CAF50") // Green for approved
+                    "pending" -> android.graphics.Color.parseColor("#FF9800")  // Orange for pending
+                    "cancelled" -> android.graphics.Color.parseColor("#F44336") // Red for cancelled
+                    "completed" -> android.graphics.Color.parseColor("#2196F3") // Blue for completed
+                    else -> android.graphics.Color.parseColor("#757575") // Gray for unknown
                 }
                 textViewStatus.setBackgroundColor(statusColor)
 
@@ -67,7 +67,7 @@ class BookingAdapter(
                     "pending" -> {
                         textViewCustomerName.text = "Status: Waiting for approval"
                     }
-                    "confirmed" -> {
+                    "approved" -> {
                         textViewCustomerName.text = "Status: Approved - Ready to charge"
                     }
                     "completed" -> {
@@ -76,7 +76,9 @@ class BookingAdapter(
                     "cancelled" -> {
                         textViewCustomerName.text = "Status: Booking cancelled"
                     }
-                    
+                    else -> {
+                        textViewCustomerName.text = "Status: ${booking.status}"
+                    }
                 }
             }
         }

@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -164,47 +165,102 @@ class EVOwnerReservationsFragment : Fragment() {
     private fun showCreateBookingDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_booking, null)
         
+        val textViewUserInfo = dialogView.findViewById<TextView>(R.id.textViewUserInfo)
         val stationSpinner = dialogView.findViewById<androidx.appcompat.widget.AppCompatSpinner>(R.id.spinnerStation)
         val dateEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
         val timeEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
+        val buttonCreate = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCreate)
         
-        // Setup station spinner
-        val stationNames = allStations.map { "${it.name} - ${it.location}" }
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, stationNames)
+        // Set user info
+        val userNic = TokenUtils.getCurrentUserNic(requireContext())
+        textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
+        
+        // Setup station spinner with enhanced information
+        val stationDisplayNames = allStations.map { station ->
+            "🔌 ${station.name} - ${station.location}\n   ${station.chargerType} | Status: ${station.status}"
+        }
+        
+        val adapter = object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, stationDisplayNames) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val textView = view.findViewById<TextView>(android.R.id.text1)
+                textView.textSize = 14f
+                textView.setPadding(16, 12, 16, 12)
+                return view
+            }
+            
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent)
+                val textView = view.findViewById<TextView>(android.R.id.text1)
+                textView.textSize = 12f
+                textView.setPadding(16, 12, 16, 12)
+                textView.maxLines = 2
+                return view
+            }
+        }
+        
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         stationSpinner.adapter = adapter
         
-        // Setup date picker
+        // Setup date picker with validation
         dateEditText.setOnClickListener {
-            showDatePicker { date ->
+            showEnhancedDatePicker { date ->
                 dateEditText.setText(date)
             }
         }
         
-        // Setup time picker
+        // Setup time picker with validation
         timeEditText.setOnClickListener {
-            showTimePicker { time ->
+            showEnhancedTimePicker { time ->
                 timeEditText.setText(time)
             }
         }
         
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Create New Reservation")
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
-            .setPositiveButton("Create") { _, _ ->
-                val selectedStationIndex = stationSpinner.selectedItemPosition
-                val date = dateEditText.text.toString()
-                val time = timeEditText.text.toString()
-                
-                if (selectedStationIndex >= 0 && date.isNotEmpty() && time.isNotEmpty()) {
+            .create()
+        
+        // Handle button clicks
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        buttonCreate.setOnClickListener {
+            val selectedStationIndex = stationSpinner.selectedItemPosition
+            val date = dateEditText.text.toString()
+            val time = timeEditText.text.toString()
+            
+            when {
+                selectedStationIndex < 0 -> {
+                    showError("Please select a charging station")
+                }
+                date.isEmpty() -> {
+                    showError("Please select a reservation date")
+                }
+                time.isEmpty() -> {
+                    showError("Please select a reservation time")
+                }
+                !isValidReservationDateTime(date, time) -> {
+                    showError("Reservations must be made at least 1 hour in advance and within 7 days")
+                }
+                else -> {
                     val stationId = allStations[selectedStationIndex].id
-                    createBooking(stationId, "$date $time")
-                } else {
-                    showError("Please fill in all fields")
+                    val stationName = allStations[selectedStationIndex].name
+                    
+                    // Show confirmation before creating
+                    showBookingConfirmation(stationName, date, time) {
+                        createBooking(stationId, "$date $time")
+                        dialog.dismiss()
+                    }
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        
+        dialog.show()
+        
+        // Make dialog responsive to theme
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 
     private fun showNearbyStationsDialog() {
@@ -243,13 +299,15 @@ class EVOwnerReservationsFragment : Fragment() {
     private fun createBooking(stationId: String, reservationDateTime: String) {
         val userNic = TokenUtils.getCurrentUserNic(requireContext())
         if (userNic == null) {
-            showError("User not authenticated")
+            showError("User not authenticated. Please log in again.")
             return
         }
         
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 showLoading(true)
+                Log.d("EVOwnerReservations", "Creating booking for station: $stationId, dateTime: $reservationDateTime")
+                
                 val request = BookingCreateRequest(
                     stationId = stationId,
                     ownerNic = userNic,
@@ -258,26 +316,67 @@ class EVOwnerReservationsFragment : Fragment() {
                 
                 val response = apiService.createBooking(request)
                 
-                if (response.isSuccessful) {
-                    showSuccess("Reservation created successfully!")
+                if (!isAdded || _binding == null) return@launch
+                
+                if (response.isSuccessful && response.body() != null) {
+                    val createdBooking = response.body()!!
+                    val stationName = getStationName(stationId)
+                    
+                    showBookingSuccessDialog(createdBooking, stationName)
                     loadRecentBookings() // Refresh recent bookings
+                    
+                    Log.d("EVOwnerReservations", "Successfully created booking: ${createdBooking.id}")
                 } else {
-                    showError("Failed to create reservation: ${response.message()}")
+                    val errorMsg = when (response.code()) {
+                        400 -> "Invalid booking request. Please check your details."
+                        404 -> "Selected charging station not found."
+                        409 -> "Time slot already booked. Please select a different time."
+                        500 -> "Server error. Please try again later."
+                        else -> "Failed to create reservation: ${response.message()}"
+                    }
+                    showError(errorMsg)
+                    Log.w("EVOwnerReservations", "Booking creation failed: ${response.code()} - ${response.message()}")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error creating booking", e)
-                showError("Network error: ${e.message}")
+                showError("Network error: Unable to create reservation. Please check your internet connection.")
             } finally {
                 showLoading(false)
             }
         }
     }
 
+    private fun showBookingSuccessDialog(booking: Booking, stationName: String) {
+        val message = """
+            🎉 Reservation Created Successfully!
+            
+            Your booking has been submitted and is now pending approval from the station operator.
+            
+            📍 Station: $stationName
+            📅 Date & Time: ${booking.reservationDate}
+            🆔 Booking ID: ${booking.id}
+            📊 Status: ${booking.status.uppercase()}
+            
+            You'll receive a QR code once your booking is approved. You can track your reservation status in the bookings section.
+        """.trimIndent()
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Booking Confirmed")
+            .setMessage(message)
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setPositiveButton("View My Bookings") { _, _ ->
+                // Could navigate to bookings fragment if needed
+            }
+            .setNeutralButton("Create Another", null)
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
     private fun showBookingDetails(booking: Booking) {
         val stationName = getStationName(booking.stationId)
         val statusMessage = when (booking.status.lowercase()) {
             "pending" -> "Your reservation is waiting for station operator approval."
-            "confirmed" -> "Your reservation is confirmed! You can start charging."
+            "approved" -> "Your reservation is confirmed! You can start charging."
             "completed" -> "Charging session completed successfully."
             "cancelled" -> "This reservation has been cancelled."
             else -> "Reservation status: ${booking.status}"
@@ -382,7 +481,7 @@ class EVOwnerReservationsFragment : Fragment() {
         }
     }
 
-    private fun showDatePicker(onDateSelected: (String) -> Unit) {
+    private fun showEnhancedDatePicker(onDateSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -392,12 +491,21 @@ class EVOwnerReservationsFragment : Fragment() {
             val selectedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
             onDateSelected(selectedDate)
         }, year, month, day).apply {
-            datePicker.minDate = System.currentTimeMillis()
+            // Set minimum date to tomorrow (to ensure at least 1 hour advance booking)
+            val minCalendar = Calendar.getInstance()
+            minCalendar.add(Calendar.DAY_OF_YEAR, 1)
+            datePicker.minDate = minCalendar.timeInMillis
+            
+            // Set maximum date to 7 days from now
+            val maxCalendar = Calendar.getInstance()
+            maxCalendar.add(Calendar.DAY_OF_YEAR, 7)
+            datePicker.maxDate = maxCalendar.timeInMillis
+            
             show()
         }
     }
 
-    private fun showTimePicker(onTimeSelected: (String) -> Unit) {
+    private fun showEnhancedTimePicker(onTimeSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
@@ -406,6 +514,68 @@ class EVOwnerReservationsFragment : Fragment() {
             val selectedTime = String.format("%02d:%02d", selectedHour, selectedMinute)
             onTimeSelected(selectedTime)
         }, hour, minute, true).show()
+    }
+
+    private fun isValidReservationDateTime(date: String, time: String): Boolean {
+        try {
+            val dateTimeString = "$date $time"
+            val reservationDateTime = Calendar.getInstance().apply {
+                val parts = date.split("-")
+                val timeParts = time.split(":")
+                set(Calendar.YEAR, parts[0].toInt())
+                set(Calendar.MONTH, parts[1].toInt() - 1)
+                set(Calendar.DAY_OF_MONTH, parts[2].toInt())
+                set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
+                set(Calendar.MINUTE, timeParts[1].toInt())
+                set(Calendar.SECOND, 0)
+            }
+            
+            val now = Calendar.getInstance()
+            val oneHourLater = Calendar.getInstance().apply {
+                add(Calendar.HOUR, 1)
+            }
+            
+            val sevenDaysLater = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 7)
+            }
+            
+            // Check if reservation is at least 1 hour in advance
+            if (reservationDateTime.before(oneHourLater)) {
+                return false
+            }
+            
+            // Check if reservation is within 7 days
+            if (reservationDateTime.after(sevenDaysLater)) {
+                return false
+            }
+            
+            return true
+        } catch (e: Exception) {
+            Log.e("EVOwnerReservations", "Error validating date time", e)
+            return false
+        }
+    }
+
+    private fun showBookingConfirmation(stationName: String, date: String, time: String, onConfirm: () -> Unit) {
+        val message = """
+            Confirm your reservation details:
+            
+            🔌 Station: $stationName
+            📅 Date: $date
+            ⏰ Time: $time
+            
+            Please review the information before proceeding.
+        """.trimIndent()
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Confirm Reservation")
+            .setMessage(message)
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setPositiveButton("Confirm Booking") { _, _ ->
+                onConfirm()
+            }
+            .setNegativeButton("Edit Details", null)
+            .show()
     }
 
     private fun getStationName(stationId: String): String {
