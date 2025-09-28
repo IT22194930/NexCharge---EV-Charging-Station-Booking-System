@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="?android:attr/colorBackground">
+
+    <!-- QR Code Image -->
+    <ImageView
+        android:id="@+id/imageViewQRCode"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@android:color/white"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show this QR code at the charging station"
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Booking Info -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keep this code safe until your charging session"
+        android:textSize="12sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:gravity="center" />
+
+</LinearLayout>
