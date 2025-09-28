@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_light"
+    android:background="?android:attr/colorBackground"
     tools:context=".ui.evowner.fragments.EVOwnerBookingsFragment">
 
     <LinearLayout
@@ -27,7 +27,7 @@
                 android:text="My Bookings"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
+                android:textColor="?android:attr/textColorPrimary"
                 android:layout_marginBottom="8dp" />
 
             <!-- Search Bar -->
@@ -58,7 +58,7 @@
             app:tabMode="fixed"
             app:tabGravity="fill"
             app:tabSelectedTextColor="?attr/colorPrimary"
-            app:tabTextColor="@android:color/darker_gray"
+            app:tabTextColor="?android:attr/textColorSecondary"
             app:tabIndicatorColor="?attr/colorPrimary">
 
             <com.google.android.material.tabs.TabItem

@@ -107,10 +107,13 @@ class EVOwnerReservationsFragment : Fragment() {
                     
                     if (response.isSuccessful && response.body() != null) {
                         val allBookings = response.body()!!
-                        // Show only the 5 most recent bookings
-                        recentBookings = allBookings.sortedByDescending { it.createdAt ?: "" }.take(5)
+                        // Filter out completed bookings and show only the 5 most recent active bookings
+                        recentBookings = allBookings
+                            .filter { it.status != "Completed" }
+                            .sortedByDescending { it.createdAt ?: "" }
+                            .take(5)
                         recentBookingAdapter.submitList(recentBookings)
-                        Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent bookings")
+                        Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent active bookings (excluding completed)")
                     } else {
                         Log.w("EVOwnerReservations", "Failed to load recent bookings: ${response.code()}")
                     }
