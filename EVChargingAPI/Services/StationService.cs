@@ -1,4 +1,4 @@
-// Author: Wickramasooriya W. A. A. L. (IT22126160)
+﻿// Author: Wickramasooriya W. A. A. L. (IT22126160)
 // Purpose: Station logic, check active bookings before deactivation
 using EVChargingAPI.Models;
 using EVChargingAPI.Repositories;
@@ -8,7 +8,12 @@ namespace EVChargingAPI.Services
     public class StationService
     {
         private readonly StationRepository _repo;
-        
+
+        // 🔹 Added constructor injection
+        public StationService(StationRepository repo)
+        {
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        }
 
         public async Task CreateAsync(Station s) => await _repo.CreateAsync(s);
         public async Task<Station?> GetByIdAsync(string id) => await _repo.GetByIdAsync(id);
