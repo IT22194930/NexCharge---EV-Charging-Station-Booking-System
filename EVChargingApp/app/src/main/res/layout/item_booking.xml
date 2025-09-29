@@ -60,13 +60,13 @@
             android:id="@+id/textViewDateTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Jan 15, 2024 - 10:00 AM to 11:00 AM"
-            android:textSize="14sp"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/imageViewBookingIcon"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewCustomerName" />
 
         <TextView
             android:id="@+id/textViewDuration"
