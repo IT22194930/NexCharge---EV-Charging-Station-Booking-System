@@ -122,11 +122,13 @@
             app:helperText="Select your preferred charging location"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
-            <androidx.appcompat.widget.AppCompatSpinner
-                android:id="@+id/spinnerStation"
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/autoCompleteStation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" />
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

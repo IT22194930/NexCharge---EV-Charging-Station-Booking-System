@@ -3,15 +3,17 @@ package com.evcharging.evchargingapp.data.model
 import com.google.gson.annotations.SerializedName
 
 data class BookingCreateRequest(
-    @SerializedName("ownerNic")
+    @SerializedName("OwnerNic")
     val ownerNic: String,
-    @SerializedName("stationId")
+    @SerializedName("StationId")
     val stationId: String,
-    @SerializedName("reservationDate")
+    @SerializedName("ReservationDate")
     val reservationDate: String
 )
 
 data class BookingUpdateRequest(
-    @SerializedName("reservationDate")
-    val reservationDate: String
+    @SerializedName("ReservationDate")
+    val reservationDate: String,
+    @SerializedName("StationId")
+    val stationId: String
 )
