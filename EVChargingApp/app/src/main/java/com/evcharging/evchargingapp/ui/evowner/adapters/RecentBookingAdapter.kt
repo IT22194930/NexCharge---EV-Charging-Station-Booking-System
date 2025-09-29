@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.evcharging.evchargingapp.data.model.Booking
 import com.evcharging.evchargingapp.databinding.ItemRecentBookingBinding
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 
 class RecentBookingAdapter(
     private val onBookingClick: (Booking) -> Unit,
     private val onViewQRClick: (Booking) -> Unit,
-    private val onDeleteClick: (Booking) -> Unit
+    private val onDeleteClick: (Booking) -> Unit,
+    private val getStationName: (String?) -> String
 ) : ListAdapter<Booking, RecentBookingAdapter.RecentBookingViewHolder>(RecentBookingDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecentBookingViewHolder {
@@ -35,9 +37,9 @@ class RecentBookingAdapter(
         fun bind(booking: Booking) {
             binding.apply {
                 // Set booking details
-                textViewStationName.text = "Station ${booking.stationId}" // You might want to resolve this to actual station name
+                textViewStationName.text = getStationName(booking.stationId)
                 textViewStatus.text = booking.status.uppercase()
-                textViewDateTime.text = booking.reservationDate.split(" ").firstOrNull() ?: booking.reservationDate
+                textViewDateTime.text = DateTimeUtils.formatShort(booking.reservationDate)
 
                 // Set status color
                 val statusColor = when (booking.status.lowercase()) {

@@ -25,6 +25,8 @@ import com.evcharging.evchargingapp.data.model.BookingCreateRequest
 import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.RecentBookingAdapter
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
@@ -38,6 +40,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private lateinit var recentBookingAdapter: RecentBookingAdapter
     private val allStations = mutableListOf<Station>()
     private var recentBookings = listOf<Booking>()
+    private var loadingCounter = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +53,11 @@ class EVOwnerReservationsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Show loading screen while setting up
+        LoadingManager.show(requireContext(), "Loading reservations...")
+        loadingCounter = 2 // We have 2 async operations to complete
+        
         setupRecyclerView()
         setupSearchFunctionality()
         setupClickListeners()
@@ -67,6 +75,9 @@ class EVOwnerReservationsFragment : Fragment() {
             },
             onDeleteClick = { booking ->
                 confirmDeleteBooking(booking)
+            },
+            getStationName = { stationId ->
+                getStationName(stationId)
             }
         )
         
@@ -120,12 +131,19 @@ class EVOwnerReservationsFragment : Fragment() {
                         Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent active bookings (excluding completed)")
                     } else {
                         Log.w("EVOwnerReservations", "Failed to load recent bookings: ${response.code()}")
+                        showError("Failed to load recent bookings")
                     }
                 } else {
                     Log.w("EVOwnerReservations", "User NIC not found")
+                    showError("User authentication error")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading recent bookings", e)
+                if (isAdded && _binding != null) {
+                    showError("Network error loading bookings")
+                }
+            } finally {
+                checkLoadingComplete()
             }
         }
     }
@@ -134,6 +152,8 @@ class EVOwnerReservationsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = apiService.getAllStations()
+                
+                if (!isAdded || _binding == null) return@launch
                 
                 if (response.isSuccessful && response.body() != null) {
                     allStations.clear()
@@ -148,8 +168,19 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading stations", e)
-                showError("Error loading stations: ${e.message}")
+                if (isAdded && _binding != null) {
+                    showError("Error loading stations: ${e.message}")
+                }
+            } finally {
+                checkLoadingComplete()
             }
+        }
+    }
+
+    private fun checkLoadingComplete() {
+        loadingCounter--
+        if (loadingCounter <= 0 && isAdded && _binding != null) {
+            LoadingManager.dismiss()
         }
     }
 
@@ -264,7 +295,7 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
                 else -> {
                     val stationId = allStations[selectedStationIndex].id
-                    val stationName = allStations[selectedStationIndex].name
+                    val stationName = getStationName(stationId)
                     
                     // Show confirmation before creating
                     showBookingConfirmation(stationName, date, time) {
@@ -392,7 +423,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Your booking has been submitted and is now pending approval from the station operator.
             
             📍 Station: $stationName
-            📅 Date & Time: ${booking.reservationDate}
+            📅 Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             🆔 Booking ID: ${booking.id}
             📊 Status: ${booking.status.uppercase()}
             
@@ -425,7 +456,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Reservation Details:
             
             Station: $stationName
-            Date & Time: ${booking.reservationDate}
+            Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage
@@ -458,10 +489,12 @@ class EVOwnerReservationsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val stationName = getStationName(booking.stationId)
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at the charging station")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate")
                         .setPositiveButton("Close", null)
                         .show()
                     
@@ -617,8 +650,19 @@ class EVOwnerReservationsFragment : Fragment() {
             .show()
     }
 
-    private fun getStationName(stationId: String): String {
-        return allStations.find { it.id == stationId }?.name ?: "Unknown Station"
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        // Log for debugging
+        Log.d("EVOwnerReservations", "Looking for station with ID: $stationId")
+        Log.d("EVOwnerReservations", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {

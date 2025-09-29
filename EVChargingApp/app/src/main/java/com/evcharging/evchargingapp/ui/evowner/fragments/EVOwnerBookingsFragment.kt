@@ -26,6 +26,8 @@ import com.evcharging.evchargingapp.ui.evowner.adapters.BookingsPagerAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.ActiveBookingsTabFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.HistoryBookingsTabFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
@@ -52,6 +54,10 @@ class EVOwnerBookingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Show loading screen while setting up
+        LoadingManager.show(requireContext(), "Loading your bookings...")
+        
         setupViewPager()
         setupSearchFunctionality()
         setupClickListeners()
@@ -99,14 +105,24 @@ class EVOwnerBookingsFragment : Fragment() {
             try {
                 val response = apiService.getAllStations()
                 
+                if (!isAdded || _binding == null) return@launch
+                
                 if (response.isSuccessful && response.body() != null) {
                     allStations = response.body()!!
                     Log.d("EVOwnerBookings", "Loaded ${allStations.size} stations")
                 } else {
                     Log.w("EVOwnerBookings", "Failed to load stations: ${response.code()}")
+                    showError("Failed to load stations")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerBookings", "Error loading stations", e)
+                if (isAdded && _binding != null) {
+                    showError("Network error loading stations")
+                }
+            } finally {
+                if (isAdded && _binding != null) {
+                    LoadingManager.dismiss()
+                }
             }
         }
     }
@@ -150,6 +166,8 @@ class EVOwnerBookingsFragment : Fragment() {
             Log.d("EVOwnerBookings", "Attempting to show QR for booking: ${booking.id}, status: ${booking.status}")
             Log.d("EVOwnerBookings", "QR Base64 available: ${!booking.qrBase64.isNullOrEmpty()}")
             
+            val stationName = getStationName(booking.stationId)
+            
             // Check if booking has QR code from backend (like web version)
             if (!booking.qrBase64.isNullOrEmpty()) {
                 Log.d("EVOwnerBookings", "QR Base64 length: ${booking.qrBase64!!.length}")
@@ -162,10 +180,11 @@ class EVOwnerBookingsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at the charging station")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate\n🆔 Booking: ${booking.id}")
                         .setPositiveButton("Close", null)
                         .show()
                     
@@ -179,7 +198,7 @@ class EVOwnerBookingsFragment : Fragment() {
                 Log.d("EVOwnerBookings", "No QR code available for booking ${booking.id}")
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle("QR Code Unavailable")
-                    .setMessage("QR code will be available once your booking is approved by the station operator.")
+                    .setMessage("QR code will be available once your booking is approved by the station operator.\n\nStation: $stationName")
                     .setPositiveButton("OK", null)
                     .show()
             }
@@ -192,11 +211,15 @@ class EVOwnerBookingsFragment : Fragment() {
 
     private fun refreshTabData() {
         // Refresh data in both tabs
-        val activeFragment = pagerAdapter.getFragment(0) as? ActiveBookingsTabFragment
-        val historyFragment = pagerAdapter.getFragment(1) as? HistoryBookingsTabFragment
-        
-        activeFragment?.refreshBookings()
-        historyFragment?.refreshBookings()
+        try {
+            val activeFragment = pagerAdapter.getFragment(0) as? ActiveBookingsTabFragment
+            val historyFragment = pagerAdapter.getFragment(1) as? HistoryBookingsTabFragment
+            
+            activeFragment?.refreshBookings()
+            historyFragment?.refreshBookings()
+        } catch (e: Exception) {
+            Log.e("EVOwnerBookings", "Error refreshing tab data", e)
+        }
     }
 
     private fun showSuccess(message: String) {
@@ -263,8 +286,19 @@ class EVOwnerBookingsFragment : Fragment() {
             .show()
     }
 
-    private fun getStationName(stationId: String): String {
-        return allStations.find { it.id == stationId }?.name ?: "Unknown Station"
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        // Log for debugging
+        Log.d("EVOwnerBookings", "Looking for station with ID: $stationId")
+        Log.d("EVOwnerBookings", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {
