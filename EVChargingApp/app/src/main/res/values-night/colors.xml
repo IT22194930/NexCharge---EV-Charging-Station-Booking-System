@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#04180A</color>
+    
+    <!-- NexCharge Professional Brand Colors - Dark Mode -->
+    <color name="nexcharge_primary">#4CAF50</color>
+    <color name="nexcharge_primary_variant">#66BB6A</color>
+    <color name="nexcharge_secondary">#81C784</color>
+    <color name="nexcharge_accent">#A5D6A7</color>
+    
+    <!-- Professional Background Gradient - Dark Mode -->
+    <color name="nexcharge_background_start">#121212</color>
+    <color name="nexcharge_background_center">#1E1E1E</color>
+    <color name="nexcharge_background_end">#2D2D2D</color>
+    
+    <!-- Text Colors - Dark Mode -->
+    <color name="nexcharge_text_primary">#E8F5E8</color>
+    <color name="nexcharge_text_secondary">#C8E6C9</color>
+    <color name="nexcharge_text_hint">#4CAF50</color>
+    
+    <!-- Status Colors - Dark Mode -->
+    <color name="status_active">#4CAF50</color>
+    <color name="status_pending">#FFB74D</color>
+    <color name="status_completed">#64B5F6</color>
+    <color name="status_cancelled">#EF5350</color>
+    
+    <!-- Card and Surface Colors - Dark Mode -->
+    <color name="nexcharge_surface">#1E1E1E</color>
+    <color name="nexcharge_surface_variant">#2D2D2D</color>
+    <color name="nexcharge_outline">#4CAF50</color>
+</resources>

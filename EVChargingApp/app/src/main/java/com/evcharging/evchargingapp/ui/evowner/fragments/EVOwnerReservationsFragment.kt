@@ -94,17 +94,6 @@ class EVOwnerReservationsFragment : Fragment() {
             }
         }
         
-        binding.fabCreateReservation.setOnClickListener {
-            // Ensure stations are loaded before showing dialog
-            if (allStations.isEmpty()) {
-                // Show loading message and load stations
-                showError("Loading stations... Please try again.")
-                loadStations()
-            } else {
-                showCreateBookingDialog()
-            }
-        }
-        
         binding.buttonQuickBookNearby.setOnClickListener {
             showNearbyStationsDialog()
         }
@@ -636,7 +625,7 @@ class EVOwnerReservationsFragment : Fragment() {
         if (!isAdded || _binding == null) return
         
         binding.buttonCreateReservation.isEnabled = !isLoading
-        binding.fabCreateReservation.isEnabled = !isLoading
+        binding.buttonQuickBookNearby.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {

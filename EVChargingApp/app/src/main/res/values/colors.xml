@@ -2,6 +2,32 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="background">#040718</color>
-    <!-- Add any other colors your app uses or your splash screen needs -->
+    <color name="background">#04180A</color>
+    
+    <!-- NexCharge Professional Brand Colors -->
+    <color name="nexcharge_primary">#2E7D32</color>
+    <color name="nexcharge_primary_variant">#388E3C</color>
+    <color name="nexcharge_secondary">#66BB6A</color>
+    <color name="nexcharge_accent">#4CAF50</color>
+    
+    <!-- Professional Background Gradient -->
+    <color name="nexcharge_background_start">#F8F9FA</color>
+    <color name="nexcharge_background_center">#E8F5E8</color>
+    <color name="nexcharge_background_end">#C8E6C9</color>
+    
+    <!-- Text Colors -->
+    <color name="nexcharge_text_primary">#1B5E20</color>
+    <color name="nexcharge_text_secondary">#2E7D32</color>
+    <color name="nexcharge_text_hint">#81C784</color>
+    
+    <!-- Status Colors -->
+    <color name="status_active">#4CAF50</color>
+    <color name="status_pending">#FF9800</color>
+    <color name="status_completed">#2196F3</color>
+    <color name="status_cancelled">#F44336</color>
+    
+    <!-- Card and Surface Colors -->
+    <color name="nexcharge_surface">#FFFFFF</color>
+    <color name="nexcharge_surface_variant">#F1F8E9</color>
+    <color name="nexcharge_outline">#81C784</color>
 </resources>
