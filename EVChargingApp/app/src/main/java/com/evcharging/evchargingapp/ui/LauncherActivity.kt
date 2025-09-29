@@ -3,9 +3,10 @@ package com.evcharging.evchargingapp.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen // Correct import
 import com.auth0.android.jwt.JWT
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
@@ -13,20 +14,16 @@ import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivi
 
 class LauncherActivity : AppCompatActivity() {
 
+    private val splashTimeOut: Long = 3000 // 3 seconds
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Must be called before super.onCreate() and setContentView()
-        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_launcher)
 
-        // Keep the splash screen visible for this Activity if you have background
-        // tasks before navigation or setting the content view.
-        // splashScreen.setKeepOnScreenCondition { true } // Example: keep on screen
-        // If you don't have long-running tasks, you might not need setKeepOnScreenCondition.
-        // Once your data is loaded (or decision made), you would set it to false.
-
-        setContentView(R.layout.activity_launcher) // Your existing launcher layout
-
-        checkUserSession()
+        // Delay the navigation to show splash screen for the specified time
+        Handler(Looper.getMainLooper()).postDelayed({
+            checkUserSession()
+        }, splashTimeOut)
     }
 
     private fun checkUserSession() {

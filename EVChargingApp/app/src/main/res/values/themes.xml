@@ -15,11 +15,15 @@
     <style name="Theme.EVChargingApp" parent="Base.Theme.EVChargingApp" />
 
     <!-- Splash Screen Theme -->
-    <style name="Theme.EVChargingApp.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/evlogo</item>
-        <!-- Required: Set the theme of the Activity that follows your splash screen. -->
-        <item name="postSplashScreenTheme">@style/Theme.EVChargingApp</item> 
+    <style name="Theme.EVChargingApp.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowBackground">@drawable/professional_gradient_background</item>
+        <item name="colorPrimary">@color/nexcharge_primary</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSurface">@color/nexcharge_surface</item>
+        <item name="android:textColorPrimary">@color/nexcharge_text_primary</item>
+        <item name="android:textColorSecondary">@color/nexcharge_text_secondary</item>
     </style>
 
     <!-- Transparent Dialog Theme for Loading -->
