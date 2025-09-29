@@ -26,6 +26,7 @@ import com.evcharging.evchargingapp.ui.evowner.adapters.BookingsPagerAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.ActiveBookingsTabFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.HistoryBookingsTabFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
@@ -52,6 +53,10 @@ class EVOwnerBookingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Show loading screen while setting up
+        LoadingManager.show(requireContext(), "Loading your bookings...")
+        
         setupViewPager()
         setupSearchFunctionality()
         setupClickListeners()
@@ -99,14 +104,24 @@ class EVOwnerBookingsFragment : Fragment() {
             try {
                 val response = apiService.getAllStations()
                 
+                if (!isAdded || _binding == null) return@launch
+                
                 if (response.isSuccessful && response.body() != null) {
                     allStations = response.body()!!
                     Log.d("EVOwnerBookings", "Loaded ${allStations.size} stations")
                 } else {
                     Log.w("EVOwnerBookings", "Failed to load stations: ${response.code()}")
+                    showError("Failed to load stations")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerBookings", "Error loading stations", e)
+                if (isAdded && _binding != null) {
+                    showError("Network error loading stations")
+                }
+            } finally {
+                if (isAdded && _binding != null) {
+                    LoadingManager.dismiss()
+                }
             }
         }
     }

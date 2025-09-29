@@ -25,6 +25,7 @@ import com.evcharging.evchargingapp.data.model.BookingCreateRequest
 import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.RecentBookingAdapter
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
@@ -38,6 +39,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private lateinit var recentBookingAdapter: RecentBookingAdapter
     private val allStations = mutableListOf<Station>()
     private var recentBookings = listOf<Booking>()
+    private var loadingCounter = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +52,11 @@ class EVOwnerReservationsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Show loading screen while setting up
+        LoadingManager.show(requireContext(), "Loading reservations...")
+        loadingCounter = 2 // We have 2 async operations to complete
+        
         setupRecyclerView()
         setupSearchFunctionality()
         setupClickListeners()
@@ -120,12 +127,19 @@ class EVOwnerReservationsFragment : Fragment() {
                         Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent active bookings (excluding completed)")
                     } else {
                         Log.w("EVOwnerReservations", "Failed to load recent bookings: ${response.code()}")
+                        showError("Failed to load recent bookings")
                     }
                 } else {
                     Log.w("EVOwnerReservations", "User NIC not found")
+                    showError("User authentication error")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading recent bookings", e)
+                if (isAdded && _binding != null) {
+                    showError("Network error loading bookings")
+                }
+            } finally {
+                checkLoadingComplete()
             }
         }
     }
@@ -134,6 +148,8 @@ class EVOwnerReservationsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = apiService.getAllStations()
+                
+                if (!isAdded || _binding == null) return@launch
                 
                 if (response.isSuccessful && response.body() != null) {
                     allStations.clear()
@@ -148,8 +164,19 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading stations", e)
-                showError("Error loading stations: ${e.message}")
+                if (isAdded && _binding != null) {
+                    showError("Error loading stations: ${e.message}")
+                }
+            } finally {
+                checkLoadingComplete()
             }
+        }
+    }
+
+    private fun checkLoadingComplete() {
+        loadingCounter--
+        if (loadingCounter <= 0 && isAdded && _binding != null) {
+            LoadingManager.dismiss()
         }
     }
 
