@@ -964,9 +964,11 @@ export default function Bookings() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Owner NIC
-              </th>
+              {role !== "EVOwner" && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Owner NIC
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Station
               </th>
@@ -984,9 +986,11 @@ export default function Bookings() {
           <tbody className="bg-white divide-y divide-gray-200">
             {bookings.map((booking) => (
               <tr key={booking.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {booking.ownerNIC}
-                </td>
+                {role !== "EVOwner" && (
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {booking.ownerNIC}
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {getStationName(booking.stationId)}
                 </td>
