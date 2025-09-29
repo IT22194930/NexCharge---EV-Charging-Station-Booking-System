@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Owners from "./pages/Owners";
 import Bookings from "./pages/Bookings";
+import Stations from "./pages/Stations";
 
 function PrivateRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -42,6 +43,13 @@ export default function App() {
         <Route path="/owners" element={
           <PrivateRoute roles={["Backoffice"]}>
             <Owners />
+          </PrivateRoute>
+        } />
+
+        {/* Station Management - Backoffice only */}
+        <Route path="/stations" element={
+          <PrivateRoute roles={["Backoffice"]}>
+            <Stations />
           </PrivateRoute>
         } />
         
