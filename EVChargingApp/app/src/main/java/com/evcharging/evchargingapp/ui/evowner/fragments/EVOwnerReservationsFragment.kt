@@ -36,7 +36,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private val binding get() = _binding!!
     private val apiService by lazy { RetrofitInstance.createApiService(requireContext()) }
     private lateinit var recentBookingAdapter: RecentBookingAdapter
-    private var allStations = listOf<Station>()
+    private val allStations = mutableListOf<Station>()
     private var recentBookings = listOf<Booking>()
 
     override fun onCreateView(
@@ -84,11 +84,14 @@ class EVOwnerReservationsFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.buttonCreateReservation.setOnClickListener {
-            showCreateBookingDialog()
-        }
-        
-        binding.fabCreateReservation.setOnClickListener {
-            showCreateBookingDialog()
+            // Ensure stations are loaded before showing dialog
+            if (allStations.isEmpty()) {
+                // Show loading message and load stations
+                showError("Loading stations... Please try again.")
+                loadStations()
+            } else {
+                showCreateBookingDialog()
+            }
         }
         
         binding.buttonQuickBookNearby.setOnClickListener {
@@ -133,14 +136,19 @@ class EVOwnerReservationsFragment : Fragment() {
                 val response = apiService.getAllStations()
                 
                 if (response.isSuccessful && response.body() != null) {
-                    allStations = response.body()!!
-                    updateStationsUI()
+                    allStations.clear()
+                    allStations.addAll(response.body()!!)
                     Log.d("EVOwnerReservations", "Loaded ${allStations.size} stations")
+                    allStations.forEach { station ->
+                        Log.d("EVOwnerReservations", "Station: ${station.name} - ${station.location} (${station.type}, ${station.availableSlots} slots)")
+                    }
                 } else {
                     Log.w("EVOwnerReservations", "Failed to load stations: ${response.code()}")
+                    showError("Failed to load stations: ${response.code()}")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading stations", e)
+                showError("Error loading stations: ${e.message}")
             }
         }
     }
@@ -163,10 +171,17 @@ class EVOwnerReservationsFragment : Fragment() {
     }
 
     private fun showCreateBookingDialog() {
+        // Check if stations are loaded
+        if (allStations.isEmpty()) {
+            showError("Loading stations... Please try again in a moment.")
+            loadStations() // Retry loading stations
+            return
+        }
+        
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_booking, null)
         
         val textViewUserInfo = dialogView.findViewById<TextView>(R.id.textViewUserInfo)
-        val stationSpinner = dialogView.findViewById<androidx.appcompat.widget.AppCompatSpinner>(R.id.spinnerStation)
+        val autoCompleteStation = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.autoCompleteStation)
         val dateEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
         val timeEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
         val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
@@ -176,32 +191,36 @@ class EVOwnerReservationsFragment : Fragment() {
         val userNic = TokenUtils.getCurrentUserNic(requireContext())
         textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
         
-        // Setup station spinner with enhanced information
+        // Setup station dropdown with enhanced information
         val stationDisplayNames = allStations.map { station ->
-            "🔌 ${station.name} - ${station.location}\n   ${station.chargerType} | Status: ${station.status}"
+            "🔌 ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} slots available"
         }
         
-        val adapter = object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, stationDisplayNames) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent)
-                val textView = view.findViewById<TextView>(android.R.id.text1)
-                textView.textSize = 14f
-                textView.setPadding(16, 12, 16, 12)
-                return view
-            }
-            
-            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getDropDownView(position, convertView, parent)
-                val textView = view.findViewById<TextView>(android.R.id.text1)
-                textView.textSize = 12f
-                textView.setPadding(16, 12, 16, 12)
-                textView.maxLines = 2
-                return view
+        Log.d("EVOwnerReservations", "Setting up dropdown with ${stationDisplayNames.size} stations")
+        
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, stationDisplayNames)
+        autoCompleteStation.setAdapter(adapter)
+        
+        // Configure the dropdown behavior
+        autoCompleteStation.threshold = 0  // Show all items immediately
+        autoCompleteStation.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                autoCompleteStation.showDropDown()
             }
         }
+        autoCompleteStation.setOnClickListener {
+            autoCompleteStation.showDropDown()
+        }
         
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        stationSpinner.adapter = adapter
+        // Force adapter refresh
+        adapter.notifyDataSetChanged()
+        
+        // Handle station selection
+        var selectedStationIndex = -1
+        autoCompleteStation.setOnItemClickListener { parent, view, position, id ->
+            selectedStationIndex = position
+            Log.d("EVOwnerReservations", "Selected station index: $position")
+        }
         
         // Setup date picker with validation
         dateEditText.setOnClickListener {
@@ -227,7 +246,6 @@ class EVOwnerReservationsFragment : Fragment() {
         }
         
         buttonCreate.setOnClickListener {
-            val selectedStationIndex = stationSpinner.selectedItemPosition
             val date = dateEditText.text.toString()
             val time = timeEditText.text.toString()
             
@@ -308,10 +326,14 @@ class EVOwnerReservationsFragment : Fragment() {
                 showLoading(true)
                 Log.d("EVOwnerReservations", "Creating booking for station: $stationId, dateTime: $reservationDateTime")
                 
+                // Convert the date format to ISO format that the API expects
+                val formattedDateTime = convertToApiFormat(reservationDateTime)
+                Log.d("EVOwnerReservations", "Formatted dateTime for API: $formattedDateTime")
+                
                 val request = BookingCreateRequest(
                     stationId = stationId,
                     ownerNic = userNic,
-                    reservationDate = reservationDateTime
+                    reservationDate = formattedDateTime
                 )
                 
                 val response = apiService.createBooking(request)
@@ -343,6 +365,23 @@ class EVOwnerReservationsFragment : Fragment() {
             } finally {
                 showLoading(false)
             }
+        }
+    }
+
+    private fun convertToApiFormat(dateTimeString: String): String {
+        try {
+            // Input format: "2024-01-15 14:30"
+            // Output format: "2024-01-15T14:30:00" (ISO 8601 format without timezone)
+            val parts = dateTimeString.split(" ")
+            if (parts.size == 2) {
+                val datePart = parts[0] // "2024-01-15"
+                val timePart = parts[1] // "14:30"
+                return "${datePart}T${timePart}:00"
+            }
+            return dateTimeString
+        } catch (e: Exception) {
+            Log.e("EVOwnerReservations", "Error converting date format", e)
+            return dateTimeString
         }
     }
 
@@ -586,7 +625,7 @@ class EVOwnerReservationsFragment : Fragment() {
         if (!isAdded || _binding == null) return
         
         binding.buttonCreateReservation.isEnabled = !isLoading
-        binding.fabCreateReservation.isEnabled = !isLoading
+        binding.buttonQuickBookNearby.isEnabled = !isLoading
     }
 
     private fun showError(message: String) {

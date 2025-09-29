@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
+    android:background="@color/nexcharge_background_start"
     tools:context=".ui.evowner.fragments.EVOwnerBookingsFragment">
 
     <LinearLayout
@@ -12,42 +12,75 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Header Section -->
-        <LinearLayout
+        <!-- Header Section Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:paddingBottom="0dp">
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/nexcharge_surface">
 
-            <!-- Title -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="My Bookings"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary"
-                android:layout_marginBottom="8dp" />
+                android:orientation="vertical"
+                android:padding="20dp">
 
-            <!-- Search Bar -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Search bookings..."
-                app:startIconDrawable="@android:drawable/ic_menu_search"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextSearch"
+                <!-- Title with Icon -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_bookings"
+                        android:layout_marginEnd="12dp"
+                        android:tint="@color/nexcharge_primary"
+                        android:contentDescription="Bookings Icon" />
 
-        </LinearLayout>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="My Bookings"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/nexcharge_text_primary" />
+
+                </LinearLayout>
+
+                <!-- Search Bar -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Search bookings..."
+                    app:startIconDrawable="@android:drawable/ic_menu_search"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxStrokeColor="@color/nexcharge_primary"
+                    app:hintTextColor="@color/nexcharge_text_hint"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/nexcharge_text_primary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Tab Layout -->
         <com.google.android.material.tabs.TabLayout
@@ -57,9 +90,9 @@
             android:layout_marginHorizontal="16dp"
             app:tabMode="fixed"
             app:tabGravity="fill"
-            app:tabSelectedTextColor="?attr/colorPrimary"
-            app:tabTextColor="?android:attr/textColorSecondary"
-            app:tabIndicatorColor="?attr/colorPrimary">
+            app:tabSelectedTextColor="@color/nexcharge_primary"
+
+            app:tabIndicatorColor="@color/nexcharge_primary">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
