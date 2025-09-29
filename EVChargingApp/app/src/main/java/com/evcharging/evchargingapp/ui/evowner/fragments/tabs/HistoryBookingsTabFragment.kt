@@ -20,6 +20,7 @@ import com.evcharging.evchargingapp.databinding.FragmentHistoryBookingsBinding
 import com.evcharging.evchargingapp.ui.evowner.adapters.BookingAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerBookingsFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -219,7 +220,7 @@ class HistoryBookingsTabFragment : Fragment() {
         val stationName = getStationName(booking.stationId)
         val message = """
             Station: $stationName
-            Reservation Date: ${booking.reservationDate}
+            Reservation Date: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage

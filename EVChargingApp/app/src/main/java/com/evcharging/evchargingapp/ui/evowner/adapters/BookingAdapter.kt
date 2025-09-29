@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.evcharging.evchargingapp.data.model.Booking
 import com.evcharging.evchargingapp.databinding.ItemBookingBinding
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 
 class BookingAdapter(
     private val onBookingClick: (Booking) -> Unit,
@@ -38,7 +39,7 @@ class BookingAdapter(
                 // Set booking details
                 textViewStationName.text = getStationName(booking.stationId)
                 textViewStatus.text = booking.status.uppercase()
-                textViewDateTime.text = booking.reservationDate
+                textViewDateTime.text = DateTimeUtils.formatRelative(booking.reservationDate)
                
 
                 // Set status color

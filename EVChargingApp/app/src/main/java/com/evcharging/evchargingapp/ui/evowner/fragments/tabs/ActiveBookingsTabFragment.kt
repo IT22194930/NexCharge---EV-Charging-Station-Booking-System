@@ -20,6 +20,7 @@ import com.evcharging.evchargingapp.databinding.FragmentActiveBookingsBinding
 import com.evcharging.evchargingapp.ui.evowner.adapters.BookingAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerBookingsFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
@@ -177,10 +178,12 @@ class ActiveBookingsTabFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val stationName = getStationName(booking.stationId)
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at the charging station")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate")
                         .setPositiveButton("Close", null)
                         .show()
                     
@@ -217,7 +220,7 @@ class ActiveBookingsTabFragment : Fragment() {
         val stationName = getStationName(booking.stationId)
         val message = """
             Station: $stationName
-            Reservation Date: ${booking.reservationDate}
+            Reservation Date: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage

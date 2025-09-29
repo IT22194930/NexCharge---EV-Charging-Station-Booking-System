@@ -26,6 +26,7 @@ import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.RecentBookingAdapter
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
@@ -422,7 +423,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Your booking has been submitted and is now pending approval from the station operator.
             
             📍 Station: $stationName
-            📅 Date & Time: ${booking.reservationDate}
+            📅 Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             🆔 Booking ID: ${booking.id}
             📊 Status: ${booking.status.uppercase()}
             
@@ -455,7 +456,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Reservation Details:
             
             Station: $stationName
-            Date & Time: ${booking.reservationDate}
+            Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage
@@ -488,10 +489,12 @@ class EVOwnerReservationsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val stationName = getStationName(booking.stationId)
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at the charging station")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate")
                         .setPositiveButton("Close", null)
                         .show()
                     

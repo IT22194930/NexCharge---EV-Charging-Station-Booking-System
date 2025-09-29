@@ -27,6 +27,7 @@ import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.ActiveBookingsTabF
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.HistoryBookingsTabFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
@@ -179,10 +180,11 @@ class EVOwnerBookingsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at $stationName\nBooking: ${booking.id}")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate\n🆔 Booking: ${booking.id}")
                         .setPositiveButton("Close", null)
                         .show()
                     
