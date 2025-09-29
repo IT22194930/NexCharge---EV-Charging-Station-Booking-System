@@ -74,6 +74,9 @@ class EVOwnerReservationsFragment : Fragment() {
             },
             onDeleteClick = { booking ->
                 confirmDeleteBooking(booking)
+            },
+            getStationName = { stationId ->
+                getStationName(stationId)
             }
         )
         
@@ -291,7 +294,7 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
                 else -> {
                     val stationId = allStations[selectedStationIndex].id
-                    val stationName = allStations[selectedStationIndex].name
+                    val stationName = getStationName(stationId)
                     
                     // Show confirmation before creating
                     showBookingConfirmation(stationName, date, time) {
@@ -644,8 +647,19 @@ class EVOwnerReservationsFragment : Fragment() {
             .show()
     }
 
-    private fun getStationName(stationId: String): String {
-        return allStations.find { it.id == stationId }?.name ?: "Unknown Station"
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        // Log for debugging
+        Log.d("EVOwnerReservations", "Looking for station with ID: $stationId")
+        Log.d("EVOwnerReservations", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {

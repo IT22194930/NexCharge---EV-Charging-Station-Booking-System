@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.data.model.Booking
+import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.databinding.FragmentActiveBookingsBinding
 import com.evcharging.evchargingapp.ui.evowner.adapters.BookingAdapter
@@ -29,6 +30,7 @@ class ActiveBookingsTabFragment : Fragment() {
     private val apiService by lazy { RetrofitInstance.createApiService(requireContext()) }
     private lateinit var bookingAdapter: BookingAdapter
     private var allBookings = listOf<Booking>()
+    private var allStations = listOf<Station>()
     private var searchQuery = ""
 
     override fun onCreateView(
@@ -43,7 +45,7 @@ class ActiveBookingsTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        loadActiveBookings()
+        loadStationsAndBookings()
     }
 
     private fun setupRecyclerView() {
@@ -56,6 +58,9 @@ class ActiveBookingsTabFragment : Fragment() {
             },
             onViewQRClick = { booking ->
                 showQRCode(booking)
+            },
+            getStationName = { stationId ->
+                getStationName(stationId)
             }
         )
         
@@ -65,10 +70,31 @@ class ActiveBookingsTabFragment : Fragment() {
         }
     }
 
-    private fun loadActiveBookings() {
+    private fun loadStationsAndBookings() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 showLoading(true)
+                
+                // Load stations first
+                val stationsResponse = apiService.getAllStations()
+                if (stationsResponse.isSuccessful && stationsResponse.body() != null) {
+                    allStations = stationsResponse.body()!!
+                }
+                
+                // Then load bookings
+                loadActiveBookings()
+                
+            } catch (e: Exception) {
+                Log.e("ActiveBookingsTab", "Error loading data", e)
+                showError("Failed to load data")
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun loadActiveBookings() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
                 val userNic = TokenUtils.getCurrentUserNic(requireContext())
                 
                 if (userNic != null) {
@@ -112,10 +138,6 @@ class ActiveBookingsTabFragment : Fragment() {
     fun filterBookings(query: String) {
         searchQuery = query
         updateBookingsUI()
-    }
-
-    fun refreshBookings() {
-        loadActiveBookings()
     }
 
     private fun updateBookingsUI() {
@@ -192,8 +214,9 @@ class ActiveBookingsTabFragment : Fragment() {
             else -> "Booking status: ${booking.status}"
         }
         
+        val stationName = getStationName(booking.stationId)
         val message = """
-            Station ID: ${booking.stationId}
+            Station: $stationName
             Reservation Date: ${booking.reservationDate}
             Status: ${booking.status.uppercase()}
             
@@ -257,6 +280,17 @@ class ActiveBookingsTabFragment : Fragment() {
         }
     }
 
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
+    }
+
     private fun showEmptyState(message: String) {
         if (!isAdded || _binding == null) return
         
@@ -270,6 +304,10 @@ class ActiveBookingsTabFragment : Fragment() {
         
         binding.layoutEmptyState.visibility = View.GONE
         binding.recyclerViewActiveBookings.visibility = View.VISIBLE
+    }
+
+    fun refreshBookings() {
+        loadStationsAndBookings()
     }
 
     override fun onDestroyView() {

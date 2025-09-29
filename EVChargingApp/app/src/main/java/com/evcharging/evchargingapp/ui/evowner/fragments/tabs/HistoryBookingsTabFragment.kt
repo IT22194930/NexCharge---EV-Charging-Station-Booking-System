@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.data.model.Booking
+import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.databinding.FragmentHistoryBookingsBinding
 import com.evcharging.evchargingapp.ui.evowner.adapters.BookingAdapter
@@ -29,6 +30,7 @@ class HistoryBookingsTabFragment : Fragment() {
     private val apiService by lazy { RetrofitInstance.createApiService(requireContext()) }
     private lateinit var bookingAdapter: BookingAdapter
     private var allBookings = listOf<Booking>()
+    private var allStations = listOf<Station>()
     private var searchQuery = ""
 
     override fun onCreateView(
@@ -43,7 +45,7 @@ class HistoryBookingsTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        loadHistoryBookings()
+        loadStationsAndBookings()
     }
 
     private fun setupRecyclerView() {
@@ -56,6 +58,9 @@ class HistoryBookingsTabFragment : Fragment() {
             },
             onViewQRClick = { booking ->
                 showQRCode(booking)
+            },
+            getStationName = { stationId ->
+                getStationName(stationId)
             }
         )
         
@@ -65,10 +70,31 @@ class HistoryBookingsTabFragment : Fragment() {
         }
     }
 
-    private fun loadHistoryBookings() {
+    private fun loadStationsAndBookings() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 showLoading(true)
+                
+                // Load stations first
+                val stationsResponse = apiService.getAllStations()
+                if (stationsResponse.isSuccessful && stationsResponse.body() != null) {
+                    allStations = stationsResponse.body()!!
+                }
+                
+                // Then load bookings
+                loadHistoryBookings()
+                
+            } catch (e: Exception) {
+                Log.e("HistoryBookingsTab", "Error loading data", e)
+                showError("Failed to load data")
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun loadHistoryBookings() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
                 val userNic = TokenUtils.getCurrentUserNic(requireContext())
                 
                 if (userNic != null) {
@@ -103,10 +129,6 @@ class HistoryBookingsTabFragment : Fragment() {
     fun filterBookings(query: String) {
         searchQuery = query
         updateBookingsUI()
-    }
-
-    fun refreshBookings() {
-        loadHistoryBookings()
     }
 
     private fun updateBookingsUI() {
@@ -194,8 +216,9 @@ class HistoryBookingsTabFragment : Fragment() {
             else -> "Booking status: ${booking.status}"
         }
         
+        val stationName = getStationName(booking.stationId)
         val message = """
-            Station ID: ${booking.stationId}
+            Station: $stationName
             Reservation Date: ${booking.reservationDate}
             Status: ${booking.status.uppercase()}
             
@@ -246,6 +269,21 @@ class HistoryBookingsTabFragment : Fragment() {
         if (isAdded && context != null) {
             Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
+    }
+
+    fun refreshBookings() {
+        loadStationsAndBookings()
     }
 
     private fun showEmptyState(message: String) {
