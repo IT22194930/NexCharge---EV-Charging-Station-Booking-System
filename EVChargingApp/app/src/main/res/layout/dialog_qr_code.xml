@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="24dp"
     android:gravity="center"
-    android:background="?android:attr/colorBackground">
+    android:background="@color/nexcharge_background_start">
 
     <!-- QR Code Image -->
     <ImageView
@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:text="Show this QR code at the charging station"
         android:textSize="14sp"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="@color/nexcharge_text_primary"
         android:gravity="center"
         android:layout_marginBottom="8dp" />
 
@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:text="Keep this code safe until your charging session"
         android:textSize="12sp"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="@color/nexcharge_text_secondary"
         android:gravity="center" />
 
 </LinearLayout>

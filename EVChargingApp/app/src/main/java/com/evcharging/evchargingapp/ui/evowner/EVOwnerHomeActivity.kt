@@ -3,8 +3,6 @@ package com.evcharging.evchargingapp.ui.evowner
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -38,16 +36,10 @@ class EVOwnerHomeActivity : AppCompatActivity() {
             insets
         }
 
-        setupToolbar()
         setupBottomNavigation()
         
         // Show loading screen while initializing
         showInitialLoading()
-    }
-
-    private fun setupToolbar() {
-        setSupportActionBar(binding.toolbarEvOwner)
-        supportActionBar?.title = "NexCharge"
     }
 
     private fun showInitialLoading() {
@@ -99,21 +91,6 @@ class EVOwnerHomeActivity : AppCompatActivity() {
     // Public method to switch tabs from fragments
     fun switchToTab(tabId: Int) {
         binding.bottomNavigationEvOwner.selectedItemId = tabId
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.toolbar_evowner_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_logout -> {
-                performLogout()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     private fun performLogout() {

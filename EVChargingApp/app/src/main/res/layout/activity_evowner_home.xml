@@ -5,42 +5,78 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/professional_gradient_background"
     tools:context=".ui.evowner.EVOwnerHomeActivity">
 
-    <!-- Top App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarEvOwner"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:title="NexCharge"
-        app:titleTextColor="?attr/colorOnPrimary"
-        app:menu="@menu/toolbar_evowner_menu"
+    <!-- Professional NexCharge Header -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/headerCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/nexcharge_primary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Fragment Container -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerEvOwner"
+    <!-- Content Container -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contentCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbarEvOwner"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationEvOwner"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintTop_toBottomOf="@id/headerCard"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationEvOwner"
-        android:layout_width="match_parent"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragmentContainerEvOwner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Bottom Navigation Container -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomNavCard"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:menu="@menu/bottom_navigation_evowner"
-        app:itemIconTint="@color/bottom_nav_color_selector"
-        app:itemTextColor="@color/bottom_nav_color_selector"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationEvOwner"
+            android:layout_width="match_parent"
+            android:layout_height="86dp"
+            android:layout_margin="2dp"
+            android:background="@android:color/transparent"
+            android:paddingVertical="4dp"
+            app:elevation="0dp"
+            app:itemActiveIndicatorStyle="@null"
+            app:itemIconSize="24dp"
+            app:itemIconTint="@color/bottom_nav_color_selector"
+            app:itemRippleColor="@color/nexcharge_primary_variant"
+            app:itemTextAppearance="@style/BottomNavigationTextAppearance"
+            app:itemTextColor="@color/bottom_nav_color_selector"
+            app:labelVisibilityMode="selected"
+            app:menu="@menu/bottom_navigation_evowner" />
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

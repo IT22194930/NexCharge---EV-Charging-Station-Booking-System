@@ -190,19 +190,32 @@ class EVOwnerProfileFragment : Fragment() {
         val currentPasswordInput = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextCurrentPassword)
         val newPasswordInput = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextNewPassword)
         val confirmPasswordInput = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.editTextConfirmPassword)
+        val changePasswordButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonChangePassword)
+        val cancelButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Change Password")
+        val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
-            .setPositiveButton("Change") { _, _ ->
-                changePassword(
-                    currentPasswordInput.text.toString(),
-                    newPasswordInput.text.toString(),
-                    confirmPasswordInput.text.toString()
-                )
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            .setCancelable(true)
+            .create()
+
+        // Remove white background from dialog
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Set up button click listeners
+        changePasswordButton.setOnClickListener {
+            changePassword(
+                currentPasswordInput.text.toString(),
+                newPasswordInput.text.toString(),
+                confirmPasswordInput.text.toString()
+            )
+            dialog.dismiss()
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun changePassword(currentPassword: String, newPassword: String, confirmPassword: String) {

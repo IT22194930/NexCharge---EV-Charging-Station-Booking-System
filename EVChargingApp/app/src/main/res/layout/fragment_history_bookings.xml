@@ -6,15 +6,93 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?android:attr/colorBackground">
+    android:background="@color/nexcharge_background_start">
 
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
+    <!-- Professional Header Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/nexcharge_surface">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="20dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_reservations"
+                android:layout_marginEnd="12dp"
+                android:tint="@color/nexcharge_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Booking History"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/nexcharge_text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your completed and cancelled sessions"
+                    android:textSize="14sp"
+                    android:textColor="@color/nexcharge_text_secondary"
+                    android:layout_marginTop="2dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Professional Progress Indicator -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/progressCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/nexcharge_surface">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="20dp">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="12dp"
+                android:indeterminateTint="@color/nexcharge_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loading booking history..."
+                android:textColor="@color/nexcharge_text_secondary" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- History Bookings List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -25,41 +103,63 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_booking" />
 
-    <!-- Empty State Layout -->
-    <LinearLayout
-        android:id="@+id/layoutEmptyState"
+    <!-- Professional Empty State Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/emptyStateCard"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone">
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:visibility="gone"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/nexcharge_surface">
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@android:drawable/ic_dialog_info"
-            android:alpha="0.5"
-            android:layout_marginBottom="16dp"
-            app:tint="?android:attr/textColorSecondary" />
-
-        <TextView
-            android:id="@+id/textViewNoBookings"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/layoutEmptyState"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No booking history yet"
-            android:textSize="18sp"
-            android:textColor="?android:attr/textColorPrimary"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="40dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Your completed and cancelled bookings will appear here"
-            android:textSize="14sp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:gravity="center" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="40dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/nexcharge_primary_variant">
 
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_reservations"
+                    android:tint="@color/nexcharge_primary" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/textViewNoBookings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No History Available"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/nexcharge_text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your completed and cancelled bookings\nwill appear here once you start using NexCharge."
+                android:textSize="14sp"
+                android:textColor="@color/nexcharge_text_secondary"
+                android:textAlignment="center"
+                android:lineSpacingExtra="4dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

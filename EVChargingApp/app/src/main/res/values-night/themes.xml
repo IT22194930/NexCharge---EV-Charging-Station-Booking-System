@@ -3,7 +3,14 @@
     <!-- Parent is Theme.Material3.DayNight.NoActionBar, so it will pick up dark theme defaults -->
     <style name="Base.Theme.EVChargingApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/nexcharge_primary</item>
+        <item name="colorSecondary">@color/nexcharge_secondary</item>
+        <item name="colorSurface">@color/nexcharge_surface</item>
+        <item name="android:colorBackground">@color/nexcharge_background_start</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorOnBackground">@color/nexcharge_text_primary</item>
+        <item name="colorOnSurface">@color/nexcharge_text_primary</item>
 
         <!-- Set the default window background for night mode -->
         <item name="android:windowBackground">@color/background</item>

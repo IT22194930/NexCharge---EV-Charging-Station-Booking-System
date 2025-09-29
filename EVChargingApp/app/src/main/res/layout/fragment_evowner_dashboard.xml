@@ -4,61 +4,109 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/nexcharge_background_start">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/textViewWelcome"
+        <!-- Welcome Header Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/welcomeHeaderCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Welcome to your Dashboard"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"
+            android:layout_marginBottom="30dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/nexcharge_surface"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="24dp" />
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="20dp"
+                >
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Dashboard Icon"
+                    android:src="@drawable/evlogo" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewWelcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Welcome to your Dashboard"
+                        android:textColor="@color/nexcharge_text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Manage your EV charging experience"
+                        android:textColor="@color/nexcharge_text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Stats Cards -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardTotalStations"
             android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="24dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/textViewWelcome"
+            app:cardBackgroundColor="@color/nexcharge_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:layout_constraintEnd_toStartOf="@id/cardActiveBookings"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/cardActiveBookings">
+            app:layout_constraintTop_toBottomOf="@id/welcomeHeaderCard">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/professional_gradient_background"
+                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center">
+                android:padding="16dp">
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/ic_dashboard"
-                    android:tint="?attr/colorPrimary" />
+                    android:tint="@color/nexcharge_primary" />
 
                 <TextView
                     android:id="@+id/textViewTotalStations"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total Stations: 0"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
                     android:layout_marginTop="8dp"
-                    android:textAlignment="center" />
+                    android:text="Total Stations: 0"
+                    android:textAlignment="center"
+                    android:textColor="@color/nexcharge_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -67,133 +115,59 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardActiveBookings"
             android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="24dp"
+            android:layout_height="140dp"
             android:layout_marginStart="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/textViewWelcome"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/nexcharge_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/cardTotalStations"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/welcomeHeaderCard">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/professional_gradient_background"
+                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center">
+                android:padding="16dp">
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:src="@drawable/ic_bookings"
-                    android:tint="?attr/colorPrimary" />
+                    android:tint="@color/nexcharge_primary" />
 
                 <TextView
                     android:id="@+id/textViewActiveBookings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="Active Bookings: 0"
-                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:textColor="@color/nexcharge_text_primary"
                     android:textSize="14sp"
-                    android:layout_marginTop="8dp"
-                    android:textAlignment="center" />
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardRevenue"
-            android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/cardTotalStations"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/cardStationStatus">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_revenue"
-                    android:tint="?attr/colorPrimary" />
-
-                <TextView
-                    android:id="@+id/textViewTotalRevenue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Revenue: $0.00"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp"
-                    android:textAlignment="center" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardStationStatus"
-            android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/cardActiveBookings"
-            app:layout_constraintStart_toEndOf="@id/cardRevenue"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:gravity="center">
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_status"
-                    android:tint="?attr/colorPrimary" />
-
-                <TextView
-                    android:id="@+id/textViewStationStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="All Stations Online: 0/0"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp"
-                    android:textAlignment="center" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
         <!-- Quick Actions -->
         <TextView
             android:id="@+id/textViewQuickActions"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Quick Actions"
+            android:textColor="@color/nexcharge_text_primary"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"
-            android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@id/cardRevenue"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/cardActiveBookings" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonAddStation"
@@ -203,6 +177,8 @@
             android:text="Add New Station"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
+            android:textColor="@color/nexcharge_text_primary"
+            app:strokeColor="@color/nexcharge_primary"
             app:layout_constraintTop_toBottomOf="@id/textViewQuickActions"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/buttonViewReports" />
@@ -212,12 +188,14 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="View Reports"
-            android:layout_marginTop="16dp"
             android:layout_marginStart="8dp"
-            app:layout_constraintTop_toBottomOf="@id/textViewQuickActions"
+            android:layout_marginTop="16dp"
+            android:text="View Reports"
+            android:textColor="@color/nexcharge_text_primary"
+            app:strokeColor="@color/nexcharge_primary"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/buttonAddStation"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/textViewQuickActions" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

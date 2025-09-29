@@ -87,9 +87,7 @@ class EVOwnerDashboardFragment : Fragment() {
             textViewTotalStations.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f) // Will show My Bookings
             textViewActiveBookings.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f) // Will show Active Bookings
             
-            // Hide unused stats
-            textViewTotalRevenue.visibility = View.GONE
-            textViewStationStatus.visibility = View.GONE
+
             
             // Button text - Rename buttons for new functionality
             buttonAddStation.text = "My Bookings"
