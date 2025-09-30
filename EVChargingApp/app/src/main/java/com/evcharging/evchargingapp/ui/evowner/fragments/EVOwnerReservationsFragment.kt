@@ -25,6 +25,7 @@ import com.evcharging.evchargingapp.data.model.BookingCreateRequest
 import com.evcharging.evchargingapp.data.model.BookingUpdateRequest
 import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.RecentBookingAdapter
+import com.evcharging.evchargingapp.ui.evowner.adapters.StationsAdapter
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
 import com.evcharging.evchargingapp.utils.DateTimeUtils
@@ -40,6 +41,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private val binding get() = _binding!!
     private val apiService by lazy { RetrofitInstance.createApiService(requireContext()) }
     private lateinit var recentBookingAdapter: RecentBookingAdapter
+    private lateinit var stationsAdapter: StationsAdapter
     private val allStations = mutableListOf<Station>()
     private var recentBookings = listOf<Booking>()
     private var loadingCounter = 0
@@ -86,9 +88,19 @@ class EVOwnerReservationsFragment : Fragment() {
             }
         )
         
+        stationsAdapter = StationsAdapter { station ->
+            // When a station is clicked, show booking dialog for that specific station
+            showCreateBookingDialogForStation(station)
+        }
+        
         binding.recyclerViewRecentBookings.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = recentBookingAdapter
+        }
+        
+        binding.recyclerViewStations.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = stationsAdapter
         }
     }
 
@@ -163,6 +175,7 @@ class EVOwnerReservationsFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null) {
                     allStations.clear()
                     allStations.addAll(response.body()!!)
+                    updateStationsUI(allStations) // Update the stations list
                     Log.d("EVOwnerReservations", "Loaded ${allStations.size} stations")
                     allStations.forEach { station ->
                         Log.d("EVOwnerReservations", "Station: ${station.name} - ${station.location} (${station.type}, ${station.availableSlots} slots)")
@@ -202,8 +215,10 @@ class EVOwnerReservationsFragment : Fragment() {
     }
 
     private fun updateStationsUI(stations: List<Station> = allStations) {
-        // This would update a stations list view if we had one
-        // For now, we'll just update the available stations for booking
+        // Update the stations adapter with filtered stations
+        if (::stationsAdapter.isInitialized) {
+            stationsAdapter.submitList(stations.toList()) // Create a new list to trigger update
+        }
     }
 
     private fun showCreateBookingDialog() {
@@ -309,6 +324,82 @@ class EVOwnerReservationsFragment : Fragment() {
                     // Show confirmation before creating
                     showBookingConfirmation(stationName, date, time) {
                         createBooking(stationId, combinedDateTime)
+                        dialog.dismiss()
+                    }
+                }
+            }
+        }
+        
+        dialog.show()
+        
+        // Make dialog responsive to theme
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+    }
+
+    private fun showCreateBookingDialogForStation(selectedStation: Station) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_booking, null)
+        
+        val textViewUserInfo = dialogView.findViewById<TextView>(R.id.textViewUserInfo)
+        val autoCompleteStation = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.autoCompleteStation)
+        val dateEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
+        val timeEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val buttonCancel = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCancel)
+        val buttonCreate = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonCreate)
+        
+        // Set user info
+        val userNic = TokenUtils.getCurrentUserNic(requireContext())
+        textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
+        
+        // Pre-select the station and disable the dropdown
+        val stationDisplayName = "🔌 ${selectedStation.name} - ${selectedStation.location}\n   ${selectedStation.type} | ${selectedStation.availableSlots} slots available"
+        autoCompleteStation.setText(stationDisplayName)
+        autoCompleteStation.isEnabled = false // Disable editing since station is pre-selected
+        
+        // Setup date picker with validation
+        dateEditText.setOnClickListener {
+            showEnhancedDatePicker { date ->
+                dateEditText.setText(date)
+            }
+        }
+        
+        // Setup time picker with validation
+        timeEditText.setOnClickListener {
+            showEnhancedTimePicker { time ->
+                timeEditText.setText(time)
+            }
+        }
+        
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .create()
+        
+        // Handle button clicks
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        buttonCreate.setOnClickListener {
+            val date = dateEditText.text.toString()
+            val time = timeEditText.text.toString()
+            
+            when {
+                date.isEmpty() -> {
+                    showError("Please select a reservation date")
+                }
+                time.isEmpty() -> {
+                    showError("Please select a reservation time")
+                }
+                !isValidReservationDateTime(date, time) -> {
+                    showError("Reservations must be made at least 1 hour in advance and within 7 days")
+                }
+                else -> {
+                    Log.d("EVOwnerReservations", "User selected - date: $date, time: $time")
+                    val combinedDateTime = "$date $time"
+                    Log.d("EVOwnerReservations", "Combined dateTime: $combinedDateTime")
+                    
+                    // Show confirmation before creating
+                    showBookingConfirmation(selectedStation.name, date, time) {
+                        createBooking(selectedStation.id, combinedDateTime)
                         dialog.dismiss()
                     }
                 }
