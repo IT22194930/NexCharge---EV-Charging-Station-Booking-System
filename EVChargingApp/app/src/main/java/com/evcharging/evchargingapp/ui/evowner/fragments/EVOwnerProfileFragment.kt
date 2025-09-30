@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +22,9 @@ import com.evcharging.evchargingapp.data.model.EVOwnerChangePasswordRequest
 import com.evcharging.evchargingapp.ui.LoginActivity
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.ThemeManager
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.radiobutton.MaterialRadioButton
 import kotlinx.coroutines.launch
 
 class EVOwnerProfileFragment : Fragment() {
@@ -56,6 +60,10 @@ class EVOwnerProfileFragment : Fragment() {
         
         binding.buttonChangePassword.setOnClickListener {
             showChangePasswordDialog()
+        }
+        
+        binding.buttonChangeTheme.setOnClickListener {
+            showThemeSelectionDialog()
         }
         
         binding.buttonLogout.setOnClickListener {
@@ -286,6 +294,60 @@ class EVOwnerProfileFragment : Fragment() {
         }
     }
 
+    private fun showThemeSelectionDialog() {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_theme_selection, null)
+        val radioGroup = dialogView.findViewById<RadioGroup>(R.id.radioGroupThemes)
+        val radioButtonLight = dialogView.findViewById<MaterialRadioButton>(R.id.radioButtonLight)
+        val radioButtonDark = dialogView.findViewById<MaterialRadioButton>(R.id.radioButtonDark)
+        val radioButtonSystem = dialogView.findViewById<MaterialRadioButton>(R.id.radioButtonSystem)
+        val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
+        val buttonApply = dialogView.findViewById<MaterialButton>(R.id.buttonApply)
+        
+        // Set current selection
+        val currentTheme = ThemeManager.getSavedTheme(requireContext())
+        when (currentTheme) {
+            ThemeManager.THEME_LIGHT -> radioButtonLight.isChecked = true
+            ThemeManager.THEME_DARK -> radioButtonDark.isChecked = true
+            ThemeManager.THEME_SYSTEM -> radioButtonSystem.isChecked = true
+        }
+        
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+            
+        // Remove white background from dialog
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        buttonApply.setOnClickListener {
+            val selectedTheme = when (radioGroup.checkedRadioButtonId) {
+                R.id.radioButtonLight -> ThemeManager.THEME_LIGHT
+                R.id.radioButtonDark -> ThemeManager.THEME_DARK
+                R.id.radioButtonSystem -> ThemeManager.THEME_SYSTEM
+                else -> ThemeManager.THEME_SYSTEM
+            }
+            
+            if (selectedTheme != currentTheme) {
+                // Save the selected theme
+                ThemeManager.saveTheme(requireContext(), selectedTheme)
+                
+                // Apply the theme immediately without recreating the activity
+                ThemeManager.applyTheme(selectedTheme)
+                
+                // Show confirmation
+                val themeName = ThemeManager.getThemeName(selectedTheme)
+                Toast.makeText(requireContext(), "Theme changed to: $themeName", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+    }
+
     private fun showDeactivateConfirmation() {
         AlertDialog.Builder(requireContext())
             .setTitle("Deactivate Account")
@@ -372,6 +434,7 @@ class EVOwnerProfileFragment : Fragment() {
         binding.apply {
             buttonUpdateProfile.isEnabled = !isLoading
             buttonChangePassword.isEnabled = !isLoading
+            buttonChangeTheme.isEnabled = !isLoading
             buttonDeactivateAccount.isEnabled = !isLoading
             buttonLogout.isEnabled = !isLoading
             editTextName.isEnabled = !isLoading

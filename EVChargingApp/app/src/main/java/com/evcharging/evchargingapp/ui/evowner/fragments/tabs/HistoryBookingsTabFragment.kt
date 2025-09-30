@@ -429,7 +429,7 @@ class HistoryBookingsTabFragment : Fragment() {
                 if (response.isSuccessful) {
                     val stationName = getStationName(booking.stationId)
                     Toast.makeText(requireContext(), 
-                        "Booking updated successfully!\n\nStation: $stationName\nNew Date & Time: ${DateTimeUtils.formatToUserFriendly(formattedDateTime)}", 
+                        "Booking updated successfully!", 
                         Toast.LENGTH_LONG).show()
                     refreshBookings() // Refresh the list
                 } else {

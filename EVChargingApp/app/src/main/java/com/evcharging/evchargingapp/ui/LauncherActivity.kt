@@ -11,6 +11,7 @@ import com.auth0.android.jwt.JWT
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
 import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
+import com.evcharging.evchargingapp.utils.ThemeManager
 
 class LauncherActivity : AppCompatActivity() {
 
@@ -18,6 +19,11 @@ class LauncherActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize theme before setting content view
+        val savedTheme = ThemeManager.getSavedTheme(this)
+        ThemeManager.applyTheme(savedTheme)
+        
         setContentView(R.layout.activity_launcher)
 
         // Delay the navigation to show splash screen for the specified time

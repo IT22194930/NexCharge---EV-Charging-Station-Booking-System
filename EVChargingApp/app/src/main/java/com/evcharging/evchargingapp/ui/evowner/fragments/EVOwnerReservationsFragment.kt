@@ -616,7 +616,7 @@ class EVOwnerReservationsFragment : Fragment() {
                 
                 if (response.isSuccessful) {
                     val stationName = getStationName(booking.stationId)
-                    showSuccess("Booking updated successfully!\n\nStation: $stationName\nNew Date & Time: ${DateTimeUtils.formatToUserFriendly(formattedDateTime)}")
+                    showSuccess("Booking updated successfully!")
                     loadRecentBookings() // Refresh the list
                 } else {
                     showError("Failed to update booking: ${response.message()}")
