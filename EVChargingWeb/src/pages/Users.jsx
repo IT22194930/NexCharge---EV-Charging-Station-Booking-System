@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import Pagination from "../components/Pagination";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -14,6 +15,8 @@ export default function Users() {
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [userToUpdate, setUserToUpdate] = useState(null);
   const [roleFilter, setRoleFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [form, setForm] = useState({
     nic: "",
     fullName: "",
@@ -21,7 +24,7 @@ export default function Users() {
     password: "",
   });
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const res = await api.get("/users");
       // Show all users in the system
@@ -31,7 +34,7 @@ export default function Users() {
       setError("Failed to load users");
       console.error(err);
     }
-  };
+  }, [roleFilter]);
 
   const filterUsers = (allUsers, filter) => {
     if (filter === "All") {
@@ -44,7 +47,18 @@ export default function Users() {
 
   const handleRoleFilterChange = (filter) => {
     setRoleFilter(filter);
+    setCurrentPage(1); // Reset to first page when filtering
     filterUsers(users, filter);
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const createUser = async (e) => {
@@ -209,7 +223,7 @@ export default function Users() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   return (
     <div>
@@ -793,6 +807,9 @@ export default function Users() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                #
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 NIC
               </th>
@@ -829,8 +846,11 @@ export default function Users() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredUsers.map((user) => (
+            {currentUsers.map((user, index) => (
               <tr key={user.nic}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                  {startIndex + index + 1}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {user.nic}
                 </td>
@@ -901,6 +921,17 @@ export default function Users() {
           </div>
         )}
       </div>
+      
+      {/* Pagination Component */}
+      {filteredUsers.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredUsers.length}
+        />
+      )}
     </div>
   );
 }

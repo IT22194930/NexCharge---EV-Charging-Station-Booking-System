@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import CreateBookingModal from "../components/bookings/CreateBookingModal";
 import UpdateBookingModal from "../components/bookings/UpdateBookingModal";
 import BookingTable from "../components/bookings/BookingTable";
 import DeleteConfirmDialog from "../components/bookings/DeleteConfirmDialog";
+import Pagination from "../components/Pagination";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
@@ -15,6 +16,8 @@ export default function Bookings() {
   const [currentBooking, setCurrentBooking] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
@@ -38,7 +41,7 @@ export default function Bookings() {
   
   const userNic = getCurrentUserNic();
 
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       if (role === "EVOwner") {
         const nic = JSON.parse(
@@ -54,6 +57,16 @@ export default function Bookings() {
       setError("Failed to load bookings");
       console.error(err);
     }
+  }, [role]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(bookings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBookings = bookings.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const getUserNic = () => {
@@ -273,7 +286,7 @@ export default function Bookings() {
   useEffect(() => {
     loadBookings();
     loadStations();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadBookings]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -344,7 +357,8 @@ export default function Bookings() {
       />
 
       <BookingTable
-        bookings={bookings}
+        bookings={currentBookings}
+        allBookings={bookings}
         role={role}
         userNic={userNic}
         getStationName={getStationName}
@@ -353,7 +367,19 @@ export default function Bookings() {
         canModifyBooking={canModifyBooking}
         cancelBooking={cancelBooking}
         deleteBooking={deleteBooking}
+        startIndex={startIndex}
       />
+      
+      {/* Pagination Component */}
+      {bookings.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={bookings.length}
+        />
+      )}
       
       <DeleteConfirmDialog
         visible={showDeleteConfirm}

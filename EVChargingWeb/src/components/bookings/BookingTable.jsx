@@ -2,6 +2,7 @@ import React from "react";
 
 export default function BookingTable({
   bookings,
+  allBookings,
   role,
   userNic,
   getStationName,
@@ -9,13 +10,17 @@ export default function BookingTable({
   openUpdateForm,
   canModifyBooking,
   cancelBooking,
-  deleteBooking
+  deleteBooking,
+  startIndex = 0
 }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+              #
+            </th>
             {role !== "EVOwner" && (
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Owner NIC
@@ -36,8 +41,11 @@ export default function BookingTable({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {bookings.map((booking) => (
+          {bookings.map((booking, index) => (
             <tr key={booking.id}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                {startIndex + index + 1}
+              </td>
               {role !== "EVOwner" && (
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {booking.ownerNIC}
@@ -150,7 +158,7 @@ export default function BookingTable({
         </tbody>
       </table>
 
-      {bookings.length === 0 && (
+      {(allBookings?.length || bookings.length) === 0 && (
         <div className="text-center py-12">
           <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
