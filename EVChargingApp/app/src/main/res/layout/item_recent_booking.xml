@@ -102,14 +102,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:weightSum="2">
+            android:weightSum="3">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonViewQR"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
-                android:layout_marginEnd="6dp"
+                android:layout_marginEnd="4dp"
                 android:layout_weight="1"
                 android:text="View QR"
                 android:textSize="12sp"
@@ -117,11 +117,25 @@
                 app:strokeColor="@color/nexcharge_primary" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonUpdate"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Update"
+                android:textSize="12sp"
+                android:visibility="gone"
+                android:textColor="@color/nexcharge_secondary"
+                app:strokeColor="@color/nexcharge_secondary" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonDelete"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:text="Delete"
                 android:textSize="12sp"
