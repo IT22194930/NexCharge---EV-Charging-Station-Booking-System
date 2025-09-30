@@ -20,6 +20,7 @@ import com.evcharging.evchargingapp.db.UserDao
 import com.evcharging.evchargingapp.ui.HomeActivity
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
 import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
+import com.evcharging.evchargingapp.utils.ThemeManager
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -30,6 +31,11 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize theme before setting content view
+        val savedTheme = ThemeManager.getSavedTheme(this)
+        ThemeManager.applyTheme(savedTheme)
+        
         enableEdgeToEdge()
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)

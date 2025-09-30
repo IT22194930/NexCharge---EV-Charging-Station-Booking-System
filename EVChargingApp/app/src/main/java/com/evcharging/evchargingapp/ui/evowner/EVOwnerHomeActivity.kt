@@ -16,6 +16,8 @@ import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerDashboardFragmen
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerProfileFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerReservationsFragment
 import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.ThemeManager
+import com.evcharging.evchargingapp.utils.safeLoadFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -26,6 +28,11 @@ class EVOwnerHomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize theme before setting content view
+        val savedTheme = ThemeManager.getSavedTheme(this)
+        ThemeManager.applyTheme(savedTheme)
+        
         enableEdgeToEdge()
         binding = ActivityEvownerHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -49,12 +56,15 @@ class EVOwnerHomeActivity : AppCompatActivity() {
             // Simulate initialization time
             delay(1500)
             
-            // Load default fragment (Dashboard)
-            loadFragment(EVOwnerDashboardFragment.newInstance())
-            binding.bottomNavigationEvOwner.selectedItemId = R.id.nav_dashboard
-            
-            // Hide loading
-            LoadingManager.dismiss()
+            // Check if activity is still alive and not finishing
+            if (!isFinishing && !isDestroyed) {
+                // Load default fragment (Dashboard)
+                loadFragment(EVOwnerDashboardFragment.newInstance())
+                binding.bottomNavigationEvOwner.selectedItemId = R.id.nav_dashboard
+                
+                // Hide loading
+                LoadingManager.dismiss()
+            }
         }
     }
 
@@ -83,9 +93,7 @@ class EVOwnerHomeActivity : AppCompatActivity() {
     }
 
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerEvOwner, fragment)
-            .commit()
+        safeLoadFragment(R.id.fragmentContainerEvOwner, fragment)
     }
 
     // Public method to switch tabs from fragments

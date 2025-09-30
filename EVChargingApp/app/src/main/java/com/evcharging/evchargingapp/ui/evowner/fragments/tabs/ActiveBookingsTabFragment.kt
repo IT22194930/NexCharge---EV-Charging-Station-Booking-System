@@ -148,7 +148,7 @@ class ActiveBookingsTabFragment : Fragment() {
     }
 
     fun filterBookings(query: String) {
-        searchQuery = query
+        searchQuery = query.trim()
         updateBookingsUI()
     }
 
@@ -157,14 +157,20 @@ class ActiveBookingsTabFragment : Fragment() {
             allBookings
         } else {
             allBookings.filter { booking ->
-                booking.stationId.contains(searchQuery, ignoreCase = true) ||
-                booking.status.contains(searchQuery, ignoreCase = true) ||
-                booking.ownerNic.contains(searchQuery, ignoreCase = true)
+                val stationName = getStationName(booking.stationId)
+                val bookingDate = booking.reservationDate?.let { DateTimeUtils.formatToUserFriendly(it) } ?: ""
+                
+                booking.stationId?.contains(searchQuery, ignoreCase = true) == true ||
+                booking.status?.contains(searchQuery, ignoreCase = true) == true ||
+                booking.ownerNic?.contains(searchQuery, ignoreCase = true) == true ||
+                booking.id?.contains(searchQuery, ignoreCase = true) == true ||
+                stationName.contains(searchQuery, ignoreCase = true) ||
+                bookingDate.contains(searchQuery, ignoreCase = true)
             }
         }
         
         if (filteredBookings.isEmpty()) {
-            showEmptyState(if (searchQuery.isEmpty()) "No active bookings yet" else "No bookings match your search")
+            showEmptyState(if (searchQuery.isEmpty()) "No active bookings yet" else "No bookings match \"$searchQuery\"")
         } else {
             hideEmptyState()
             bookingAdapter.submitList(filteredBookings)
@@ -430,7 +436,7 @@ class ActiveBookingsTabFragment : Fragment() {
                 if (response.isSuccessful) {
                     val stationName = getStationName(booking.stationId)
                     Toast.makeText(requireContext(), 
-                        "Booking updated successfully!\n\nStation: $stationName\nNew Date & Time: ${DateTimeUtils.formatToUserFriendly(formattedDateTime)}", 
+                        "Booking updated successfully!", 
                         Toast.LENGTH_LONG).show()
                     refreshBookings() // Refresh the list
                 } else {
