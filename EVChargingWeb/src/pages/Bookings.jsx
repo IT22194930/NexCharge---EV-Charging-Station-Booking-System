@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
 import CreateBookingModal from "../components/bookings/CreateBookingModal";
 import UpdateBookingModal from "../components/bookings/UpdateBookingModal";
 import BookingTable from "../components/bookings/BookingTable";
 import DeleteConfirmDialog from "../components/bookings/DeleteConfirmDialog";
+import Pagination from "../components/Pagination";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
   const [stations, setStations] = useState([]);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -15,6 +17,9 @@ export default function Bookings() {
   const [currentBooking, setCurrentBooking] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [statusFilter, setStatusFilter] = useState("All");
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
@@ -38,7 +43,7 @@ export default function Bookings() {
   
   const userNic = getCurrentUserNic();
 
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       if (role === "EVOwner") {
         const nic = JSON.parse(
@@ -46,14 +51,41 @@ export default function Bookings() {
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const res = await api.get(`/bookings/owner/${nic}`);
         setBookings(res.data);
+        filterBookings(res.data, statusFilter);
       } else {
         const res = await api.get("/bookings");
         setBookings(res.data);
+        filterBookings(res.data, statusFilter);
       }
     } catch (err) {
       setError("Failed to load bookings");
       console.error(err);
     }
+  }, [role, statusFilter]);
+
+  const filterBookings = (allBookings, filter) => {
+    if (filter === "All") {
+      setFilteredBookings(allBookings);
+    } else {
+      const filtered = allBookings.filter(booking => booking.status === filter);
+      setFilteredBookings(filtered);
+    }
+  };
+
+  const handleStatusFilterChange = (filter) => {
+    setStatusFilter(filter);
+    setCurrentPage(1); // Reset to first page when filtering
+    filterBookings(bookings, filter);
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBookings = filteredBookings.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const getUserNic = () => {
@@ -273,7 +305,7 @@ export default function Bookings() {
   useEffect(() => {
     loadBookings();
     loadStations();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadBookings]);
 
   return (
     <div>
@@ -344,7 +376,8 @@ export default function Bookings() {
       />
 
       <BookingTable
-        bookings={bookings}
+        bookings={currentBookings}
+        allBookings={bookings}
         role={role}
         userNic={userNic}
         getStationName={getStationName}
@@ -353,7 +386,21 @@ export default function Bookings() {
         canModifyBooking={canModifyBooking}
         cancelBooking={cancelBooking}
         deleteBooking={deleteBooking}
+        startIndex={startIndex}
+        statusFilter={statusFilter}
+        handleStatusFilterChange={handleStatusFilterChange}
       />
+      
+      {/* Pagination Component */}
+      {filteredBookings.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredBookings.length}
+        />
+      )}
       
       <DeleteConfirmDialog
         visible={showDeleteConfirm}

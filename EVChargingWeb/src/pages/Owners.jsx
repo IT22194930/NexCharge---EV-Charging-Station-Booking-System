@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import Pagination from "../components/Pagination";
 
 export default function Owners() {
   const [owners, setOwners] = useState([]);
@@ -10,13 +11,15 @@ export default function Owners() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [ownerToDelete, setOwnerToDelete] = useState(null);
   const [currentOwner, setCurrentOwner] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [form, setForm] = useState({
     nic: "",
     fullName: "",
     password: ""
   });
 
-  const loadOwners = async () => {
+  const loadOwners = useCallback(async () => {
     try {
       const res = await api.get("/users");
       // Filter to show only EV Owners
@@ -26,6 +29,16 @@ export default function Owners() {
       setError("Failed to load EV owners");
       console.error(err);
     }
+  }, []);
+
+  // Pagination logic
+  const totalPages = Math.ceil(owners.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentOwners = owners.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const createOwner = async (e) => {
@@ -122,7 +135,7 @@ export default function Owners() {
 
   useEffect(() => {
     loadOwners();
-  }, []);
+  }, [loadOwners]);
 
   return (
     <div>
@@ -140,50 +153,123 @@ export default function Owners() {
 
       {/* Create Owner Modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Create New EV Owner</h2>
-            <form onSubmit={createOwner} className="space-y-4">
-              <input
-                type="text"
-                placeholder="NIC (Primary Key)"
-                value={form.nic}
-                onChange={(e) => setForm({ ...form, nic: e.target.value })}
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={form.fullName}
-                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full border p-2 rounded"
-                required
-              />
-              <div className="flex space-x-3">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl transform transition-all duration-300 scale-100 w-full max-w-md mx-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-t-2xl px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Create New EV Owner</h2>
+                </div>
                 <button
-                  type="submit"
-                  className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
-                >
-                  Create Owner
-                </button>
-                <button
-                  type="button"
                   onClick={closeModals}
-                  className="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-700"
+                  className="text-white/80 hover:text-white hover:bg-white/10 rounded-full p-1 transition-colors duration-200"
                 >
-                  Cancel
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </button>
               </div>
-            </form>
+            </div>
+
+            {/* Form */}
+            <div className="p-6">
+              <form onSubmit={createOwner} className="space-y-6">
+                {/* NIC Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    National Identity Card (NIC) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter NIC number"
+                      value={form.nic}
+                      onChange={(e) => setForm({ ...form, nic: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Full Name Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter full name"
+                      value={form.fullName}
+                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="Enter password"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeModals}
+                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium flex items-center justify-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span>Cancel</span>
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>Create Owner</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -357,6 +443,7 @@ export default function Owners() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIC</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -364,8 +451,11 @@ export default function Owners() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {owners.map((owner) => (
+            {currentOwners.map((owner, index) => (
               <tr key={owner.nic}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                  {startIndex + index + 1}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {owner.nic}
                 </td>
@@ -418,6 +508,17 @@ export default function Owners() {
           </div>
         )}
       </div>
+      
+      {/* Pagination Component */}
+      {owners.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={owners.length}
+        />
+      )}
     </div>
   );
 }

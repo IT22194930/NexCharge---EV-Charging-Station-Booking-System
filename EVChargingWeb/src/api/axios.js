@@ -6,7 +6,7 @@ const BASE_URLS = {
   network: "http://192.168.1.63/EVChargingAPI/api",
 };
 
-const currentBaseURL = BASE_URLS.network; // Change to BASE_URLS.local for local development
+const currentBaseURL = BASE_URLS.local; // Change to BASE_URLS.local for local development
 
 const api = axios.create({
   baseURL: currentBaseURL,

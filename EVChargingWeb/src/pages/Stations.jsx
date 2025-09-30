@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import Pagination from "../components/Pagination";
 
 export default function Stations() {
   const [stations, setStations] = useState([]);
@@ -11,6 +12,8 @@ export default function Stations() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [currentStation, setCurrentStation] = useState(null);
   const [stationToDelete, setStationToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [form, setForm] = useState({
     name: "",
     location: "",
@@ -23,7 +26,7 @@ export default function Stations() {
     }
   });
 
-  const loadStations = async () => {
+  const loadStations = useCallback(async () => {
     try {
       const res = await api.get("/stations");
       setStations(res.data);
@@ -31,6 +34,16 @@ export default function Stations() {
       setError("Failed to load stations");
       console.error(err);
     }
+  }, []);
+
+  // Pagination logic
+  const totalPages = Math.ceil(stations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentStations = stations.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const createStation = async (e) => {
@@ -168,7 +181,7 @@ export default function Stations() {
 
   useEffect(() => {
     loadStations();
-  }, []);
+  }, [loadStations]);
 
   return (
     <div>
@@ -767,6 +780,7 @@ export default function Stations() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -777,8 +791,11 @@ export default function Stations() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {stations.map((station) => (
+            {currentStations.map((station, index) => (
               <tr key={station.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                  {startIndex + index + 1}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {station.name}
                 </td>
@@ -851,6 +868,17 @@ export default function Stations() {
           </div>
         )}
       </div>
+      
+      {/* Pagination Component */}
+      {stations.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={stations.length}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
