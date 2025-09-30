@@ -11,7 +11,9 @@ export default function BookingTable({
   canModifyBooking,
   cancelBooking,
   deleteBooking,
-  startIndex = 0
+  startIndex = 0,
+  statusFilter = "All",
+  handleStatusFilterChange
 }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -33,7 +35,27 @@ export default function BookingTable({
               Date & Time
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
+              <div className="flex items-center space-x-3">
+                <span>Status</span>
+                {handleStatusFilterChange && (
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => handleStatusFilterChange(e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="All">All ({allBookings?.length || bookings.length})</option>
+                    <option value="Pending">
+                      Pending ({(allBookings || bookings).filter(b => b.status === "Pending").length})
+                    </option>
+                    <option value="Approved">
+                      Approved ({(allBookings || bookings).filter(b => b.status === "Approved").length})
+                    </option>
+                    <option value="Cancelled">
+                      Cancelled ({(allBookings || bookings).filter(b => b.status === "Cancelled").length})
+                    </option>
+                  </select>
+                )}
+              </div>
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Actions
