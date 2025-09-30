@@ -592,21 +592,13 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
     }
     
     private fun useDefaultLocation() {
-        // Use Colombo as default location for Sri Lanka
-        val defaultLocation = LatLng(6.9271, 79.8612)
+        // Use Sri Lanka as default map view without adding any markers
+        val defaultLocation = LatLng(7.8731, 80.7718) // Center of Sri Lanka
         googleMap?.animateCamera(
-            CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f)
+            CameraUpdateFactory.newLatLngZoom(defaultLocation, 7f)
         )
         
-        googleMap?.addMarker(
-            MarkerOptions()
-                .position(defaultLocation)
-                .title("📍 Approximate Location")
-                .snippet("Colombo, Sri Lanka (Default)")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-        )
-        
-        Toast.makeText(requireContext(), "Using approximate location: Colombo", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Showing all charging stations in Sri Lanka", Toast.LENGTH_SHORT).show()
     }
     
     private fun loadChargingStationsForMap() {
