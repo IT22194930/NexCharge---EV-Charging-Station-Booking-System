@@ -131,69 +131,122 @@ export default function OwnerStationsMap() {
 
   return (
     <div className="mt-10">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">Nearby Charging Stations</h2>
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        {!isLoaded ? (
-          <div className="h-[450px] flex items-center justify-center text-gray-500">Loading map...</div>
-        ) : (
-          <GoogleMap mapContainerStyle={mapContainerStyle} zoom={userPosition ? 13 : 11} center={center} options={{ streetViewControl: false, mapTypeControl: false }}>
-            {userPosition && (
-              <Marker position={userPosition} icon={{
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 6,
-                fillColor: '#2563eb',
-                fillOpacity: 1,
-                strokeWeight: 2,
-                strokeColor: 'white'
-              }} title="Your Location" />
-            )}
-            {nearestStations.map(st => (
-              <Marker key={st.id} position={{ lat: st.latitude, lng: st.longitude }} onClick={() => setSelectedStation(st)} />
-            ))}
-            {selectedStation && (
-              <InfoWindow position={{ lat: selectedStation.latitude, lng: selectedStation.longitude }} onCloseClick={() => setSelectedStation(null)}>
-                <div className="max-w-[220px]">
-                  <h3 className="font-semibold text-gray-800 mb-1">{selectedStation.name}</h3>
-                  <p className="text-xs text-gray-600 mb-1">{selectedStation.location}</p>
-                  {selectedStation.distanceKm != null && (
-                    <p className="text-xs text-blue-600 mb-2">{selectedStation.distanceKm} km away</p>
-                  )}
-                  <p className="text-xs text-gray-500 mb-2">Type: {selectedStation.type} | Slots: {selectedStation.availableSlots}</p>
-                  <button
-                    onClick={() => openBookingForStation(selectedStation)}
-                    className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg text-xs font-medium hover:from-green-700 hover:to-emerald-700 transition-colors"
-                  >
-                    Book This Station
-                  </button>
-                </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
-        )}
+      <div className="flex items-center mb-6">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md mr-3">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 leading-tight">Nearby Charging Stations</h2>
+          <p className="text-sm text-gray-500">Find and book one of the closest active stations</p>
+        </div>
       </div>
 
-      {/* Station list (sorted) */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="font-semibold text-gray-800 mb-3">Nearest Stations</h3>
-        <div className="max-h-64 overflow-y-auto divide-y">
-          {nearestStations.map(s => (
-            <div key={s.id} className="py-2 flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">{s.name}</p>
-                <p className="text-xs text-gray-500">{s.location}</p>
-                <p className="text-xs text-gray-400">{s.type} • Slots {s.availableSlots}{s.distanceKm != null && ` • ${s.distanceKm} km`}</p>
-              </div>
-              <button
-                onClick={() => openBookingForStation(s)}
-                className="ml-4 px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-medium hover:bg-blue-700"
-              >
-                Book
-              </button>
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl shadow relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 opacity-60 pointer-events-none" />
+            <div className="p-4 relative z-10">
+              {!isLoaded ? (
+                <div className="h-[450px] flex items-center justify-center text-gray-500 animate-pulse">Loading map...</div>
+              ) : (
+                <GoogleMap mapContainerStyle={mapContainerStyle} zoom={userPosition ? 13 : 11} center={center} options={{ streetViewControl: false, mapTypeControl: false }}>
+                  {userPosition && (
+                    <Marker position={userPosition} icon={{
+                      path: window.google.maps.SymbolPath.CIRCLE,
+                      scale: 7,
+                      fillColor: '#0ea5e9',
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: 'white'
+                    }} title="Your Location" />
+                  )}
+                  {nearestStations.map(st => (
+                    <Marker key={st.id} position={{ lat: st.latitude, lng: st.longitude }} onClick={() => setSelectedStation(st)} />
+                  ))}
+                  {selectedStation && (
+                    <InfoWindow position={{ lat: selectedStation.latitude, lng: selectedStation.longitude }} onCloseClick={() => setSelectedStation(null)}>
+                      <div className="max-w-[230px]">
+                        <div className="flex items-start mb-2">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 leading-snug">{selectedStation.name}</h3>
+                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{selectedStation.location}</p>
+                          </div>
+                        </div>
+                        {selectedStation.distanceKm != null && (
+                          <div className="flex items-center text-[11px] text-emerald-600 font-medium mb-1">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                            {selectedStation.distanceKm} km away
+                          </div>
+                        )}
+                        <p className="text-[11px] text-gray-500 mb-2">Type: {selectedStation.type} • Slots: {selectedStation.availableSlots}</p>
+                        <button
+                          onClick={() => openBookingForStation(selectedStation)}
+                          className="w-full px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg text-xs font-medium hover:from-green-700 hover:to-emerald-700 transition-colors shadow-sm hover:shadow"
+                        >
+                          Book This Station
+                        </button>
+                      </div>
+                    </InfoWindow>
+                  )}
+                </GoogleMap>
+              )}
             </div>
-          ))}
-          {nearestStations.length === 0 && (
-            <p className="text-sm text-gray-500 py-4 text-center">No active stations with coordinates.</p>
-          )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl shadow p-5 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800 flex items-center">
+                <svg className="w-4 h-4 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                </svg>
+                Nearest Stations
+              </h3>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">Top {nearestStations.length}</span>
+            </div>
+            <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar" style={{maxHeight: '410px'}}>
+              {nearestStations.map((s, idx) => (
+                <div key={s.id} className="group border border-gray-100 hover:border-emerald-300 rounded-xl p-3 transition-all bg-white hover:shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center mb-1">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-700 mr-2">{idx+1}</span>
+                        <p className="font-medium text-sm text-gray-900 truncate">{s.name}</p>
+                      </div>
+                      <p className="text-[11px] text-gray-500 mb-1 line-clamp-1">{s.location}</p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-gray-500">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-medium">{s.type}</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">Slots {s.availableSlots}</span>
+                        {s.distanceKm != null && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                            {s.distanceKm} km
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => openBookingForStation(s)}
+                      className="ml-3 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-md text-[11px] font-medium hover:from-blue-700 hover:to-indigo-700 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+                    >
+                      Book
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {nearestStations.length === 0 && (
+                <p className="text-sm text-gray-500 py-4 text-center">No active stations with coordinates.</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
