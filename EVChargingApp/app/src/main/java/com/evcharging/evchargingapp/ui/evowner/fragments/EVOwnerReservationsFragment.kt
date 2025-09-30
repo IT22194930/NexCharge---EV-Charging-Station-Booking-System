@@ -529,7 +529,7 @@ class EVOwnerReservationsFragment : Fragment() {
             
             Your booking has been submitted and is now pending approval from the station operator.
             
-            📍 Station: $stationName
+             Station: $stationName
             📅 Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             🆔 Booking ID: ${booking.id}
             📊 Status: ${booking.status.uppercase()}
