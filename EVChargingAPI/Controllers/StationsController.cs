@@ -38,5 +38,123 @@ namespace EVChargingAPI.Controllers
             await _service.CreateAsync(s);
             return Ok(s);
         }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Backoffice")]
+        public async Task<IActionResult> Update(string id, [FromBody] dynamic requestData)
+        {
+            try
+            {
+                Console.WriteLine($"Updating station with ID: {id}");
+                Console.WriteLine($"Request data: {JsonSerializer.Serialize(requestData)}");
+                
+                // Convert to JSON string and back to JsonElement for processing
+                var jsonString = JsonSerializer.Serialize(requestData);
+                var jsonDocument = JsonDocument.Parse(jsonString);
+                var root = jsonDocument.RootElement;
+                
+                Console.WriteLine($"Parsed JSON: {jsonString}");
+                
+                // Create a Station object from the dynamic data with simple object types
+                var station = new Station
+                {
+                    Id = id,
+                    Name = root.TryGetProperty("name", out JsonElement nameElement) ? nameElement.GetString() : null,
+                    Location = root.TryGetProperty("location", out JsonElement locationElement) ? locationElement.GetString() : null,
+                    Type = root.TryGetProperty("type", out JsonElement typeElement) ? typeElement.GetString() : null,
+                    AvailableSlots = root.TryGetProperty("availableSlots", out JsonElement slotsElement) ? slotsElement.GetInt32() : 0,
+                    Latitude = root.TryGetProperty("lat", out JsonElement latElement) ? (latElement.ValueKind == JsonValueKind.Null ? null : latElement.GetDouble()) : null,
+                    Longitude = root.TryGetProperty("lng", out JsonElement lngElement) ? (lngElement.ValueKind == JsonValueKind.Null ? null : lngElement.GetDouble()) : null,
+                    OperatingHours = root.TryGetProperty("operatingHours", out JsonElement hoursElement) ? 
+                        new {
+                            openTime = hoursElement.TryGetProperty("openTime", out JsonElement openTimeElement) ? openTimeElement.GetString() : "06:00",
+                            closeTime = hoursElement.TryGetProperty("closeTime", out JsonElement closeTimeElement) ? closeTimeElement.GetString() : "22:00",
+                            isOpen24Hours = hoursElement.TryGetProperty("isOpen24Hours", out JsonElement is24HoursElement) ? is24HoursElement.GetBoolean() : false
+                        } : null
+                };
+                
+                Console.WriteLine($"Station object: Name={station.Name}, Location={station.Location}, Type={station.Type}, AvailableSlots={station.AvailableSlots}, Latitude={station.Latitude}, Longitude={station.Longitude}, OperatingHours={station.OperatingHours}");
+                
+                await _service.UpdateAsync(id, station);
+                
+                return Ok(new { message = "Station updated successfully", station });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Update error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return BadRequest(new { message = "Failed to update station", error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}/schedule")]
+        [Authorize(Roles = "Backoffice")]
+        public async Task<IActionResult> UpdateSchedule(string id, [FromBody] dynamic operatingHours)
+        {
+            try
+            {
+                Console.WriteLine($"Updating schedule for station ID: {id}");
+                Console.WriteLine($"Operating hours data: {operatingHours}");
+                
+                // Convert to JSON string and back to JsonElement for processing
+                var jsonString = JsonSerializer.Serialize(operatingHours);
+                var jsonDocument = JsonDocument.Parse(jsonString);
+                var root = jsonDocument.RootElement;
+                
+                Console.WriteLine($"Parsed JSON: {jsonString}");
+                
+                // Create a properly serializable operating hours object
+                var hoursObj = new {
+                    openTime = root.TryGetProperty("openTime", out JsonElement openTimeElement) ? openTimeElement.GetString() : "06:00",
+                    closeTime = root.TryGetProperty("closeTime", out JsonElement closeTimeElement) ? closeTimeElement.GetString() : "22:00",
+                    isOpen24Hours = root.TryGetProperty("isOpen24Hours", out JsonElement is24HoursElement) ? is24HoursElement.GetBoolean() : false
+                };
+                
+                await _service.UpdateScheduleAsync(id, hoursObj);
+                return Ok(new { message = "Station schedule updated successfully" });
+            }
+            catch (Exception ex) 
+            { 
+                Console.WriteLine($"Schedule update error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return BadRequest(new { message = "Failed to update station schedule", error = ex.Message }); 
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Backoffice")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                await _service.DeleteAsync(id);
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("deactivate/{id}")]
+        [Authorize(Roles = "Backoffice")]
+        public async Task<IActionResult> Deactivate(string id)
+        {
+            try
+            {
+                await _service.DeactivateAsync(id);
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("activate/{id}")]
+        [Authorize(Roles = "Backoffice")]
+        public async Task<IActionResult> Activate(string id)
+        {
+            try
+            {
+                await _service.ActivateAsync(id);
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
     }
 }
