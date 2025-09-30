@@ -14,12 +14,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.button.MaterialButton
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.widget.TextView
 import java.util.*
+import java.util.Date
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.databinding.FragmentEvownerDashboardBinding
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.data.model.DashboardStats
 import com.evcharging.evchargingapp.data.model.Station
+import com.evcharging.evchargingapp.data.model.Booking
+import com.evcharging.evchargingapp.data.model.BookingCreateRequest
 import com.evcharging.evchargingapp.data.repository.UserRepository
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
@@ -68,12 +77,12 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         when {
             fineLocationGranted -> {
                 Log.d("EVOwnerDashboard", "Fine location permission granted")
-                Toast.makeText(requireContext(), "Location permission granted! 📍", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Location permission granted! ", Toast.LENGTH_SHORT).show()
                 enableUserLocation()
             }
             coarseLocationGranted -> {
                 Log.d("EVOwnerDashboard", "Coarse location permission granted")
-                Toast.makeText(requireContext(), "Approximate location permission granted 📍", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Approximate location permission granted ", Toast.LENGTH_SHORT).show()
                 enableUserLocation()
             }
             else -> {
@@ -156,7 +165,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                     1500,
                     null
                 )
-                Toast.makeText(requireContext(), "Centered on your location 📍", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Centered on your location ", Toast.LENGTH_SHORT).show()
             } else {
                 // Try to get location again
                 checkLocationPermissionAndGetLocation()
@@ -167,14 +176,17 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         binding.buttonFindStations.setOnClickListener {
             Log.d("EVOwnerDashboard", "Find stations button clicked")
             
-            if (stationsList.isNotEmpty()) {
-                // Show all stations on map with optimal zoom
-                showAllStationsOnMap()
-                Toast.makeText(requireContext(), "Showing ${stationsList.size} charging stations", Toast.LENGTH_SHORT).show()
-            } else {
-                // Reload stations if list is empty
+            if (userLocation != null && stationsList.isNotEmpty()) {
+                // Show nearest 3 stations dialog
+                showNearestStationsDialog()
+            } else if (stationsList.isEmpty()) {
+                // Load stations first
                 Toast.makeText(requireContext(), "Loading charging stations...", Toast.LENGTH_SHORT).show()
                 loadChargingStationsForMap()
+            } else {
+                // No user location available
+                Toast.makeText(requireContext(), "Please enable location to find nearest stations", Toast.LENGTH_SHORT).show()
+                checkLocationPermissionAndGetLocation()
             }
         }
     }
@@ -466,7 +478,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             googleMap?.isMyLocationEnabled = true
             
             // Show loading message
-            Toast.makeText(requireContext(), "Getting your location... 📍", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Getting your location... ", Toast.LENGTH_SHORT).show()
             
             // First try to get last known location
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
@@ -569,7 +581,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(userLocation!!)
-                    .title("📍 Your Current Location")
+                    .title(" Your Current Location")
                     .snippet("Accuracy: ${location.accuracy.toInt()}m")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
@@ -578,7 +590,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             displayStationsOnMap()
         }
         
-        Toast.makeText(requireContext(), "Location found! 📍 (±${location.accuracy.toInt()}m)", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Location found!  (±${location.accuracy.toInt()}m)", Toast.LENGTH_SHORT).show()
         
         Log.d("EVOwnerDashboard", "User location updated: ${location.latitude}, ${location.longitude}, accuracy: ${location.accuracy}m")
     }
@@ -660,12 +672,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                 }
             }
             
-            // Show info message if no stations found
-            if (stationsList.isEmpty()) {
-                Toast.makeText(requireContext(), "No charging stations found", Toast.LENGTH_SHORT).show()
-            } else {
-                Log.d("EVOwnerDashboard", "Displayed ${stationsList.size} charging stations on map")
-            }
+            
         }
     }
     
@@ -717,6 +724,430 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                 }
             }
         }
+    }
+    
+    private fun showNearestStationsDialog() {
+        Log.d("NearestStations", "showNearestStationsDialog called")
+        Log.d("NearestStations", "stationsList size: ${stationsList.size}")
+        Log.d("NearestStations", "userLocation: $userLocation")
+        
+        userLocation?.let { userLoc ->
+            // Calculate distances and get nearest 3 stations
+            val stationsWithDistance = stationsList.mapNotNull { station ->
+                Log.d("NearestStations", "Processing station: ${station.name}, lat: ${station.latitude}, lng: ${station.longitude}, location: ${station.location}")
+                
+                val stationLocation = if (station.latitude != null && station.longitude != null) {
+                    LatLng(station.latitude, station.longitude)
+                } else {
+                    LocationUtils.parseLocation(station.location)
+                }
+                
+                stationLocation?.let {
+                    val distance = LocationUtils.calculateDistance(userLoc, it)
+                    Log.d("NearestStations", "Station ${station.name} distance: $distance km")
+                    Pair(station, distance)
+                }
+            }.sortedBy { it.second }.take(3)
+            
+            Log.d("NearestStations", "Found ${stationsWithDistance.size} stations with distance")
+            
+            if (stationsWithDistance.isNotEmpty()) {
+                showProfessionalStationsDialog(stationsWithDistance)
+            } else {
+                Log.d("NearestStations", "No stations found with valid locations")
+                Toast.makeText(requireContext(), "No charging stations found nearby. Please check if stations are available in your area.", Toast.LENGTH_LONG).show()
+            }
+        } ?: run {
+            Toast.makeText(requireContext(), "Please enable location to find nearest stations", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun showProfessionalStationsDialog(stationsWithDistance: List<Pair<Station, Double>>) {
+        Log.d("DialogCreation", "Creating dialog for ${stationsWithDistance.size} stations")
+        
+        // Create the professional dialog using custom layout
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_nearest_stations, null)
+        
+        val stationsContainer = dialogView.findViewById<android.widget.LinearLayout>(R.id.layoutStationsContainer)
+        val closeButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonClose)
+        
+        Log.d("DialogCreation", "Dialog views found - Container: ${stationsContainer != null}, Button: ${closeButton != null}")
+        
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Add station cards to container
+        stationsWithDistance.forEachIndexed { index, (station, distance) ->
+            Log.d("DialogCreation", "Creating card $index for station: ${station.name}")
+            
+            // Create professional looking card with guaranteed visibility
+            val stationCard = createProfessionalCardV2(station, distance, index + 1)
+            stationCard.setOnClickListener {
+                dialog.dismiss()
+                showStationOnMapAndBooking(station)
+            }
+            stationsContainer.addView(stationCard)
+            Log.d("DialogCreation", "Added station card to container")
+            
+            // Add divider except for last item
+            if (index < stationsWithDistance.size - 1) {
+                val divider = createDivider()
+                stationsContainer.addView(divider)
+            }
+        }
+        
+        // Setup close button
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
+        
+        // Make dialog responsive to theme
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+    }
+    
+    private fun createProfessionalCardV2(station: Station, distance: Double, position: Int): View {
+        val cardView = com.google.android.material.card.MaterialCardView(requireContext()).apply {
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 12, 0, 12)
+            }
+            radius = 16f
+            cardElevation = 8f
+            setCardBackgroundColor(android.graphics.Color.WHITE)
+            isClickable = true
+            isFocusable = true
+        }
+        
+        val textView = android.widget.TextView(requireContext()).apply {
+            text = buildString {
+               
+                append("${station.name}\n\n")
+                append("Location: ${station.location}\n")
+                append("Type: ${station.type} • ${station.availableSlots} slots available\n")
+                append("Distance: ${LocationUtils.formatDistance(distance)}\n")
+                append("Status: ${if (station.isActive) "ACTIVE" else "INACTIVE"}")
+                
+
+
+
+            }
+            textSize = 16f
+            setTextColor(android.graphics.Color.BLACK)
+            setPadding(20, 20, 20, 20)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        
+        cardView.addView(textView)
+        return cardView
+    }
+    
+    private fun createDivider(): View {
+        return android.view.View(requireContext()).apply {
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                1
+            ).apply {
+                setMargins(24, 16, 24, 16)
+            }
+            setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.nexcharge_text_secondary))
+            alpha = 0.2f
+        }
+    }
+
+    private fun showStationOnMapAndBooking(station: Station) {
+        // Clear existing markers and show only the selected station
+        googleMap?.clear()
+        
+        // Get station location
+        val stationLocation = if (station.latitude != null && station.longitude != null) {
+            LatLng(station.latitude, station.longitude)
+        } else {
+            LocationUtils.parseLocation(station.location)
+        }
+        
+        stationLocation?.let { location ->
+            // Add marker for selected station
+            val markerColor = if (station.isActive) {
+                BitmapDescriptorFactory.HUE_GREEN
+            } else {
+                BitmapDescriptorFactory.HUE_RED
+            }
+            
+            val distanceText = userLocation?.let { userLoc ->
+                val distance = LocationUtils.calculateDistance(userLoc, location)
+                " • ${LocationUtils.formatDistance(distance)} away"
+            } ?: ""
+            
+            val statusText = if (station.isActive) "Active" else "Inactive"
+            
+            googleMap?.addMarker(
+                MarkerOptions()
+                    .position(location)
+                    .title("⚡ ${station.name}")
+                    .snippet("Status: $statusText\nType: ${station.type}\nSlots: ${station.availableSlots}$distanceText")
+                    .icon(BitmapDescriptorFactory.defaultMarker(markerColor))
+            )
+            
+            // Show user location if available
+            userLocation?.let { userLoc ->
+                googleMap?.addMarker(
+                    MarkerOptions()
+                        .position(userLoc)
+                        .title(" Your Location")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                )
+            }
+            
+            // Animate camera to show both user and station location
+            googleMap?.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(location, 15f),
+                2000,
+                null
+            )
+            
+            // Show booking option dialog
+            showBookingOptionsDialog(station)
+            
+        } ?: run {
+            Toast.makeText(requireContext(), "Could not locate station on map", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun showBookingOptionsDialog(station: Station) {
+        val message = if (station.isActive) {
+            " Station located on map!\n\n⚡ ${station.name}\n📍 ${station.location}\n🔌 ${station.availableSlots} slots available\n\nWould you like to book this station?"
+        } else {
+            " Station located on map!\n\n⚡ ${station.name}\n📍 ${station.location}\n🔴 This station is currently inactive\n\nYou can still view it on the map, but booking is not available."
+        }
+        
+        val builder = MaterialAlertDialogBuilder(requireContext())
+            .setMessage(message)
+            .setNegativeButton("Close") { dialog, _ ->
+                dialog.dismiss()
+                // Show all stations again
+                displayStationsOnMap()
+            }
+        
+        if (station.isActive) {
+            builder.setPositiveButton("📝 Book Now") { dialog, _ ->
+                dialog.dismiss()
+                showBookingDialog(station)
+            }
+        }
+        
+        builder.show()
+    }
+    
+    private fun showBookingDialog(station: Station) {
+        // Create the booking dialog using the same layout as reservations
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_create_booking, null)
+        
+        val textViewUserInfo = dialogView.findViewById<TextView>(R.id.textViewUserInfo)
+        val autoCompleteStation = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.autoCompleteStation)
+        val dateEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
+        val timeEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
+        val buttonCreate = dialogView.findViewById<MaterialButton>(R.id.buttonCreate)
+        
+        // Set user info
+        val userNic = TokenUtils.getCurrentUserNic(requireContext())
+        textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
+        
+        // Pre-select the station and make it non-editable
+        val stationDisplayName = "⚡ ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} slots available"
+        autoCompleteStation.setText(stationDisplayName)
+        autoCompleteStation.isEnabled = false // Disable editing since station is pre-selected
+        
+        // Setup date picker with 7-day limit
+        dateEditText.setOnClickListener {
+            showDatePicker { selectedDate ->
+                dateEditText.setText(selectedDate)
+            }
+        }
+        
+       
+        
+        // Setup time picker
+        timeEditText.setOnClickListener {
+            showTimePicker { selectedTime ->
+                timeEditText.setText(selectedTime)
+            }
+        }
+        
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Handle button clicks
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        buttonCreate.setOnClickListener {
+            val date = dateEditText.text?.toString()?.trim()
+            val time = timeEditText.text?.toString()?.trim()
+            
+            if (date.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Please select a date", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            if (time.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Please select a time", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            // Validate the selected date and time
+            if (isValidReservationDateTime(date, time)) {
+                dialog.dismiss()
+                
+                // Create the booking with selected date and time
+                createBookingWithDateTime(station, date, time)
+            } else {
+                Toast.makeText(requireContext(), "Please select a future date and time", Toast.LENGTH_LONG).show()
+            }
+        }
+        
+        dialog.show()
+        
+        // Make dialog responsive to theme
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+    }
+    
+    private fun showDatePicker(onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        
+        // Show informative message about date restriction
+        Toast.makeText(requireContext(), "You can book up to 7 days in advance", Toast.LENGTH_SHORT).show()
+        
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val formattedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
+                onDateSelected(formattedDate)
+            },
+            year, month, day
+        )
+        
+        // Set minimum date to today
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+        
+        // Set maximum date to 7 days from now
+        val maxCalendar = Calendar.getInstance()
+        maxCalendar.add(Calendar.DAY_OF_MONTH, 7)
+        datePickerDialog.datePicker.maxDate = maxCalendar.timeInMillis
+        
+        datePickerDialog.show()
+    }
+    
+    private fun showTimePicker(onTimeSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        
+        val timePickerDialog = TimePickerDialog(
+            requireContext(),
+            { _, selectedHour, selectedMinute ->
+                val formattedTime = String.format("%02d:%02d", selectedHour, selectedMinute)
+                onTimeSelected(formattedTime)
+            },
+            hour, minute, true // 24-hour format
+        )
+        
+        timePickerDialog.show()
+    }
+    
+    private fun isValidReservationDateTime(date: String, time: String): Boolean {
+        return try {
+            val selectedDateTime = "$date $time"
+            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+            val selectedDate = dateFormat.parse(selectedDateTime)
+            val currentDate = Date()
+            
+            // Check if the selected date/time is in the future
+            selectedDate != null && selectedDate.after(currentDate)
+        } catch (e: Exception) {
+            Log.e("EVOwnerDashboard", "Error validating date/time: $date $time", e)
+            false
+        }
+    }
+    
+    private fun createBookingWithDateTime(station: Station, date: String, time: String) {
+        val userNic = TokenUtils.getCurrentUserNic(requireContext())
+        if (userNic == null) {
+            Toast.makeText(requireContext(), "User not authenticated. Please log in again.", Toast.LENGTH_LONG).show()
+            return
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Creating booking...")
+                
+                // Combine date and time into the required format
+                val dateTime = "${date}T${time}:00"
+                
+                Log.d("EVOwnerDashboard", "Creating booking for station: ${station.id}, dateTime: $dateTime")
+                
+                val request = BookingCreateRequest(
+                    ownerNic = userNic,
+                    stationId = station.id,
+                    reservationDate = dateTime
+                )
+                
+                val response = apiService.createBooking(request)
+                
+                LoadingManager.dismiss()
+                
+                if (response.isSuccessful && response.body() != null) {
+                    val booking = response.body()!!
+                    Log.d("EVOwnerDashboard", "Successfully created booking: ${booking.id}")
+                    
+                    showBookingSuccessDialog(booking, station.name)
+                } else {
+                    Log.e("EVOwnerDashboard", "Failed to create booking: ${response.code()} - ${response.message()}")
+                    Toast.makeText(requireContext(), "Failed to create booking. Please try again.", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                LoadingManager.dismiss()
+                Log.e("EVOwnerDashboard", "Error creating booking", e)
+                Toast.makeText(requireContext(), "Error creating booking: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    private fun showBookingSuccessDialog(booking: Booking, stationName: String) {
+        val message = "🎉 Booking Created Successfully!\n\n" +
+                "📋 Booking ID: ${booking.id}\n" +
+                "⚡ Station: $stationName\n" +
+                "📅 Date & Time: ${booking.reservationDate}\n" +
+                "📊 Status: ${booking.status}\n\n" +
+                "You can view and manage this booking in the Reservations tab."
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("✅ Booking Confirmed")
+            .setMessage(message)
+            .setPositiveButton("View on Map") { dialog, _ ->
+                dialog.dismiss()
+                // Keep the station visible on map
+            }
+            .setNegativeButton("Close") { dialog, _ ->
+                dialog.dismiss()
+                // Show all stations again
+                displayStationsOnMap()
+            }
+            .show()
     }
 
     override fun onDestroyView() {
