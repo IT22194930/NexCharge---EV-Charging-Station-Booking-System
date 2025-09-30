@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import MapPicker from "../components/MapPicker"; // added
 
 export default function Stations() {
   const [stations, setStations] = useState([]);
@@ -14,6 +15,8 @@ export default function Stations() {
     location: "",
     type: "AC",
     availableSlots: 1,
+    lat: null, // added
+    lng: null, // added
     operatingHours: {
       openTime: "06:00",
       closeTime: "22:00",
@@ -34,7 +37,14 @@ export default function Stations() {
   const createStation = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/stations", form);
+      await api.post("/stations", {
+        name: form.name,
+        location: form.location,
+        type: form.type,
+        availableSlots: form.availableSlots,
+        lat: form.lat,
+        lng: form.lng
+      });
       resetForm();
       setShowCreateForm(false);
       loadStations();
@@ -101,6 +111,8 @@ export default function Stations() {
       location: station.location,
       type: station.type,
       availableSlots: station.availableSlots,
+      lat: station.latitude || station.lat || null, // added
+      lng: station.longitude || station.lng || null, // added
       operatingHours: station.operatingHours || {
         openTime: "06:00",
         closeTime: "22:00",
@@ -129,6 +141,8 @@ export default function Stations() {
       location: "",
       type: "AC",
       availableSlots: 1,
+      lat: null,
+      lng: null,
       operatingHours: {
         openTime: "06:00",
         closeTime: "22:00",
@@ -166,7 +180,7 @@ export default function Stations() {
       {/* Create Station Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96 max-h-96 overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg w-96 max-h-[620px] overflow-y-auto">{/* adjusted height */}
             <h2 className="text-xl font-bold mb-4">Create New Station</h2>
             <form onSubmit={createStation} className="space-y-4">
               <input
@@ -179,12 +193,44 @@ export default function Stations() {
               />
               <input
                 type="text"
-                placeholder="Location"
+                placeholder="Location (address)"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 className="w-full border p-2 rounded"
                 required
               />
+              <div>
+                <label className="block text-sm font-medium mb-1">Select Map Location</label>
+                <MapPicker
+                  lat={form.lat}
+                  lng={form.lng}
+                  onChange={({ lat, lng }) => setForm({ ...form, lat, lng })}
+                  height="220px"
+                />
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Latitude"
+                    value={form.lat ?? ''}
+                    onChange={(e) => setForm({ ...form, lat: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                    className="border p-2 rounded text-sm"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Longitude"
+                    value={form.lng ?? ''}
+                    onChange={(e) => setForm({ ...form, lng: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                    className="border p-2 rounded text-sm"
+                  />
+                </div>
+                {!form.lat || !form.lng ? (
+                  <p className="text-xs text-red-500 mt-1">Select a point on the map.</p>
+                ) : (
+                  <p className="text-xs text-green-600 mt-1">Lat: {form.lat.toFixed(5)} | Lng: {form.lng.toFixed(5)}</p>
+                )}
+              </div>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
@@ -245,7 +291,8 @@ export default function Stations() {
               <div className="flex space-x-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
+                  disabled={!form.lat || !form.lng}
+                  className="flex-1 bg-green-600 disabled:opacity-50 text-white py-2 rounded hover:bg-green-700"
                 >
                   Create Station
                 </button>
@@ -284,6 +331,38 @@ export default function Stations() {
                 className="w-full border p-2 rounded"
                 required
               />
+              <div>
+                <label className="block text-sm font-medium mb-1">Select Map Location</label>
+                <MapPicker
+                  lat={form.lat}
+                  lng={form.lng}
+                  onChange={({ lat, lng }) => setForm({ ...form, lat, lng })}
+                  height="220px"
+                />
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Latitude"
+                    value={form.lat ?? ''}
+                    onChange={(e) => setForm({ ...form, lat: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                    className="border p-2 rounded text-sm"
+                  />
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="Longitude"
+                    value={form.lng ?? ''}
+                    onChange={(e) => setForm({ ...form, lng: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                    className="border p-2 rounded text-sm"
+                  />
+                </div>
+                {!form.lat || !form.lng ? (
+                  <p className="text-xs text-red-500 mt-1">Select a point on the map.</p>
+                ) : (
+                  <p className="text-xs text-green-600 mt-1">Lat: {form.lat.toFixed(5)} | Lng: {form.lng.toFixed(5)}</p>
+                )}
+              </div>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
