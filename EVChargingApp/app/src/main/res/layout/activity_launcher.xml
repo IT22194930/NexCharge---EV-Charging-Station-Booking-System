@@ -10,13 +10,14 @@
         android:id="@+id/imageViewLogo"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:src="@drawable/evlogo"
         android:layout_marginBottom="24dp"
         android:contentDescription="NexCharge Logo"
-        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/evlogo"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toTopOf="@id/textViewBrand"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <!-- Brand Text -->
@@ -24,29 +25,29 @@
         android:id="@+id/textViewBrand"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="NexCharge"
+        android:textColor="@color/nexcharge_primary"
         android:textSize="36sp"
         android:textStyle="bold"
-        android:textColor="@color/nexcharge_primary"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintTop_toBottomOf="@id/imageViewLogo"
         app:layout_constraintBottom_toTopOf="@id/textViewTagline"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imageViewLogo" />
 
     <!-- Tagline -->
     <TextView
         android:id="@+id/textViewTagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Premium EV Charging Solutions"
-        android:textSize="16sp"
-        android:textColor="@color/nexcharge_text_secondary"
         android:layout_marginBottom="48dp"
-        app:layout_constraintTop_toBottomOf="@id/textViewBrand"
+        android:text="Premium EV Charging Solutions"
+        android:textColor="@color/nexcharge_text_secondary"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/progressBarLauncher"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/textViewBrand" />
 
     <!-- Loading Indicator -->
     <ProgressBar
@@ -55,9 +56,9 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:indeterminateTint="@color/nexcharge_primary"
-        app:layout_constraintTop_toBottomOf="@id/textViewTagline"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/textViewTagline" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

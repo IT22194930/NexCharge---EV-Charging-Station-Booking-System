@@ -22,11 +22,15 @@ import com.evcharging.evchargingapp.databinding.FragmentEvownerReservationsBindi
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.data.model.Booking
 import com.evcharging.evchargingapp.data.model.BookingCreateRequest
+import com.evcharging.evchargingapp.data.model.BookingUpdateRequest
 import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.RecentBookingAdapter
 import com.evcharging.evchargingapp.utils.TokenUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
+import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -38,6 +42,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private lateinit var recentBookingAdapter: RecentBookingAdapter
     private val allStations = mutableListOf<Station>()
     private var recentBookings = listOf<Booking>()
+    private var loadingCounter = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,6 +55,11 @@ class EVOwnerReservationsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Show loading screen while setting up
+        LoadingManager.show(requireContext(), "Loading reservations...")
+        loadingCounter = 2 // We have 2 async operations to complete
+        
         setupRecyclerView()
         setupSearchFunctionality()
         setupClickListeners()
@@ -67,6 +77,12 @@ class EVOwnerReservationsFragment : Fragment() {
             },
             onDeleteClick = { booking ->
                 confirmDeleteBooking(booking)
+            },
+            onUpdateClick = { booking ->
+                showUpdateBookingDialog(booking)
+            },
+            getStationName = { stationId ->
+                getStationName(stationId)
             }
         )
         
@@ -120,12 +136,19 @@ class EVOwnerReservationsFragment : Fragment() {
                         Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent active bookings (excluding completed)")
                     } else {
                         Log.w("EVOwnerReservations", "Failed to load recent bookings: ${response.code()}")
+                        showError("Failed to load recent bookings")
                     }
                 } else {
                     Log.w("EVOwnerReservations", "User NIC not found")
+                    showError("User authentication error")
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading recent bookings", e)
+                if (isAdded && _binding != null) {
+                    showError("Network error loading bookings")
+                }
+            } finally {
+                checkLoadingComplete()
             }
         }
     }
@@ -134,6 +157,8 @@ class EVOwnerReservationsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = apiService.getAllStations()
+                
+                if (!isAdded || _binding == null) return@launch
                 
                 if (response.isSuccessful && response.body() != null) {
                     allStations.clear()
@@ -148,8 +173,19 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("EVOwnerReservations", "Error loading stations", e)
-                showError("Error loading stations: ${e.message}")
+                if (isAdded && _binding != null) {
+                    showError("Error loading stations: ${e.message}")
+                }
+            } finally {
+                checkLoadingComplete()
             }
+        }
+    }
+
+    private fun checkLoadingComplete() {
+        loadingCounter--
+        if (loadingCounter <= 0 && isAdded && _binding != null) {
+            LoadingManager.dismiss()
         }
     }
 
@@ -264,11 +300,15 @@ class EVOwnerReservationsFragment : Fragment() {
                 }
                 else -> {
                     val stationId = allStations[selectedStationIndex].id
-                    val stationName = allStations[selectedStationIndex].name
+                    val stationName = getStationName(stationId)
+                    
+                    Log.d("EVOwnerReservations", "User selected - date: $date, time: $time")
+                    val combinedDateTime = "$date $time"
+                    Log.d("EVOwnerReservations", "Combined dateTime: $combinedDateTime")
                     
                     // Show confirmation before creating
                     showBookingConfirmation(stationName, date, time) {
-                        createBooking(stationId, "$date $time")
+                        createBooking(stationId, combinedDateTime)
                         dialog.dismiss()
                     }
                 }
@@ -370,14 +410,21 @@ class EVOwnerReservationsFragment : Fragment() {
 
     private fun convertToApiFormat(dateTimeString: String): String {
         try {
+            Log.d("EVOwnerReservations", "convertToApiFormat input: $dateTimeString")
+            
             // Input format: "2024-01-15 14:30"
-            // Output format: "2024-01-15T14:30:00" (ISO 8601 format without timezone)
+            // Output format: "2024-01-15T14:30" (exactly like web datetime-local input)
+            // This matches the web version format to prevent timezone conversion issues
             val parts = dateTimeString.split(" ")
             if (parts.size == 2) {
                 val datePart = parts[0] // "2024-01-15"
                 val timePart = parts[1] // "14:30"
-                return "${datePart}T${timePart}:00"
+                val result = "${datePart}T${timePart}"  // NO seconds, exactly like web
+                
+                Log.d("EVOwnerReservations", "convertToApiFormat output: $result")
+                return result
             }
+            Log.w("EVOwnerReservations", "convertToApiFormat: Invalid format, returning original: $dateTimeString")
             return dateTimeString
         } catch (e: Exception) {
             Log.e("EVOwnerReservations", "Error converting date format", e)
@@ -392,7 +439,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Your booking has been submitted and is now pending approval from the station operator.
             
             📍 Station: $stationName
-            📅 Date & Time: ${booking.reservationDate}
+            📅 Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             🆔 Booking ID: ${booking.id}
             📊 Status: ${booking.status.uppercase()}
             
@@ -425,7 +472,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Reservation Details:
             
             Station: $stationName
-            Date & Time: ${booking.reservationDate}
+            Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage
@@ -433,11 +480,154 @@ class EVOwnerReservationsFragment : Fragment() {
             Booking ID: ${booking.id}
         """.trimIndent()
         
-        MaterialAlertDialogBuilder(requireContext())
+        val alertDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Reservation Information")
             .setMessage(message)
             .setPositiveButton("Close", null)
-            .show()
+        
+        // Add Update button for pending bookings
+        if (booking.status.lowercase() == "pending") {
+            alertDialog.setNeutralButton("Update") { _, _ ->
+                showUpdateBookingDialog(booking)
+            }
+        }
+        
+        alertDialog.show()
+    }
+
+    private fun showUpdateBookingDialog(booking: Booking) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_update_booking, null)
+        val editTextDate = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
+        val editTextTime = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
+        val buttonUpdate = dialogView.findViewById<MaterialButton>(R.id.buttonUpdate)
+        
+        // Current booking info views
+        val textViewCurrentStation = dialogView.findViewById<TextView>(R.id.textViewCurrentStation)
+        val textViewCurrentDateTime = dialogView.findViewById<TextView>(R.id.textViewCurrentDateTime)
+        val textViewBookingStatus = dialogView.findViewById<TextView>(R.id.textViewBookingStatus)
+        
+        // Display current booking information
+        val stationName = getStationName(booking.stationId)
+        textViewCurrentStation.text = "Station: $stationName"
+        textViewCurrentDateTime.text = "Current Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}"
+        textViewBookingStatus.text = "Status: ${booking.status.uppercase()}"
+        
+        // Initialize with current booking date/time
+        try {
+            val currentDateTime = booking.reservationDate
+            // Parse the current date/time and populate the fields
+            if (currentDateTime.contains("T")) {
+                // ISO format: "2024-01-15T14:30:00"
+                val parts = currentDateTime.split("T")
+                if (parts.size >= 2) {
+                    editTextDate.setText(parts[0]) // "2024-01-15"
+                    val timePart = parts[1].split(":") // ["14", "30", "00"]
+                    if (timePart.size >= 2) {
+                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
+                    }
+                }
+            } else if (currentDateTime.contains(" ")) {
+                // Space format: "2024-01-15 14:30:00"
+                val parts = currentDateTime.split(" ")
+                if (parts.size >= 2) {
+                    editTextDate.setText(parts[0]) // "2024-01-15"
+                    val timePart = parts[1].split(":") // ["14", "30", "00"]
+                    if (timePart.size >= 2) {
+                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("EVOwnerReservations", "Error parsing current date/time", e)
+            // Set default values if parsing fails
+            editTextDate.setText("")
+            editTextTime.setText("")
+        }
+        
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+            
+        dialog.window?.setBackgroundDrawable(null)
+        
+        // Date picker
+        editTextDate.setOnClickListener {
+            showEnhancedDatePicker { selectedDate ->
+                editTextDate.setText(selectedDate)
+            }
+        }
+        
+        // Time picker
+        editTextTime.setOnClickListener {
+            showEnhancedTimePicker { selectedTime ->
+                editTextTime.setText(selectedTime)
+            }
+        }
+        
+        // Cancel button
+        buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        // Update button
+        buttonUpdate.setOnClickListener {
+            val date = editTextDate.text.toString().trim()
+            val time = editTextTime.text.toString().trim()
+            
+            when {
+                date.isEmpty() -> {
+                    showError("Please select a date")
+                }
+                time.isEmpty() -> {
+                    showError("Please select a time")
+                }
+                !isValidReservationDateTime(date, time) -> {
+                    showError("Selected date and time must be in the future")
+                }
+                else -> {
+                    dialog.dismiss()
+                    updateBooking(booking, date, time)
+                }
+            }
+        }
+        
+        dialog.show()
+    }
+    
+    private fun updateBooking(booking: Booking, newDate: String, newTime: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Updating booking...")
+                
+                val newDateTime = "$newDate $newTime"
+                val formattedDateTime = convertToApiFormat(newDateTime)
+                
+                val response = apiService.updateBooking(
+                    booking.id,
+                    BookingUpdateRequest(
+                        reservationDate = formattedDateTime,
+                        stationId = booking.stationId
+                    )
+                )
+                
+                LoadingManager.dismiss()
+                
+                if (response.isSuccessful) {
+                    val stationName = getStationName(booking.stationId)
+                    showSuccess("Booking updated successfully!\n\nStation: $stationName\nNew Date & Time: ${DateTimeUtils.formatToUserFriendly(formattedDateTime)}")
+                    loadRecentBookings() // Refresh the list
+                } else {
+                    showError("Failed to update booking: ${response.message()}")
+                }
+                
+            } catch (e: Exception) {
+                LoadingManager.dismiss()
+                Log.e("EVOwnerReservations", "Error updating booking", e)
+                showError("Error updating booking: ${e.message}")
+            }
+        }
     }
 
     private fun showQRCode(booking: Booking) {
@@ -458,10 +648,12 @@ class EVOwnerReservationsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
+                    val stationName = getStationName(booking.stationId)
+                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at the charging station")
+                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate")
                         .setPositiveButton("Close", null)
                         .show()
                     
@@ -551,6 +743,7 @@ class EVOwnerReservationsFragment : Fragment() {
         
         TimePickerDialog(requireContext(), { _, selectedHour, selectedMinute ->
             val selectedTime = String.format("%02d:%02d", selectedHour, selectedMinute)
+            Log.d("EVOwnerReservations", "Time picker selected: hour=$selectedHour, minute=$selectedMinute, formatted=$selectedTime")
             onTimeSelected(selectedTime)
         }, hour, minute, true).show()
     }
@@ -617,8 +810,19 @@ class EVOwnerReservationsFragment : Fragment() {
             .show()
     }
 
-    private fun getStationName(stationId: String): String {
-        return allStations.find { it.id == stationId }?.name ?: "Unknown Station"
+    private fun getStationName(stationId: String?): String {
+        if (stationId.isNullOrEmpty()) return "Unknown Station"
+        
+        // Log for debugging
+        Log.d("EVOwnerReservations", "Looking for station with ID: $stationId")
+        Log.d("EVOwnerReservations", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
+        
+        val station = allStations.find { it.id == stationId }
+        return if (station != null) {
+            "${station.name} - ${station.location}"
+        } else {
+            "Unknown Station"
+        }
     }
 
     private fun showLoading(isLoading: Boolean) {

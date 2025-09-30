@@ -48,6 +48,60 @@
 
             </LinearLayout>
 
+            <!-- Current Booking Information -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/nexcharge_background_center">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Current Booking Details"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/nexcharge_text_primary"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/textViewCurrentStation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Station: Loading..."
+                        android:textSize="14sp"
+                        android:textColor="@color/nexcharge_text_secondary"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewCurrentDateTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date &amp; Time: Loading..."
+                        android:textSize="14sp"
+                        android:textColor="@color/nexcharge_text_secondary"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textViewBookingStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status: Loading..."
+                        android:textSize="14sp"
+                        android:textColor="@color/nexcharge_text_secondary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Date Selection -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

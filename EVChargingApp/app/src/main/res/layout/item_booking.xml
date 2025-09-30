@@ -126,9 +126,26 @@
                 android:text="View QR"
                 android:textColor="@color/nexcharge_primary"
                 android:textSize="12sp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 app:icon="@android:drawable/ic_dialog_info"
                 app:iconSize="16dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonUpdate"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="Update"
+                android:textColor="@color/nexcharge_secondary"
+                android:textSize="12sp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"
+                app:icon="@android:drawable/ic_menu_edit"
+                app:iconSize="16dp"
+                app:strokeColor="@color/nexcharge_secondary"
+                app:iconTint="@color/nexcharge_secondary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonDelete"
@@ -138,7 +155,7 @@
                 android:layout_weight="1"
                 android:text="Delete"
                 android:textSize="12sp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 app:icon="@android:drawable/ic_menu_delete"
                 app:iconSize="16dp"
                 app:strokeColor="@android:color/holo_red_dark"
