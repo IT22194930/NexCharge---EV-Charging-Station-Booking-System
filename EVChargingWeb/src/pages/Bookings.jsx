@@ -9,6 +9,7 @@ import Pagination from "../components/Pagination";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
   const [stations, setStations] = useState([]);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -18,6 +19,7 @@ export default function Bookings() {
   const [bookingToDelete, setBookingToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [statusFilter, setStatusFilter] = useState("All");
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
@@ -49,21 +51,38 @@ export default function Bookings() {
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const res = await api.get(`/bookings/owner/${nic}`);
         setBookings(res.data);
+        filterBookings(res.data, statusFilter);
       } else {
         const res = await api.get("/bookings");
         setBookings(res.data);
+        filterBookings(res.data, statusFilter);
       }
     } catch (err) {
       setError("Failed to load bookings");
       console.error(err);
     }
-  }, [role]);
+  }, [role, statusFilter]);
+
+  const filterBookings = (allBookings, filter) => {
+    if (filter === "All") {
+      setFilteredBookings(allBookings);
+    } else {
+      const filtered = allBookings.filter(booking => booking.status === filter);
+      setFilteredBookings(filtered);
+    }
+  };
+
+  const handleStatusFilterChange = (filter) => {
+    setStatusFilter(filter);
+    setCurrentPage(1); // Reset to first page when filtering
+    filterBookings(bookings, filter);
+  };
 
   // Pagination logic
-  const totalPages = Math.ceil(bookings.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentBookings = bookings.slice(startIndex, endIndex);
+  const currentBookings = filteredBookings.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -286,7 +305,7 @@ export default function Bookings() {
   useEffect(() => {
     loadBookings();
     loadStations();
-  }, [loadBookings]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadBookings]);
 
   return (
     <div>
@@ -368,16 +387,18 @@ export default function Bookings() {
         cancelBooking={cancelBooking}
         deleteBooking={deleteBooking}
         startIndex={startIndex}
+        statusFilter={statusFilter}
+        handleStatusFilterChange={handleStatusFilterChange}
       />
       
       {/* Pagination Component */}
-      {bookings.length > 0 && (
+      {filteredBookings.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
           itemsPerPage={itemsPerPage}
-          totalItems={bookings.length}
+          totalItems={filteredBookings.length}
         />
       )}
       
