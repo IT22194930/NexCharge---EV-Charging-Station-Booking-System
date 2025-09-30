@@ -184,6 +184,21 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonChangeTheme"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Change Theme"
+            android:textColor="@color/nexcharge_primary"
+            android:layout_marginTop="16dp"
+            app:strokeColor="@color/nexcharge_primary"
+            app:icon="@drawable/ic_theme"
+            app:iconTint="@color/nexcharge_primary"
+            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonLogout"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
@@ -194,7 +209,7 @@
             app:icon="@drawable/ic_logout"
             app:iconTint="@android:color/white"
             app:backgroundTint="@color/nexcharge_accent"
-            app:layout_constraintTop_toBottomOf="@id/buttonChangePassword"
+            app:layout_constraintTop_toBottomOf="@id/buttonChangeTheme"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

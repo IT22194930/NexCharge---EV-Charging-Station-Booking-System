@@ -14,6 +14,7 @@ class BookingAdapter(
     private val onBookingClick: (Booking) -> Unit,
     private val onDeleteClick: (Booking) -> Unit,
     private val onViewQRClick: (Booking) -> Unit,
+    private val onUpdateClick: (Booking) -> Unit,
     private val getStationName: (String?) -> String
 ) : ListAdapter<Booking, BookingAdapter.BookingViewHolder>(BookingDiffCallback()) {
 
@@ -56,9 +57,17 @@ class BookingAdapter(
                 root.setOnClickListener { onBookingClick(booking) }
                 buttonViewQR.setOnClickListener { onViewQRClick(booking) }
                 buttonDelete.setOnClickListener { onDeleteClick(booking) }
+                buttonUpdate.setOnClickListener { onUpdateClick(booking) }
 
                 // Show/hide View QR button based on QR code availability
                 buttonViewQR.visibility = if (!booking.qrBase64.isNullOrEmpty()) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+
+                // Show/hide Update button only for pending bookings
+                buttonUpdate.visibility = if (booking.status.lowercase() == "pending") {
                     View.VISIBLE
                 } else {
                     View.GONE

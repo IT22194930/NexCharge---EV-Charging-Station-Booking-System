@@ -79,18 +79,23 @@ class EVOwnerBookingsFragment : Fragment() {
 
     private fun setupSearchFunctionality() {
         binding.editTextSearch.addTextChangedListener { text ->
-            val query = text.toString()
+            val query = text.toString().trim()
+            
+            // Update search hint based on input
+            if (query.isNotEmpty()) {
+                binding.textInputLayoutSearch.hint = "Searching for \"$query\"..."
+            } else {
+                binding.textInputLayoutSearch.hint = "Search by station, status, or booking ID..."
+            }
+            
+            // Filter bookings with improved search
             filterBookingsInTabs(query)
         }
     }
 
     private fun filterBookingsInTabs(query: String) {
-        // Filter bookings in both tab fragments
-        val activeFragment = pagerAdapter.getFragment(0) as? ActiveBookingsTabFragment
-        val historyFragment = pagerAdapter.getFragment(1) as? HistoryBookingsTabFragment
-        
-        activeFragment?.filterBookings(query)
-        historyFragment?.filterBookings(query)
+        // Use the adapter's improved filtering method
+        pagerAdapter.filterBookingsInAllTabs(query)
     }
 
     private fun setupClickListeners() {
@@ -210,10 +215,10 @@ class EVOwnerBookingsFragment : Fragment() {
     }
 
     private fun refreshTabData() {
-        // Refresh data in both tabs
+        // Refresh data in both tabs using the improved method
         try {
-            val activeFragment = pagerAdapter.getFragment(0) as? ActiveBookingsTabFragment
-            val historyFragment = pagerAdapter.getFragment(1) as? HistoryBookingsTabFragment
+            val activeFragment = pagerAdapter.getActiveFragment(0) as? ActiveBookingsTabFragment
+            val historyFragment = pagerAdapter.getActiveFragment(1) as? HistoryBookingsTabFragment
             
             activeFragment?.refreshBookings()
             historyFragment?.refreshBookings()
