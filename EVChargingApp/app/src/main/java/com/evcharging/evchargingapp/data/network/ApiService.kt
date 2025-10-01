@@ -54,6 +54,13 @@ interface ApiService {
     @DELETE("bookings/{id}")
     suspend fun deleteBooking(@Path("id") id: String): Response<Unit>
 
+    // Station availability APIs
+    @GET("bookings/availability/{stationId}")
+    suspend fun getStationAvailability(@Path("stationId") stationId: String, @Query("date") date: String): Response<StationAvailability>
+
+    @GET("bookings/available-hours/{stationId}")
+    suspend fun getAvailableHours(@Path("stationId") stationId: String, @Query("date") date: String): Response<List<Int>>
+
     // EV Owner Account Management APIs
     @POST("evowner/register")
     suspend fun registerEVOwner(@Body request: EVOwnerCreateRequest): Response<EVOwner>

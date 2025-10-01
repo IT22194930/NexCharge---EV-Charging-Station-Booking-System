@@ -185,11 +185,11 @@ class EVOwnerBookingsFragment : Fragment() {
                     val imageView = dialogView.findViewById<ImageView>(R.id.imageViewQRCode)
                     imageView.setImageBitmap(qrBitmap)
                     
-                    val userFriendlyDate = DateTimeUtils.formatToUserFriendly(booking.reservationDate)
+                    val timeSlot = DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Booking QR Code")
                         .setView(dialogView)
-                        .setMessage("Show this QR code at $stationName\n📅 $userFriendlyDate\n🆔 Booking: ${booking.id}")
+                        .setMessage("Show this QR code at $stationName\n📅 $timeSlot\n🆔 Booking: ${booking.id}")
                         .setPositiveButton("Close", null)
                         .show()
                     
@@ -273,7 +273,7 @@ class EVOwnerBookingsFragment : Fragment() {
             Booking Details:
             
             Station: $stationName
-            Date & Time: ${booking.reservationDate}
+            Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage

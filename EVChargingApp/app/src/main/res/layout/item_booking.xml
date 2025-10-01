@@ -80,7 +80,7 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginStart="16dp"
             app:layout_constraintTop_toBottomOf="@id/textViewStationName"
-            app:layout_constraintStart_toEndOf="@id/imageViewBookingIcon"
+            app:layout_constraintStart_toEndOf="@id/iconCard"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
@@ -88,7 +88,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Jan 15, 2024 - 10:00 AM to 11:00 AM"
+            android:text="Booking time will be displayed here"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"

@@ -224,7 +224,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Use the search above to find stations, then tap 'New Reservation' to book a time slot."
+                    android:text="Use the search above to find stations, then book a time slot."
                     android:textSize="14sp"
                     android:textColor="?android:attr/textColorSecondary"
                     android:layout_marginTop="8dp"
