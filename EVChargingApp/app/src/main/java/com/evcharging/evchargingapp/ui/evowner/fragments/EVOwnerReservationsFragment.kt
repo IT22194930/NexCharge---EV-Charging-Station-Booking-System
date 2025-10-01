@@ -244,7 +244,8 @@ class EVOwnerReservationsFragment : Fragment() {
         
         // Setup station dropdown with enhanced information
         val stationDisplayNames = allStations.map { station ->
-            "🔌 ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} slots available"
+            val dailyCapacity = station.availableSlots * 24 // Total EVs that can be charged per day
+            "🔌 ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} machines/hour | Up to ${dailyCapacity} EVs/day"
         }
         
         Log.d("EVOwnerReservations", "Setting up dropdown with ${stationDisplayNames.size} stations")
@@ -277,13 +278,29 @@ class EVOwnerReservationsFragment : Fragment() {
         dateEditText.setOnClickListener {
             showEnhancedDatePicker { date ->
                 dateEditText.setText(date)
+                // Clear hour selection when date changes
+                timeEditText.setText("")
+                timeEditText.tag = null
             }
         }
         
-        // Setup time picker with validation
+        // Setup hour slot picker with availability
         timeEditText.setOnClickListener {
-            showEnhancedTimePicker { time ->
-                timeEditText.setText(time)
+            val selectedDate = dateEditText.text.toString()
+            if (selectedDate.isEmpty()) {
+                showError("Please select a date first")
+                return@setOnClickListener
+            }
+            
+            if (selectedStationIndex < 0) {
+                showError("Please select a station first")
+                return@setOnClickListener
+            }
+            
+            val stationId = allStations[selectedStationIndex].id
+            showAvailableHoursPicker(stationId, selectedDate) { hour ->
+                timeEditText.setText("${hour}:00 - ${hour + 1}:00")
+                timeEditText.tag = hour // Store the actual hour value
             }
         }
         
@@ -299,6 +316,7 @@ class EVOwnerReservationsFragment : Fragment() {
         buttonCreate.setOnClickListener {
             val date = dateEditText.text.toString()
             val time = timeEditText.text.toString()
+            val selectedHour = timeEditText.tag as? Int
             
             when {
                 selectedStationIndex < 0 -> {
@@ -307,23 +325,21 @@ class EVOwnerReservationsFragment : Fragment() {
                 date.isEmpty() -> {
                     showError("Please select a reservation date")
                 }
-                time.isEmpty() -> {
-                    showError("Please select a reservation time")
+                time.isEmpty() || selectedHour == null -> {
+                    showError("Please select an available hour slot")
                 }
-                !isValidReservationDateTime(date, time) -> {
+                !isValidReservationDateTimeWithHour(date, selectedHour) -> {
                     showError("Reservations must be made at least 1 hour in advance and within 7 days")
                 }
                 else -> {
                     val stationId = allStations[selectedStationIndex].id
                     val stationName = getStationName(stationId)
                     
-                    Log.d("EVOwnerReservations", "User selected - date: $date, time: $time")
-                    val combinedDateTime = "$date $time"
-                    Log.d("EVOwnerReservations", "Combined dateTime: $combinedDateTime")
+                    Log.d("EVOwnerReservations", "User selected - date: $date, hour: $selectedHour")
                     
                     // Show confirmation before creating
                     showBookingConfirmation(stationName, date, time) {
-                        createBooking(stationId, combinedDateTime)
+                        createBookingWithHour(stationId, date, selectedHour)
                         dialog.dismiss()
                     }
                 }
@@ -351,7 +367,8 @@ class EVOwnerReservationsFragment : Fragment() {
         textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
         
         // Pre-select the station and disable the dropdown
-        val stationDisplayName = "🔌 ${selectedStation.name} - ${selectedStation.location}\n   ${selectedStation.type} | ${selectedStation.availableSlots} slots available"
+        val dailyCapacity = selectedStation.availableSlots * 24
+        val stationDisplayName = "🔌 ${selectedStation.name} - ${selectedStation.location}\n   ${selectedStation.type} | ${selectedStation.availableSlots} machines/hour | Up to ${dailyCapacity} EVs/day"
         autoCompleteStation.setText(stationDisplayName)
         autoCompleteStation.isEnabled = false // Disable editing since station is pre-selected
         
@@ -359,13 +376,23 @@ class EVOwnerReservationsFragment : Fragment() {
         dateEditText.setOnClickListener {
             showEnhancedDatePicker { date ->
                 dateEditText.setText(date)
+                // Clear hour selection when date changes
+                timeEditText.setText("")
+                timeEditText.tag = null
             }
         }
         
-        // Setup time picker with validation
+        // Setup hour slot picker with availability
         timeEditText.setOnClickListener {
-            showEnhancedTimePicker { time ->
-                timeEditText.setText(time)
+            val selectedDate = dateEditText.text.toString()
+            if (selectedDate.isEmpty()) {
+                showError("Please select a date first")
+                return@setOnClickListener
+            }
+            
+            showAvailableHoursPicker(selectedStation.id, selectedDate) { hour ->
+                timeEditText.setText("${hour}:00 - ${hour + 1}:00")
+                timeEditText.tag = hour // Store the actual hour value
             }
         }
         
@@ -381,25 +408,24 @@ class EVOwnerReservationsFragment : Fragment() {
         buttonCreate.setOnClickListener {
             val date = dateEditText.text.toString()
             val time = timeEditText.text.toString()
+            val selectedHour = timeEditText.tag as? Int
             
             when {
                 date.isEmpty() -> {
                     showError("Please select a reservation date")
                 }
-                time.isEmpty() -> {
-                    showError("Please select a reservation time")
+                time.isEmpty() || selectedHour == null -> {
+                    showError("Please select an available hour slot")
                 }
-                !isValidReservationDateTime(date, time) -> {
+                !isValidReservationDateTimeWithHour(date, selectedHour) -> {
                     showError("Reservations must be made at least 1 hour in advance and within 7 days")
                 }
                 else -> {
-                    Log.d("EVOwnerReservations", "User selected - date: $date, time: $time")
-                    val combinedDateTime = "$date $time"
-                    Log.d("EVOwnerReservations", "Combined dateTime: $combinedDateTime")
+                    Log.d("EVOwnerReservations", "User selected - date: $date, hour: $selectedHour")
                     
                     // Show confirmation before creating
                     showBookingConfirmation(selectedStation.name, date, time) {
-                        createBooking(selectedStation.id, combinedDateTime)
+                        createBookingWithHour(selectedStation.id, date, selectedHour)
                         dialog.dismiss()
                     }
                 }
@@ -433,16 +459,17 @@ class EVOwnerReservationsFragment : Fragment() {
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.HOUR, 2) // Book for 2 hours from now
         
-        val dateTime = String.format(
-            "%04d-%02d-%02d %02d:%02d",
+        val date = String.format(
+            "%04d-%02d-%02d",
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE)
+            calendar.get(Calendar.DAY_OF_MONTH)
         )
         
-        createBooking(station.id, dateTime)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        
+        // Try to book the calculated hour, or show available hours if not available
+        createBookingWithHour(station.id, date, hour)
     }
 
     private fun createBooking(stationId: String, reservationDateTime: String) {
@@ -464,7 +491,8 @@ class EVOwnerReservationsFragment : Fragment() {
                 val request = BookingCreateRequest(
                     stationId = stationId,
                     ownerNic = userNic,
-                    reservationDate = formattedDateTime
+                    reservationDate = formattedDateTime,
+                    reservationHour = 0 // TODO: Update to support hour selection
                 )
                 
                 val response = apiService.createBooking(request)
@@ -529,8 +557,8 @@ class EVOwnerReservationsFragment : Fragment() {
             
             Your booking has been submitted and is now pending approval from the station operator.
             
-             Station: $stationName
-            📅 Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
+            🏢 Station: $stationName
+            📅 Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}
             🆔 Booking ID: ${booking.id}
             📊 Status: ${booking.status.uppercase()}
             
@@ -563,7 +591,7 @@ class EVOwnerReservationsFragment : Fragment() {
             Reservation Details:
             
             Station: $stationName
-            Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
+            Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage
@@ -589,7 +617,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private fun showUpdateBookingDialog(booking: Booking) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_update_booking, null)
         val editTextDate = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
-        val editTextTime = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val editTextHour = dialogView.findViewById<TextInputEditText>(R.id.editTextHour)
         val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
         val buttonUpdate = dialogView.findViewById<MaterialButton>(R.id.buttonUpdate)
         
@@ -601,39 +629,25 @@ class EVOwnerReservationsFragment : Fragment() {
         // Display current booking information
         val stationName = getStationName(booking.stationId)
         textViewCurrentStation.text = "Station: $stationName"
-        textViewCurrentDateTime.text = "Current Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}"
+        textViewCurrentDateTime.text = "Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}"
         textViewBookingStatus.text = "Status: ${booking.status.uppercase()}"
         
-        // Initialize with current booking date/time
+        // Initialize with current booking date and hour
         try {
-            val currentDateTime = booking.reservationDate
-            // Parse the current date/time and populate the fields
-            if (currentDateTime.contains("T")) {
-                // ISO format: "2024-01-15T14:30:00"
-                val parts = currentDateTime.split("T")
-                if (parts.size >= 2) {
-                    editTextDate.setText(parts[0]) // "2024-01-15"
-                    val timePart = parts[1].split(":") // ["14", "30", "00"]
-                    if (timePart.size >= 2) {
-                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
-                    }
-                }
-            } else if (currentDateTime.contains(" ")) {
-                // Space format: "2024-01-15 14:30:00"
-                val parts = currentDateTime.split(" ")
-                if (parts.size >= 2) {
-                    editTextDate.setText(parts[0]) // "2024-01-15"
-                    val timePart = parts[1].split(":") // ["14", "30", "00"]
-                    if (timePart.size >= 2) {
-                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
-                    }
-                }
-            }
+            // Set the date from reservation date (extract only the date part)
+            editTextDate.setText(DateTimeUtils.extractDateOnly(booking.reservationDate))
+            
+            // Set the hour from reservation hour
+            val hour = booking.reservationHour
+            editTextHour.setText("${hour}:00 - ${hour + 1}:00")
+            editTextHour.tag = hour // Store the current hour value
+            
         } catch (e: Exception) {
-            Log.e("EVOwnerReservations", "Error parsing current date/time", e)
+            Log.e("EVOwnerReservations", "Error setting current booking values", e)
             // Set default values if parsing fails
             editTextDate.setText("")
-            editTextTime.setText("")
+            editTextHour.setText("")
+            editTextHour.tag = null
         }
         
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -647,13 +661,23 @@ class EVOwnerReservationsFragment : Fragment() {
         editTextDate.setOnClickListener {
             showEnhancedDatePicker { selectedDate ->
                 editTextDate.setText(selectedDate)
+                // Clear hour selection when date changes
+                editTextHour.setText("")
+                editTextHour.tag = null
             }
         }
         
-        // Time picker
-        editTextTime.setOnClickListener {
-            showEnhancedTimePicker { selectedTime ->
-                editTextTime.setText(selectedTime)
+        // Hour slot picker
+        editTextHour.setOnClickListener {
+            val selectedDate = editTextDate.text.toString()
+            if (selectedDate.isEmpty()) {
+                showError("Please select a date first")
+                return@setOnClickListener
+            }
+            
+            showAvailableHoursPicker(booking.stationId, selectedDate) { hour ->
+                editTextHour.setText("${hour}:00 - ${hour + 1}:00")
+                editTextHour.tag = hour // Store the actual hour value
             }
         }
         
@@ -665,21 +689,22 @@ class EVOwnerReservationsFragment : Fragment() {
         // Update button
         buttonUpdate.setOnClickListener {
             val date = editTextDate.text.toString().trim()
-            val time = editTextTime.text.toString().trim()
+            val time = editTextHour.text.toString().trim()
+            val selectedHour = editTextHour.tag as? Int
             
             when {
                 date.isEmpty() -> {
                     showError("Please select a date")
                 }
-                time.isEmpty() -> {
-                    showError("Please select a time")
+                time.isEmpty() || selectedHour == null -> {
+                    showError("Please select an available hour slot")
                 }
-                !isValidReservationDateTime(date, time) -> {
-                    showError("Selected date and time must be in the future")
+                !isValidReservationDateTimeWithHour(date, selectedHour) -> {
+                    showError("Selected date and time must be at least 1 hour in advance and within 7 days")
                 }
                 else -> {
                     dialog.dismiss()
-                    updateBooking(booking, date, time)
+                    updateBookingWithHour(booking, date, selectedHour)
                 }
             }
         }
@@ -699,6 +724,7 @@ class EVOwnerReservationsFragment : Fragment() {
                     booking.id,
                     BookingUpdateRequest(
                         reservationDate = formattedDateTime,
+                        reservationHour = 0, // TODO: Update to support hour selection
                         stationId = booking.stationId
                     )
                 )
@@ -711,6 +737,44 @@ class EVOwnerReservationsFragment : Fragment() {
                     loadRecentBookings() // Refresh the list
                 } else {
                     showError("Failed to update booking: ${response.message()}")
+                }
+                
+            } catch (e: Exception) {
+                LoadingManager.dismiss()
+                Log.e("EVOwnerReservations", "Error updating booking", e)
+                showError("Error updating booking: ${e.message}")
+            }
+        }
+    }
+
+    private fun updateBookingWithHour(booking: Booking, newDate: String, newHour: Int) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Updating booking...")
+                
+                val response = apiService.updateBooking(
+                    booking.id,
+                    BookingUpdateRequest(
+                        reservationDate = newDate,
+                        reservationHour = newHour,
+                        stationId = booking.stationId
+                    )
+                )
+                
+                LoadingManager.dismiss()
+                
+                if (response.isSuccessful) {
+                    val stationName = getStationName(booking.stationId)
+                    showSuccess("Booking updated successfully!")
+                    loadRecentBookings() // Refresh the list
+                } else {
+                    val errorMsg = when (response.code()) {
+                        409 -> "Hour slot already fully booked. Please select a different time."
+                        400 -> "Invalid booking update request."
+                        404 -> "Booking not found."
+                        else -> "Failed to update booking: ${response.message()}"
+                    }
+                    showError(errorMsg)
                 }
                 
             } catch (e: Exception) {
@@ -811,11 +875,11 @@ class EVOwnerReservationsFragment : Fragment() {
         
         DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
             val selectedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
+            Log.d("EVOwnerReservations", "Date selected: $selectedDate")
             onDateSelected(selectedDate)
         }, year, month, day).apply {
-            // Set minimum date to tomorrow (to ensure at least 1 hour advance booking)
+            // Set minimum date to today (allow same-day booking if more than 1 hour in advance)
             val minCalendar = Calendar.getInstance()
-            minCalendar.add(Calendar.DAY_OF_YEAR, 1)
             datePicker.minDate = minCalendar.timeInMillis
             
             // Set maximum date to 7 days from now
@@ -879,6 +943,53 @@ class EVOwnerReservationsFragment : Fragment() {
         }
     }
 
+    private fun isValidReservationDateTimeWithHour(date: String, hour: Int): Boolean {
+        try {
+            val reservationDateTime = Calendar.getInstance().apply {
+                val parts = date.split("-")
+                set(Calendar.YEAR, parts[0].toInt())
+                set(Calendar.MONTH, parts[1].toInt() - 1)
+                set(Calendar.DAY_OF_MONTH, parts[2].toInt())
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+            
+            val now = Calendar.getInstance()
+            val oneHourLater = Calendar.getInstance().apply {
+                add(Calendar.HOUR, 1)
+            }
+            
+            val sevenDaysLater = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 7)
+            }
+            
+            Log.d("EVOwnerReservations", "Validating reservation: $date $hour:00")
+            Log.d("EVOwnerReservations", "Current time: ${now.time}")
+            Log.d("EVOwnerReservations", "One hour later: ${oneHourLater.time}")
+            Log.d("EVOwnerReservations", "Reservation time: ${reservationDateTime.time}")
+            Log.d("EVOwnerReservations", "Seven days later: ${sevenDaysLater.time}")
+            
+            // Check if reservation is at least 1 hour in advance
+            if (reservationDateTime.before(oneHourLater)) {
+                Log.d("EVOwnerReservations", "Validation failed: Reservation is not at least 1 hour in advance")
+                return false
+            }
+            
+            // Check if reservation is within 7 days
+            if (reservationDateTime.after(sevenDaysLater)) {
+                Log.d("EVOwnerReservations", "Validation failed: Reservation is more than 7 days in advance")
+                return false
+            }
+            
+            Log.d("EVOwnerReservations", "Validation passed")
+            return true
+        } catch (e: Exception) {
+            Log.e("EVOwnerReservations", "Error validating date time with hour", e)
+            return false
+        }
+    }
+
     private fun showBookingConfirmation(stationName: String, date: String, time: String, onConfirm: () -> Unit) {
         val message = """
             Confirm your reservation details:
@@ -921,6 +1032,96 @@ class EVOwnerReservationsFragment : Fragment() {
         
         binding.buttonCreateReservation.isEnabled = !isLoading
         binding.buttonQuickBookNearby.isEnabled = !isLoading
+    }
+
+    private fun showAvailableHoursPicker(stationId: String, date: String, onHourSelected: (Int) -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                Log.d("EVOwnerReservations", "Loading available hours for station: $stationId, date: $date")
+                LoadingManager.show(requireContext(), "Loading available hours...")
+                
+                val response = apiService.getAvailableHours(stationId, date)
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                
+                Log.d("EVOwnerReservations", "API response code: ${response.code()}")
+                Log.d("EVOwnerReservations", "API response success: ${response.isSuccessful}")
+                
+                if (response.isSuccessful) {
+                    val availableHours = response.body() ?: emptyList()
+                    Log.d("EVOwnerReservations", "Available hours received: $availableHours")
+                    
+                    if (availableHours.isEmpty()) {
+                        Toast.makeText(requireContext(), "No available slots for this date. Please select another date.", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                    
+                    // Create hour selection dialog - simple version like dashboard
+                    val hourOptions = availableHours.map { hour ->
+                        "${hour}:00 - ${hour + 1}:00"
+                    }.toTypedArray()
+                    
+                    Log.d("EVOwnerReservations", "Hour options created: ${hourOptions.contentToString()}")
+                    
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Available Hour Slots")
+                        .setSingleChoiceItems(hourOptions, -1) { dialog, which ->
+                            onHourSelected(availableHours[which])
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                        
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                    Log.e("EVOwnerReservations", "API call failed: ${response.code()} - $errorBody")
+                    Toast.makeText(requireContext(), "Failed to load available hours: ${response.message()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                Log.e("BookingHours", "Error loading available hours", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createBookingWithHour(stationId: String, date: String, hour: Int) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Creating booking...")
+                
+                val userNic = TokenUtils.getCurrentUserNic(requireContext()) ?: throw Exception("User not logged in")
+                
+                val bookingRequest = BookingCreateRequest(
+                    ownerNic = userNic,
+                    stationId = stationId,
+                    reservationDate = date,
+                    reservationHour = hour
+                )
+                
+                val response = apiService.createBooking(bookingRequest)
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                
+                if (response.isSuccessful) {
+                    val booking = response.body()
+                    if (booking != null) {
+                        val stationName = getStationName(stationId)
+                        showBookingSuccessDialog(booking, stationName)
+                        loadRecentBookings() // Refresh recent bookings
+                    } else {
+                        Toast.makeText(requireContext(), "Booking created but no details returned", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Failed to create booking"
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                Log.e("CreateBooking", "Error creating booking", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showError(message: String) {

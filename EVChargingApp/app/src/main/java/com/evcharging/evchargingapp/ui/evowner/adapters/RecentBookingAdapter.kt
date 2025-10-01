@@ -40,7 +40,7 @@ class RecentBookingAdapter(
                 // Set booking details
                 textViewStationName.text = getStationName(booking.stationId)
                 textViewStatus.text = booking.status.uppercase()
-                textViewDateTime.text = DateTimeUtils.formatShort(booking.reservationDate)
+                textViewDateTime.text = DateTimeUtils.formatBookingTimeRangeCompact(booking.reservationDate, booking.reservationHour)
 
                 // Set status color
                 val statusColor = when (booking.status.lowercase()) {

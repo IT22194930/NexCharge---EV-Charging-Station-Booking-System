@@ -963,25 +963,41 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         textViewUserInfo.text = "NIC: ${userNic ?: "Unknown"}"
         
         // Pre-select the station and make it non-editable
-        val stationDisplayName = "⚡ ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} slots available"
+        val stationDisplayName = "⚡ ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} charging slots per hour"
         autoCompleteStation.setText(stationDisplayName)
         autoCompleteStation.isEnabled = false // Disable editing since station is pre-selected
         
+        var selectedDate: String? = null
+        var selectedHour: Int? = null
+        
         // Setup date picker with 7-day limit
         dateEditText.setOnClickListener {
-            showDatePicker { selectedDate ->
-                dateEditText.setText(selectedDate)
+            showDatePicker { date ->
+                selectedDate = date
+                dateEditText.setText(date)
+                // Clear time selection when date changes
+                selectedHour = null
+                timeEditText.setText("")
+               
+            }
+        }
+        
+    
+        
+        // Setup hour picker (replaces time picker)
+        timeEditText.setOnClickListener {
+            if (selectedDate == null) {
+                Toast.makeText(requireContext(), "Please select a date first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            
+            showAvailableHoursPicker(station.id, selectedDate!!) { hour ->
+                selectedHour = hour
+                timeEditText.setText("${hour}:00 - ${hour + 1}:00")
             }
         }
         
        
-        
-        // Setup time picker
-        timeEditText.setOnClickListener {
-            showTimePicker { selectedTime ->
-                timeEditText.setText(selectedTime)
-            }
-        }
         
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
@@ -994,28 +1010,20 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         }
         
         buttonCreate.setOnClickListener {
-            val date = dateEditText.text?.toString()?.trim()
-            val time = timeEditText.text?.toString()?.trim()
-            
-            if (date.isNullOrEmpty()) {
+            if (selectedDate.isNullOrEmpty()) {
                 Toast.makeText(requireContext(), "Please select a date", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            if (time.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Please select a time", Toast.LENGTH_SHORT).show()
+            if (selectedHour == null) {
+                Toast.makeText(requireContext(), "Please select an available hour slot", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            // Validate the selected date and time
-            if (isValidReservationDateTime(date, time)) {
-                dialog.dismiss()
-                
-                // Create the booking with selected date and time
-                createBookingWithDateTime(station, date, time)
-            } else {
-                Toast.makeText(requireContext(), "Please select a future date and time", Toast.LENGTH_LONG).show()
-            }
+            dialog.dismiss()
+            
+            // Create the booking with selected date and hour
+            createBookingWithHour(station, selectedDate!!, selectedHour!!)
         }
         
         dialog.show()
@@ -1104,7 +1112,8 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                 val request = BookingCreateRequest(
                     ownerNic = userNic,
                     stationId = station.id,
-                    reservationDate = dateTime
+                    reservationDate = dateTime,
+                    reservationHour = 0 // TODO: This method should be removed/updated
                 )
                 
                 val response = apiService.createBooking(request)
@@ -1127,11 +1136,93 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
+
+    private fun showAvailableHoursPicker(stationId: String, date: String, onHourSelected: (Int) -> Unit) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Loading available hours...")
+                
+                val response = apiService.getAvailableHours(stationId, date)
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                
+                if (response.isSuccessful) {
+                    val availableHours = response.body() ?: emptyList()
+                    
+                    if (availableHours.isEmpty()) {
+                        Toast.makeText(requireContext(), "No available slots for this date. Please select another date.", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                    
+                    // Create hour selection dialog
+                    val hourOptions = availableHours.map { hour ->
+                        "${hour}:00 - ${hour + 1}:00"
+                    }.toTypedArray()
+                    
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Available Hour Slots")
+                        .setSingleChoiceItems(hourOptions, -1) { dialog, which ->
+                            onHourSelected(availableHours[which])
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                        
+                } else {
+                    Toast.makeText(requireContext(), "Failed to load available hours", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                Log.e("BookingHours", "Error loading available hours", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createBookingWithHour(station: Station, date: String, hour: Int) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                LoadingManager.show(requireContext(), "Creating booking...")
+                
+                val userNic = TokenUtils.getCurrentUserNic(requireContext()) ?: throw Exception("User not logged in")
+                
+                val bookingRequest = BookingCreateRequest(
+                    ownerNic = userNic,
+                    stationId = station.id,
+                    reservationDate = date,
+                    reservationHour = hour
+                )
+                
+                val response = apiService.createBooking(bookingRequest)
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                
+                if (response.isSuccessful) {
+                    val booking = response.body()
+                    if (booking != null) {
+                        showBookingSuccessDialog(booking, station.name)
+                    } else {
+                        Toast.makeText(requireContext(), "Booking created but no details returned", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Failed to create booking"
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                if (LoadingManager.isShowing()) LoadingManager.dismiss()
+                Log.e("CreateBooking", "Error creating booking", e)
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun showBookingSuccessDialog(booking: Booking, stationName: String) {
+        val hourText = "${booking.reservationHour}:00 - ${booking.reservationHour + 1}:00"
         val message = "🎉 Booking Created Successfully!\n\n" +
                 "📋 Booking ID: ${booking.id}\n" +
                 "⚡ Station: $stationName\n" +
-                "📅 Date & Time: ${booking.reservationDate}\n" +
+                "📅 Date: ${booking.reservationDate}\n" +
+                "⏰ Time Slot: $hourText\n" +
                 "📊 Status: ${booking.status}\n\n" +
                 "You can view and manage this booking in the Reservations tab."
         

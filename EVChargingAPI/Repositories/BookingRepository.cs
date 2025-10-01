@@ -31,6 +31,33 @@ namespace EVChargingAPI.Repositories
             await _bookings.DeleteOneAsync(x => x.Id == id);
 
         public async Task<List<Booking>> GetAllAsync() => await _bookings.Find(_ => true).ToListAsync();
+
+        public async Task<int> GetBookedCountForHourAsync(string stationId, DateTime date, int hour)
+        {
+            var startOfDay = date.Date;
+            var endOfDay = date.Date.AddDays(1);
+
+            var count = await _bookings.CountDocumentsAsync(x =>
+                x.StationId == stationId &&
+                x.ReservationDate >= startOfDay &&
+                x.ReservationDate < endOfDay &&
+                x.ReservationHour == hour &&
+                x.Status != "Cancelled");
+
+            return (int)count;
+        }
+
+        public async Task<List<Booking>> GetBookingsForDateAsync(string stationId, DateTime date)
+        {
+            var startOfDay = date.Date;
+            var endOfDay = date.Date.AddDays(1);
+
+            return await _bookings.Find(x =>
+                x.StationId == stationId &&
+                x.ReservationDate >= startOfDay &&
+                x.ReservationDate < endOfDay &&
+                x.Status != "Cancelled").ToListAsync();
+        }
     }
 }
 

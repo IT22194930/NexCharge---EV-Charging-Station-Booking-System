@@ -29,7 +29,8 @@ namespace EVChargingAPI.Controllers
                 {
                     OwnerNIC = dto.OwnerNic,
                     StationId = dto.StationId,
-                    ReservationDate = dto.ReservationDate
+                    ReservationDate = dto.ReservationDate,
+                    ReservationHour = dto.ReservationHour
                 };
                 var created = await _service.CreateAsync(b);
                 return Ok(created);
@@ -43,7 +44,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
-                var updated = await _service.UpdateAsync(id, new Booking { ReservationDate = dto.ReservationDate, StationId = dto.StationId });
+                var updated = await _service.UpdateAsync(id, new Booking { ReservationDate = dto.ReservationDate, ReservationHour = dto.ReservationHour, StationId = dto.StationId });
                 return Ok(updated);
             }
             catch (Exception ex) { return BadRequest(ex.Message); }
@@ -99,6 +100,30 @@ namespace EVChargingAPI.Controllers
         {
             var list = await _repo.GetAllAsync();
             return Ok(list);
+        }
+
+        [HttpGet("availability/{stationId}")]
+        [Authorize(Roles = "EVOwner,Operator,Backoffice")]
+        public async Task<IActionResult> GetStationAvailability(string stationId, [FromQuery] DateTime date)
+        {
+            try
+            {
+                var availability = await _service.GetStationAvailabilityAsync(stationId, date);
+                return Ok(availability);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpGet("available-hours/{stationId}")]
+        [Authorize(Roles = "EVOwner,Operator,Backoffice")]
+        public async Task<IActionResult> GetAvailableHours(string stationId, [FromQuery] DateTime date)
+        {
+            try
+            {
+                var availableHours = await _service.GetAvailableHoursAsync(stationId, date);
+                return Ok(availableHours);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
     }
 }
