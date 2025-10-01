@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { bookingAPI } from "../../api/bookingService";
 
 export default function CreateBookingModal({
   visible,
@@ -11,6 +12,48 @@ export default function CreateBookingModal({
   getMinDate,
   getMaxDate
 }) {
+  const [availableHours, setAvailableHours] = useState([]);
+  const [loadingHours, setLoadingHours] = useState(false);
+  const [selectedStation, setSelectedStation] = useState(null);
+
+  // Load available hours when station and date change
+  useEffect(() => {
+    const loadHours = async () => {
+      if (form.stationId && form.reservationDate && form.stationId !== '' && form.reservationDate !== '') {
+        try {
+          setLoadingHours(true);
+          const hours = await bookingAPI.getAvailableHours(form.stationId, form.reservationDate);
+          setAvailableHours(hours);
+          
+          // Reset selected hour if it's no longer available
+          if (!hours.includes(form.reservationHour)) {
+            setForm(prev => ({ ...prev, reservationHour: hours.length > 0 ? hours[0] : 0 }));
+          }
+        } catch (error) {
+          console.error('Error loading available hours:', error);
+          setAvailableHours([]);
+        } finally {
+          setLoadingHours(false);
+        }
+      } else {
+        setAvailableHours([]);
+      }
+    };
+    
+    loadHours();
+  }, [form.stationId, form.reservationDate, form.reservationHour, setForm]);
+
+  const handleStationChange = (e) => {
+    const stationId = e.target.value;
+    const station = stations.find(s => s.id === stationId);
+    setSelectedStation(station);
+    setForm(prev => ({ ...prev, stationId, reservationHour: 0 }));
+  };
+
+  const handleDateChange = (e) => {
+    setForm(prev => ({ ...prev, reservationDate: e.target.value, reservationHour: 0 }));
+  };
+
   if (!visible) return null;
   return (
     <div
@@ -149,9 +192,7 @@ export default function CreateBookingModal({
                 <div className="relative">
                   <select
                     value={form.stationId}
-                    onChange={(e) =>
-                      setForm({ ...form, stationId: e.target.value })
-                    }
+                    onChange={handleStationChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
                     required
                   >
@@ -197,7 +238,7 @@ export default function CreateBookingModal({
                 )}
               </div>
 
-              {/* Reservation Date & Time */}
+              {/* Reservation Date */}
               <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                   <svg
@@ -211,19 +252,71 @@ export default function CreateBookingModal({
                       clipRule="evenodd"
                     />
                   </svg>
-                  Reservation Date & Time
+                  Reservation Date
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   value={form.reservationDate}
-                  onChange={(e) =>
-                    setForm({ ...form, reservationDate: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  onChange={handleDateChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   min={getMinDate()}
                   max={getMaxDate()}
+                  disabled={!form.stationId}
                   required
                 />
+                {!form.stationId && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Please select a charging station first
+                  </p>
+                )}
+              </div>
+
+              {/* Reservation Hour */}
+              <div>
+                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                  <svg
+                    className="w-4 h-4 mr-2 text-gray-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Time Slot
+                </label>
+                <select
+                  value={form.reservationHour}
+                  onChange={(e) =>
+                    setForm({ ...form, reservationHour: parseInt(e.target.value) })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  required
+                  disabled={!form.stationId || !form.reservationDate || loadingHours}
+                >
+                  {!form.stationId ? (
+                    <option value="">Select a charging station first</option>
+                  ) : !form.reservationDate ? (
+                    <option value="">Select a date first</option>
+                  ) : loadingHours ? (
+                    <option value="">Loading available hours...</option>
+                  ) : availableHours.length === 0 ? (
+                    <option value="">No available slots for this date</option>
+                  ) : (
+                    <>
+                      <option value="" disabled>
+                        Choose an available time slot
+                      </option>
+                      {availableHours.map((hour) => (
+                        <option key={hour} value={hour}>
+                          {hour.toString().padStart(2, '0')}:00 - {(hour + 1).toString().padStart(2, '0')}:00
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
                 <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-700 flex items-center">
                     <svg
@@ -238,9 +331,7 @@ export default function CreateBookingModal({
                       />
                     </svg>
                     <span>
-                      <strong>Booking Rules:</strong> Reservations must be
-                      made at least 1 hour in advance and within 7 days from
-                      now.
+                      <strong>Booking Rules:</strong> 1) Select charging station 2) Select date (within 7 days) 3) Choose available time slot. Only available hours are shown.
                     </span>
                   </p>
                 </div>

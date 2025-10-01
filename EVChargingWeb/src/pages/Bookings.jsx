@@ -6,6 +6,7 @@ import UpdateBookingModal from "../components/bookings/UpdateBookingModal";
 import BookingTable from "../components/bookings/BookingTable";
 import DeleteConfirmDialog from "../components/bookings/DeleteConfirmDialog";
 import Pagination from "../components/Pagination";
+import { extractDateOnly } from "../utils/dateUtils";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
@@ -24,6 +25,7 @@ export default function Bookings() {
     ownerNic: "",
     stationId: "",
     reservationDate: "",
+    reservationHour: 0,
   });
   const role = localStorage.getItem("role");
   
@@ -170,6 +172,7 @@ export default function Bookings() {
     try {
       await api.put(`/bookings/${currentBooking.id}`, {
         reservationDate: form.reservationDate,
+        reservationHour: form.reservationHour,
         stationId: form.stationId,
       });
       resetForm();
@@ -246,17 +249,14 @@ export default function Bookings() {
   const openUpdateForm = (booking) => {
     setCurrentBooking(booking);
     
-    // Format date properly for datetime-local input
-    const bookingDate = new Date(booking.reservationDate);
-    // Adjust for timezone to prevent shifting
-    const timezoneOffset = bookingDate.getTimezoneOffset() * 60000;
-    const localTime = new Date(bookingDate.getTime() - timezoneOffset);
-    const formattedDate = localTime.toISOString().slice(0, 16);
+    // Extract just the date part for the date input
+    const dateOnly = extractDateOnly(booking.reservationDate);
     
     setForm({
       ownerNic: booking.ownerNIC,
       stationId: booking.stationId,
-      reservationDate: formattedDate,
+      reservationDate: dateOnly,
+      reservationHour: booking.reservationHour || 0,
     });
     setShowUpdateForm(true);
   };
@@ -266,6 +266,7 @@ export default function Bookings() {
       ownerNic: "",
       stationId: "",
       reservationDate: "",
+      reservationHour: 0,
     });
   };
 
@@ -291,15 +292,14 @@ export default function Bookings() {
 
   // Set minimum and maximum dates for date input
   const getMinDate = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1); // At least 1 hour from now
-    return now.toISOString().slice(0, 16);
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Today's date
   };
 
   const getMaxDate = () => {
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return sevenDaysFromNow.toISOString().slice(0, 16);
+    const today = new Date();
+    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return sevenDaysFromNow.toISOString().split('T')[0]; // 7 days from today
   };
 
   useEffect(() => {

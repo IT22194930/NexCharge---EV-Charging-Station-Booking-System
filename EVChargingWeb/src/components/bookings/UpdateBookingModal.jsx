@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { formatBookingTimeRange } from "../../utils/dateUtils";
+import { bookingAPI } from "../../api/bookingService";
 
 export default function UpdateBookingModal({
   visible,
@@ -12,6 +14,40 @@ export default function UpdateBookingModal({
   getMinDate,
   getMaxDate
 }) {
+  const [availableHours, setAvailableHours] = useState([]);
+  const [loadingHours, setLoadingHours] = useState(false);
+
+  // Load available hours when station and date change
+  useEffect(() => {
+    const loadHours = async () => {
+      if (form.stationId && form.reservationDate && form.stationId !== '' && form.reservationDate !== '') {
+        try {
+          setLoadingHours(true);
+          const hours = await bookingAPI.getAvailableHours(form.stationId, form.reservationDate);
+          setAvailableHours(hours);
+          
+          // Reset selected hour if it's no longer available
+          if (!hours.includes(form.reservationHour)) {
+            setForm(prev => ({ ...prev, reservationHour: hours.length > 0 ? hours[0] : 0 }));
+          }
+        } catch (error) {
+          console.error('Error loading available hours:', error);
+          setAvailableHours([]);
+        } finally {
+          setLoadingHours(false);
+        }
+      } else {
+        setAvailableHours([]);
+      }
+    };
+    
+    loadHours();
+  }, [form.stationId, form.reservationDate, form.reservationHour, setForm]);
+
+  const handleDateChange = (e) => {
+    setForm(prev => ({ ...prev, reservationDate: e.target.value, reservationHour: 0 }));
+  };
+
   if (!visible) return null;
   return (
     <div
@@ -153,23 +189,13 @@ export default function UpdateBookingModal({
                         />
                       </svg>
                       <span className="font-medium text-gray-600">
-                        Date
+                        Time Slot
                       </span>
                     </div>
                     <div className="space-y-0">
                       <div className="flex items-baseline space-x-2.5">
                         <p className="text-sm font-semibold text-gray-900">
-                          {new Date(
-                            currentBooking?.reservationDate
-                          ).toLocaleDateString()}
-                        </p>
-                        <p className="text-xs text-gray-600 -mt-0.5">
-                          {new Date(
-                            currentBooking?.reservationDate
-                          ).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {formatBookingTimeRange(currentBooking?.reservationDate, currentBooking?.reservationHour || 0)}
                         </p>
                       </div>
                     </div>
@@ -317,19 +343,71 @@ export default function UpdateBookingModal({
                       clipRule="evenodd"
                     />
                   </svg>
-                  New Reservation Date & Time
+                  New Reservation Date
                 </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={form.reservationDate}
-                    onChange={(e) =>
-                      setForm({ ...form, reservationDate: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                    onChange={handleDateChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                     min={getMinDate()}
                     max={getMaxDate()}
+                    disabled={!form.stationId}
                     required
                   />
+                  {!form.stationId && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Please select a charging station first
+                    </p>
+                  )}
+                </div>
+
+                {/* New Time Slot */}
+                <div>
+                <label className="flex items-center text-xs font-medium text-gray-700 mb-1">
+                  <svg
+                    className="w-3 h-3 mr-1 text-gray-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  New Time Slot
+                </label>
+                  <select
+                    value={form.reservationHour}
+                    onChange={(e) =>
+                      setForm({ ...form, reservationHour: parseInt(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    required
+                    disabled={!form.stationId || !form.reservationDate || loadingHours}
+                  >
+                    {!form.stationId ? (
+                      <option value="">Select a charging station first</option>
+                    ) : !form.reservationDate ? (
+                      <option value="">Select a date first</option>
+                    ) : loadingHours ? (
+                      <option value="">Loading available hours...</option>
+                    ) : availableHours.length === 0 ? (
+                      <option value="">No available slots for this date</option>
+                    ) : (
+                      <>
+                        <option value="" disabled>
+                          Choose an available time slot
+                        </option>
+                        {availableHours.map((hour) => (
+                          <option key={hour} value={hour}>
+                            {hour.toString().padStart(2, '0')}:00 - {(hour + 1).toString().padStart(2, '0')}:00
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </select>
                   <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
                     <p className="text-xs text-amber-700 flex items-center">
                       <svg
@@ -344,9 +422,8 @@ export default function UpdateBookingModal({
                         />
                       </svg>
                       <span>
-                        <strong>Update Rules:</strong> Changes must be made at
-                        least 12 hours before the current reservation time and
-                        within 7 days from now.
+                        <strong>Update Rules:</strong> Select station first, then date (within 7 days), then time slot. Only available time slots are shown. Changes must be made at
+                        least 12 hours before the current reservation time.
                       </span>
                     </p>
                   </div>

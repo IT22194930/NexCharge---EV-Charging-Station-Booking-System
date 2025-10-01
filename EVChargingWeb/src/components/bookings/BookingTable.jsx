@@ -1,4 +1,5 @@
 import React from "react";
+import { formatBookingTimeRange } from "../../utils/dateUtils";
 
 export default function BookingTable({
   bookings,
@@ -32,7 +33,7 @@ export default function BookingTable({
               Station
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Date & Time
+              Time Slot
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="flex items-center space-x-3">
@@ -77,7 +78,7 @@ export default function BookingTable({
                 {getStationName(booking.stationId)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {new Date(booking.reservationDate).toLocaleString()}
+                {formatBookingTimeRange(booking.reservationDate, booking.reservationHour || 0)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <span

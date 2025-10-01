@@ -41,14 +41,13 @@ export default function OwnerStationsMap() {
 
   // Reuse min/max date logic consistent with existing Bookings page
   const getMinDate = useCallback(() => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1);
-    return now.toISOString().slice(0,16);
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Today's date
   }, []);
   const getMaxDate = useCallback(() => {
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7*24*60*60*1000);
-    return sevenDaysFromNow.toISOString().slice(0,16);
+    const today = new Date();
+    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return sevenDaysFromNow.toISOString().split('T')[0]; // 7 days from today
   }, []);
 
   const getOwnerNic = useCallback(() => {
