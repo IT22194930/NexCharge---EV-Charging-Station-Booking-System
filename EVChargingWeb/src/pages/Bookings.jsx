@@ -28,21 +28,21 @@ export default function Bookings() {
     reservationHour: 0,
   });
   const role = localStorage.getItem("role");
-  
+
   // Get current user NIC from token
   const getCurrentUserNic = () => {
     try {
       if (role === "EVOwner") {
-        return JSON.parse(
-          atob(localStorage.getItem("token").split(".")[1])
-        )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+        return JSON.parse(atob(localStorage.getItem("token").split(".")[1]))[
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        ];
       }
     } catch (err) {
       console.error("Error extracting user NIC:", err);
     }
     return null;
   };
-  
+
   const userNic = getCurrentUserNic();
 
   const loadBookings = useCallback(async () => {
@@ -69,7 +69,9 @@ export default function Bookings() {
     if (filter === "All") {
       setFilteredBookings(allBookings);
     } else {
-      const filtered = allBookings.filter(booking => booking.status === filter);
+      const filtered = allBookings.filter(
+        (booking) => booking.status === filter
+      );
       setFilteredBookings(filtered);
     }
   };
@@ -248,10 +250,10 @@ export default function Bookings() {
 
   const openUpdateForm = (booking) => {
     setCurrentBooking(booking);
-    
+
     // Extract just the date part for the date input
     const dateOnly = extractDateOnly(booking.reservationDate);
-    
+
     setForm({
       ownerNic: booking.ownerNIC,
       stationId: booking.stationId,
@@ -293,13 +295,15 @@ export default function Bookings() {
   // Set minimum and maximum dates for date input
   const getMinDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Today's date
+    return today.toISOString().split("T")[0]; // Today's date
   };
 
   const getMaxDate = () => {
     const today = new Date();
-    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return sevenDaysFromNow.toISOString().split('T')[0]; // 7 days from today
+    const sevenDaysFromNow = new Date(
+      today.getTime() + 7 * 24 * 60 * 60 * 1000
+    );
+    return sevenDaysFromNow.toISOString().split("T")[0]; // 7 days from today
   };
 
   useEffect(() => {
@@ -390,7 +394,7 @@ export default function Bookings() {
         statusFilter={statusFilter}
         handleStatusFilterChange={handleStatusFilterChange}
       />
-      
+
       {/* Pagination Component */}
       {filteredBookings.length > 0 && (
         <Pagination
@@ -401,7 +405,7 @@ export default function Bookings() {
           totalItems={filteredBookings.length}
         />
       )}
-      
+
       <DeleteConfirmDialog
         visible={showDeleteConfirm}
         cancelDelete={cancelDelete}

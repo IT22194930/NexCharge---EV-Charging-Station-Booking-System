@@ -8,14 +8,14 @@
  */
 export const formatBookingTimeRange = (dateString, hour) => {
   const date = new Date(dateString);
-  const options = { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  const options = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   };
-  const formattedDate = date.toLocaleDateString('en-US', options);
-  const startHour = hour.toString().padStart(2, '0');
-  const endHour = ((hour + 1) % 24).toString().padStart(2, '0');
+  const formattedDate = date.toLocaleDateString("en-US", options);
+  const startHour = hour.toString().padStart(2, "0");
+  const endHour = ((hour + 1) % 24).toString().padStart(2, "0");
   return `${formattedDate} - ${startHour}:00 to ${endHour}:00`;
 };
 
@@ -25,8 +25,8 @@ export const formatBookingTimeRange = (dateString, hour) => {
  * @returns {string} Compact time range
  */
 export const formatBookingTimeRangeCompact = (hour) => {
-  const startHour = hour.toString().padStart(2, '0');
-  const endHour = ((hour + 1) % 24).toString().padStart(2, '0');
+  const startHour = hour.toString().padStart(2, "0");
+  const endHour = ((hour + 1) % 24).toString().padStart(2, "0");
   return `${startHour}:00-${endHour}:00`;
 };
 
@@ -37,7 +37,7 @@ export const formatBookingTimeRangeCompact = (hour) => {
  */
 export const extractDateOnly = (dateString) => {
   const date = new Date(dateString);
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 };
 
 /**
@@ -47,11 +47,11 @@ export const extractDateOnly = (dateString) => {
 export const getHourOptions = () => {
   const hours = [];
   for (let i = 0; i < 24; i++) {
-    const hourStr = i.toString().padStart(2, '0');
-    const nextHourStr = ((i + 1) % 24).toString().padStart(2, '0');
+    const hourStr = i.toString().padStart(2, "0");
+    const nextHourStr = ((i + 1) % 24).toString().padStart(2, "0");
     hours.push({
       value: i,
-      label: `${hourStr}:00 - ${nextHourStr}:00`
+      label: `${hourStr}:00 - ${nextHourStr}:00`,
     });
   }
   return hours;
@@ -65,8 +65,8 @@ export const getHourOptions = () => {
 export const parseDateTimeToDateAndHour = (datetimeString) => {
   const datetime = new Date(datetimeString);
   return {
-    date: datetime.toISOString().split('T')[0],
-    hour: datetime.getHours()
+    date: datetime.toISOString().split("T")[0],
+    hour: datetime.getHours(),
   };
 };
 

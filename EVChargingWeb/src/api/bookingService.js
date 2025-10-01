@@ -1,22 +1,26 @@
-import api from './axios';
+import api from "./axios";
 
 // Booking API endpoints
 export const bookingAPI = {
   // Get available hours for a specific station and date
   getAvailableHours: async (stationId, date) => {
-    const response = await api.get(`/bookings/available-hours/${stationId}?date=${date}`);
+    const response = await api.get(
+      `/bookings/available-hours/${stationId}?date=${date}`
+    );
     return response.data;
   },
 
   // Get station availability for a specific date
   getStationAvailability: async (stationId, date) => {
-    const response = await api.get(`/bookings/availability/${stationId}?date=${date}`);
+    const response = await api.get(
+      `/bookings/availability/${stationId}?date=${date}`
+    );
     return response.data;
   },
 
   // Create a new booking
   createBooking: async (bookingData) => {
-    const response = await api.post('/bookings', bookingData);
+    const response = await api.post("/bookings", bookingData);
     return response.data;
   },
 
@@ -34,7 +38,7 @@ export const bookingAPI = {
 
   // Get all bookings (admin/operator)
   getAllBookings: async () => {
-    const response = await api.get('/bookings');
+    const response = await api.get("/bookings");
     return response.data;
   },
 
@@ -54,14 +58,14 @@ export const bookingAPI = {
   deleteBooking: async (bookingId) => {
     const response = await api.delete(`/bookings/${bookingId}`);
     return response.data;
-  }
+  },
 };
 
 // Station API endpoints
 export const stationAPI = {
   // Get all stations
   getAllStations: async () => {
-    const response = await api.get('/stations');
+    const response = await api.get("/stations");
     return response.data;
   },
 
@@ -69,5 +73,5 @@ export const stationAPI = {
   getStationById: async (stationId) => {
     const response = await api.get(`/stations/${stationId}`);
     return response.data;
-  }
+  },
 };

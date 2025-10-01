@@ -12,7 +12,7 @@ export default function UpdateBookingModal({
   currentBooking,
   getStationName,
   getMinDate,
-  getMaxDate
+  getMaxDate,
 }) {
   const [availableHours, setAvailableHours] = useState([]);
   const [loadingHours, setLoadingHours] = useState(false);
@@ -20,18 +20,29 @@ export default function UpdateBookingModal({
   // Load available hours when station and date change
   useEffect(() => {
     const loadHours = async () => {
-      if (form.stationId && form.reservationDate && form.stationId !== '' && form.reservationDate !== '') {
+      if (
+        form.stationId &&
+        form.reservationDate &&
+        form.stationId !== "" &&
+        form.reservationDate !== ""
+      ) {
         try {
           setLoadingHours(true);
-          const hours = await bookingAPI.getAvailableHours(form.stationId, form.reservationDate);
+          const hours = await bookingAPI.getAvailableHours(
+            form.stationId,
+            form.reservationDate
+          );
           setAvailableHours(hours);
-          
+
           // Reset selected hour if it's no longer available
           if (!hours.includes(form.reservationHour)) {
-            setForm(prev => ({ ...prev, reservationHour: hours.length > 0 ? hours[0] : 0 }));
+            setForm((prev) => ({
+              ...prev,
+              reservationHour: hours.length > 0 ? hours[0] : 0,
+            }));
           }
         } catch (error) {
-          console.error('Error loading available hours:', error);
+          console.error("Error loading available hours:", error);
           setAvailableHours([]);
         } finally {
           setLoadingHours(false);
@@ -40,12 +51,16 @@ export default function UpdateBookingModal({
         setAvailableHours([]);
       }
     };
-    
+
     loadHours();
   }, [form.stationId, form.reservationDate, form.reservationHour, setForm]);
 
   const handleDateChange = (e) => {
-    setForm(prev => ({ ...prev, reservationDate: e.target.value, reservationHour: 0 }));
+    setForm((prev) => ({
+      ...prev,
+      reservationDate: e.target.value,
+      reservationHour: 0,
+    }));
   };
 
   if (!visible) return null;
@@ -69,9 +84,7 @@ export default function UpdateBookingModal({
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
-                  Update Booking
-                </h2>
+                <h2 className="text-lg font-bold text-white">Update Booking</h2>
                 <p className="text-blue-100 text-xs">
                   Modify your reservation details
                 </p>
@@ -81,11 +94,7 @@ export default function UpdateBookingModal({
               onClick={closeModals}
               className="text-white/80 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-all duration-200"
             >
-              <svg
-                className="w-4 h-4"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -146,9 +155,7 @@ export default function UpdateBookingModal({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="font-medium text-gray-600">
-                        Owner
-                      </span>
+                      <span className="font-medium text-gray-600">Owner</span>
                     </div>
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {currentBooking?.ownerNIC}
@@ -165,9 +172,7 @@ export default function UpdateBookingModal({
                       >
                         <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                       </svg>
-                      <span className="font-medium text-gray-600">
-                        Station
-                      </span>
+                      <span className="font-medium text-gray-600">Station</span>
                     </div>
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {getStationName(currentBooking?.stationId)}
@@ -195,7 +200,10 @@ export default function UpdateBookingModal({
                     <div className="space-y-0">
                       <div className="flex items-baseline space-x-2.5">
                         <p className="text-sm font-semibold text-gray-900">
-                          {formatBookingTimeRange(currentBooking?.reservationDate, currentBooking?.reservationHour || 0)}
+                          {formatBookingTimeRange(
+                            currentBooking?.reservationDate,
+                            currentBooking?.reservationHour || 0
+                          )}
                         </p>
                       </div>
                     </div>
@@ -215,9 +223,7 @@ export default function UpdateBookingModal({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="font-medium text-gray-600">
-                        Status
-                      </span>
+                      <span className="font-medium text-gray-600">Status</span>
                     </div>
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -275,9 +281,7 @@ export default function UpdateBookingModal({
                     <p className="text-sm font-medium text-gray-800">
                       {form.ownerNic}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Cannot be modified
-                    </p>
+                    <p className="text-xs text-gray-500">Cannot be modified</p>
                   </div>
                 </div>
               </div>
@@ -308,8 +312,8 @@ export default function UpdateBookingModal({
                     </option>
                     {stations.map((station) => (
                       <option key={station.id} value={station.id}>
-                        🔌 {station.name} - {station.location} (
-                        {station.type}, {station.availableSlots} slots)
+                        🔌 {station.name} - {station.location} ({station.type},{" "}
+                        {station.availableSlots} slots)
                       </option>
                     ))}
                   </select>
@@ -345,25 +349,25 @@ export default function UpdateBookingModal({
                   </svg>
                   New Reservation Date
                 </label>
-                  <input
-                    type="date"
-                    value={form.reservationDate}
-                    onChange={handleDateChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    min={getMinDate()}
-                    max={getMaxDate()}
-                    disabled={!form.stationId}
-                    required
-                  />
-                  {!form.stationId && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Please select a charging station first
-                    </p>
-                  )}
-                </div>
+                <input
+                  type="date"
+                  value={form.reservationDate}
+                  onChange={handleDateChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  min={getMinDate()}
+                  max={getMaxDate()}
+                  disabled={!form.stationId}
+                  required
+                />
+                {!form.stationId && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Please select a charging station first
+                  </p>
+                )}
+              </div>
 
-                {/* New Time Slot */}
-                <div>
+              {/* New Time Slot */}
+              <div>
                 <label className="flex items-center text-xs font-medium text-gray-700 mb-1">
                   <svg
                     className="w-3 h-3 mr-1 text-gray-500"
@@ -378,59 +382,67 @@ export default function UpdateBookingModal({
                   </svg>
                   New Time Slot
                 </label>
-                  <select
-                    value={form.reservationHour}
-                    onChange={(e) =>
-                      setForm({ ...form, reservationHour: parseInt(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    required
-                    disabled={!form.stationId || !form.reservationDate || loadingHours}
-                  >
-                    {!form.stationId ? (
-                      <option value="">Select a charging station first</option>
-                    ) : !form.reservationDate ? (
-                      <option value="">Select a date first</option>
-                    ) : loadingHours ? (
-                      <option value="">Loading available hours...</option>
-                    ) : availableHours.length === 0 ? (
-                      <option value="">No available slots for this date</option>
-                    ) : (
-                      <>
-                        <option value="" disabled>
-                          Choose an available time slot
+                <select
+                  value={form.reservationHour}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      reservationHour: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  required
+                  disabled={
+                    !form.stationId || !form.reservationDate || loadingHours
+                  }
+                >
+                  {!form.stationId ? (
+                    <option value="">Select a charging station first</option>
+                  ) : !form.reservationDate ? (
+                    <option value="">Select a date first</option>
+                  ) : loadingHours ? (
+                    <option value="">Loading available hours...</option>
+                  ) : availableHours.length === 0 ? (
+                    <option value="">No available slots for this date</option>
+                  ) : (
+                    <>
+                      <option value="" disabled>
+                        Choose an available time slot
+                      </option>
+                      {availableHours.map((hour) => (
+                        <option key={hour} value={hour}>
+                          {hour.toString().padStart(2, "0")}:00 -{" "}
+                          {(hour + 1).toString().padStart(2, "0")}:00
                         </option>
-                        {availableHours.map((hour) => (
-                          <option key={hour} value={hour}>
-                            {hour.toString().padStart(2, '0')}:00 - {(hour + 1).toString().padStart(2, '0')}:00
-                          </option>
-                        ))}
-                      </>
-                    )}
-                  </select>
-                  <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
-                    <p className="text-xs text-amber-700 flex items-center">
-                      <svg
-                        className="w-3 h-3 mr-1 text-amber-500 flex-shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span>
-                        <strong>Update Rules:</strong> Select station first, then date (within 7 days), then time slot. Only available time slots are shown. Changes must be made at
-                        least 12 hours before the current reservation time.
-                      </span>
-                    </p>
-                  </div>
+                      ))}
+                    </>
+                  )}
+                </select>
+                <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-xs text-amber-700 flex items-center">
+                    <svg
+                      className="w-3 h-3 mr-1 text-amber-500 flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span>
+                      <strong>Update Rules:</strong> Select station first, then
+                      date (within 7 days), then time slot. Only available time
+                      slots are shown. Changes must be made at least 12 hours
+                      before the current reservation time.
+                    </span>
+                  </p>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
+        </div>
 
         {/* Action Buttons */}
         <div className="p-4 border-t border-gray-200 flex-shrink-0">
