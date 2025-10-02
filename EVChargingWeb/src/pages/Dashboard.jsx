@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import StatsCardSkeleton from "../components/StatsCardSkeleton";
 import OwnerStationsMap from "../components/OwnerStationsMap";
+import BackOfficeStationsMap from "../components/BackOfficeStationsMap";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -206,6 +207,11 @@ export default function Dashboard() {
       {role === "EVOwner" && (
         <div className="mt-8">
           <OwnerStationsMap />
+        </div>
+      )}
+      {role === "Backoffice" && (
+        <div className="mt-8">
+          <BackOfficeStationsMap />
         </div>
       )}
     </div>
