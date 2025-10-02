@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/nexcharge_background_start">
+    android:background="@android:color/transparent">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
@@ -41,7 +41,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Update Booking"
+                    android:text="Update Booking Slot"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/white" />
@@ -85,7 +85,7 @@
                         android:id="@+id/textViewCurrentDateTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Date &amp; Time: Loading..."
+                        android:text="Time Slot: Loading..."
                         android:textSize="14sp"
                         android:textColor="@color/nexcharge_text_secondary"
                         android:layout_marginBottom="4dp" />
@@ -109,7 +109,7 @@
                 android:hint="Select Date"
                 android:layout_marginBottom="16dp"
                 app:startIconDrawable="@android:drawable/ic_dialog_info"
-                app:helperText="Choose your preferred date"
+                app:helperText="Choose your preferred charging date"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -122,18 +122,18 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Time Selection -->
+            <!-- Hour Slot Selection -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Select Time"
+                android:hint="Select Hour Slot"
                 android:layout_marginBottom="20dp"
                 app:startIconDrawable="@android:drawable/ic_dialog_info"
-                app:helperText="Choose your preferred time slot"
+                app:helperText="Choose from available 1-hour charging slots"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextTime"
+                    android:id="@+id/editTextHour"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:focusable="false"

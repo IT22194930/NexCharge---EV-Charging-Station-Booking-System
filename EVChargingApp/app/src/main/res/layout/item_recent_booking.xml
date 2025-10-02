@@ -64,7 +64,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:maxLines="1"
-                    android:text="2024-01-15"
+                    android:text="Booking date and time"
                     android:textColor="@color/nexcharge_text_secondary"
                     android:textSize="14sp" />
 

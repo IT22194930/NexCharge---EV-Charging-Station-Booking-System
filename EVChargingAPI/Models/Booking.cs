@@ -20,6 +20,9 @@ namespace EVChargingAPI.Models
         [BsonElement("reservationDate")]
         public DateTime ReservationDate { get; set; }
 
+        [BsonElement("reservationHour")]
+        public int ReservationHour { get; set; } // Hour of the day (0-23)
+
         [BsonElement("status")]
         public string Status { get; set; } = "Pending"; // Pending, Approved, Cancelled, Completed
 

@@ -6,6 +6,7 @@ data class Booking(
     val stationId: String,
     val stationName: String? = null,
     val reservationDate: String,
+    val reservationHour: Int = 0, // Hour of the day (0-23), default to 0 for backward compatibility
     val status: String, // Pending, Approved, Cancelled, Completed
     val createdAt: String,
     val amount: Double? = null,

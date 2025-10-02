@@ -237,7 +237,7 @@ class ActiveBookingsTabFragment : Fragment() {
         val stationName = getStationName(booking.stationId)
         val message = """
             Station: $stationName
-            Reservation Date: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}
+            Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}
             Status: ${booking.status.uppercase()}
             
             $statusMessage
@@ -264,7 +264,7 @@ class ActiveBookingsTabFragment : Fragment() {
     private fun showUpdateBookingDialog(booking: Booking) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_update_booking, null)
         val editTextDate = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
-        val editTextTime = dialogView.findViewById<TextInputEditText>(R.id.editTextTime)
+        val editTextHour = dialogView.findViewById<TextInputEditText>(R.id.editTextHour)
         val buttonCancel = dialogView.findViewById<MaterialButton>(R.id.buttonCancel)
         val buttonUpdate = dialogView.findViewById<MaterialButton>(R.id.buttonUpdate)
         
@@ -276,39 +276,25 @@ class ActiveBookingsTabFragment : Fragment() {
         // Display current booking information
         val stationName = getStationName(booking.stationId)
         textViewCurrentStation.text = "Station: $stationName"
-        textViewCurrentDateTime.text = "Current Date & Time: ${DateTimeUtils.formatToUserFriendly(booking.reservationDate)}"
+        textViewCurrentDateTime.text = "Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}"
         textViewBookingStatus.text = "Status: ${booking.status.uppercase()}"
         
-        // Initialize with current booking date/time
+        // Initialize with current booking date and hour
         try {
-            val currentDateTime = booking.reservationDate
-            // Parse the current date/time and populate the fields
-            if (currentDateTime.contains("T")) {
-                // ISO format: "2024-01-15T14:30:00"
-                val parts = currentDateTime.split("T")
-                if (parts.size >= 2) {
-                    editTextDate.setText(parts[0]) // "2024-01-15"
-                    val timePart = parts[1].split(":") // ["14", "30", "00"]
-                    if (timePart.size >= 2) {
-                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
-                    }
-                }
-            } else if (currentDateTime.contains(" ")) {
-                // Space format: "2024-01-15 14:30:00"
-                val parts = currentDateTime.split(" ")
-                if (parts.size >= 2) {
-                    editTextDate.setText(parts[0]) // "2024-01-15"
-                    val timePart = parts[1].split(":") // ["14", "30", "00"]
-                    if (timePart.size >= 2) {
-                        editTextTime.setText("${timePart[0]}:${timePart[1]}") // "14:30"
-                    }
-                }
-            }
+            // Set the date from reservation date (extract only the date part)
+            editTextDate.setText(DateTimeUtils.extractDateOnly(booking.reservationDate))
+            
+            // Set the hour from reservation hour
+            val hour = booking.reservationHour
+            editTextHour.setText("${hour}:00 - ${hour + 1}:00")
+            editTextHour.tag = hour // Store the current hour value
+            
         } catch (e: Exception) {
-            Log.e("ActiveBookings", "Error parsing current date/time", e)
+            Log.e("ActiveBookings", "Error setting current booking values", e)
             // Set default values if parsing fails
             editTextDate.setText("")
-            editTextTime.setText("")
+            editTextHour.setText("")
+            editTextHour.tag = null
         }
         
         val dialog = MaterialAlertDialogBuilder(requireContext())
@@ -322,14 +308,29 @@ class ActiveBookingsTabFragment : Fragment() {
         editTextDate.setOnClickListener {
             showDatePicker { selectedDate ->
                 editTextDate.setText(selectedDate)
+                // Clear hour selection when date changes
+                editTextHour.setText("")
+                editTextHour.tag = null
             }
         }
         
-        // Time picker
-        editTextTime.setOnClickListener {
-            showTimePicker { selectedTime ->
-                editTextTime.setText(selectedTime)
+        // Hour slot picker
+        editTextHour.setOnClickListener {
+            val selectedDate = editTextDate.text.toString()
+            if (selectedDate.isEmpty()) {
+                showError("Please select a date first")
+                return@setOnClickListener
             }
+            
+            // Basic hour picker (0-23)
+            val hours = (0..23).map { hour -> "${hour}:00 - ${hour + 1}:00" }.toTypedArray()
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Select Hour Slot")
+                .setItems(hours) { _, which ->
+                    editTextHour.setText(hours[which])
+                    editTextHour.tag = which // Store the actual hour value
+                }
+                .show()
         }
         
         // Cancel button
@@ -340,14 +341,15 @@ class ActiveBookingsTabFragment : Fragment() {
         // Update button
         buttonUpdate.setOnClickListener {
             val date = editTextDate.text.toString().trim()
-            val time = editTextTime.text.toString().trim()
+            val time = editTextHour.text.toString().trim()
+            val selectedHour = editTextHour.tag as? Int
             
             when {
                 date.isEmpty() -> {
                     showError("Please select a date")
                 }
-                time.isEmpty() -> {
-                    showError("Please select a time")
+                time.isEmpty() || selectedHour == null -> {
+                    showError("Please select an available hour slot")
                 }
                 !isValidReservationDateTime(date, time) -> {
                     showError("Selected date and time must be in the future")
@@ -427,6 +429,7 @@ class ActiveBookingsTabFragment : Fragment() {
                     booking.id,
                     BookingUpdateRequest(
                         reservationDate = formattedDateTime,
+                        reservationHour = 0, // TODO: Update to support hour selection
                         stationId = booking.stationId
                     )
                 )

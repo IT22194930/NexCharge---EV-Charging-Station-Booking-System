@@ -155,4 +155,123 @@ object DateTimeUtils {
             dateTimeString
         }
     }
+
+    /**
+     * Formats date and hour to show time range for booking
+     * Returns: "Jan 15, 2024 - 14:00 to 15:00"
+     */
+    fun formatBookingTimeRange(dateTimeString: String, hour: Int): String {
+        return try {
+            var parsedDate: Date? = null
+            
+            // Try different input formats
+            for (format in inputFormats) {
+                try {
+                    parsedDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+            
+            if (parsedDate != null) {
+                val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                val dateStr = dateFormat.format(parsedDate)
+                
+                // Format start and end hours
+                val startHour = String.format("%02d:00", hour)
+                val endHour = String.format("%02d:00", hour + 1)
+                
+                "$dateStr - $startHour to $endHour"
+            } else {
+                "$dateTimeString - Hour $hour"
+            }
+        } catch (e: Exception) {
+            "$dateTimeString - Hour $hour"
+        }
+    }
+
+    /**
+     * Formats date and hour to show compact time range for booking
+     * Returns: "Jan 15 - 14:00-15:00"
+     */
+    fun formatBookingTimeRangeCompact(dateTimeString: String, hour: Int): String {
+        return try {
+            var parsedDate: Date? = null
+            
+            // Try different input formats
+            for (format in inputFormats) {
+                try {
+                    parsedDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+            
+            if (parsedDate != null) {
+                val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
+                val dateStr = dateFormat.format(parsedDate)
+                
+                // Format start and end hours
+                val startHour = String.format("%02d:00", hour)
+                val endHour = String.format("%02d:00", hour + 1)
+                
+                "$dateStr - $startHour-$endHour"
+            } else {
+                "$dateTimeString - $hour:00-${hour+1}:00"
+            }
+        } catch (e: Exception) {
+            "$dateTimeString - $hour:00-${hour+1}:00"
+        }
+    }
+
+    /**
+     * Extracts just the date part from a datetime string
+     * Returns: "2025-10-03" from "2025-10-03T00:00:00" or similar formats
+     */
+    fun extractDateOnly(dateTimeString: String): String {
+        return try {
+            // First try to parse and format properly
+            var parsedDate: Date? = null
+            
+            // Try different input formats
+            for (format in inputFormats) {
+                try {
+                    parsedDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+            
+            if (parsedDate != null) {
+                // Format as simple date string
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(parsedDate)
+            } else {
+                // Fallback: extract date part from string
+                when {
+                    dateTimeString.contains("T") -> {
+                        // "2025-10-03T00:00:00" -> "2025-10-03"
+                        dateTimeString.substringBefore("T")
+                    }
+                    dateTimeString.contains(" ") -> {
+                        // "2025-10-03 00:00:00" -> "2025-10-03"
+                        dateTimeString.substringBefore(" ")
+                    }
+                    else -> {
+                        // Already in date format or unknown format
+                        dateTimeString
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Final fallback: try string manipulation
+            when {
+                dateTimeString.contains("T") -> dateTimeString.substringBefore("T")
+                dateTimeString.contains(" ") -> dateTimeString.substringBefore(" ")
+                else -> dateTimeString
+            }
+        }
+    }
 }

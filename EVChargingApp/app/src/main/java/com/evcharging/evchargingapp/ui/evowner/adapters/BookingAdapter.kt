@@ -40,7 +40,8 @@ class BookingAdapter(
                 // Set booking details
                 textViewStationName.text = getStationName(booking.stationId)
                 textViewStatus.text = booking.status.uppercase()
-                textViewDateTime.text = DateTimeUtils.formatRelative(booking.reservationDate)
+                textViewDateTime.text = DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)
+                textViewDuration.text = "Duration: 1 hour"
                
 
                 // Set status color
