@@ -278,14 +278,14 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonFindStations"
                             style="@style/Widget.Material3.Button"
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:text="Find Stations"
-                            android:textSize="12sp"
-                            android:textColor="@android:color/white"
+                            android:layout_weight="1"
                             android:backgroundTint="@color/nexcharge_primary"
+                            android:text="Find Stations"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
                             app:cornerRadius="12dp"
                             app:icon="@drawable/ic_bookings"
                             app:iconSize="16dp"
@@ -294,19 +294,14 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonLocateMe"
                             style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:text="My Location"
-                            android:textSize="12sp"
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
                             android:textColor="@color/nexcharge_primary"
                             app:cornerRadius="12dp"
-                            app:strokeColor="@color/nexcharge_primary"
-                            app:strokeWidth="1.5dp"
-                            app:icon="@drawable/ic_dashboard"
-                            app:iconSize="16dp"
-                            app:iconTint="@color/nexcharge_primary" />
+                            app:icon="@android:drawable/ic_menu_mylocation"
+                            app:iconSize="30dp"
+                            app:iconTint="@color/nexcharge_primary"
+                            app:strokeColor="@color/nexcharge_primary" />
 
                     </LinearLayout>
 
