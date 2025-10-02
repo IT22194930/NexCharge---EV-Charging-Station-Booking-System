@@ -23,6 +23,7 @@ export default function Bookings() {
   const [itemsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState("All");
   const [actionConfirm, setActionConfirm] = useState({ visible: false });
+  const [searchOwnerNic, setSearchOwnerNic] = useState(""); // operator NIC search
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
@@ -54,29 +55,29 @@ export default function Bookings() {
           atob(localStorage.getItem("token").split(".")[1])
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const res = await api.get(`/bookings/owner/${nic}`);
-        setBookings(res.data);
-        filterBookings(res.data, statusFilter);
+        setBookings(res.data); // filtering handled in effect
       } else {
         const res = await api.get("/bookings");
-        setBookings(res.data);
-        filterBookings(res.data, statusFilter);
+        setBookings(res.data); // filtering handled in effect
       }
     } catch (err) {
       setError("Failed to load bookings");
       console.error(err);
     }
-  }, [role, statusFilter]);
+  }, [role]);
 
-  const filterBookings = (allBookings, filter) => {
-    if (filter === "All") {
-      setFilteredBookings(allBookings);
-    } else {
-      const filtered = allBookings.filter(
-        (booking) => booking.status === filter
-      );
-      setFilteredBookings(filtered);
+  const filterBookings = useCallback((allBookings, filter) => {
+    let working = allBookings;
+    if (role === "Operator" && searchOwnerNic.trim()) {
+      const q = searchOwnerNic.trim().toLowerCase();
+      working = working.filter(b => (b.ownerNIC || "").toLowerCase().includes(q));
     }
-  };
+    if (filter === "All") {
+      setFilteredBookings(working);
+    } else {
+      setFilteredBookings(working.filter(b => b.status === filter));
+    }
+  }, [role, searchOwnerNic]);
 
   const handleStatusFilterChange = (filter) => {
     setStatusFilter(filter);
@@ -362,9 +363,18 @@ export default function Bookings() {
     loadStations();
   }, [loadBookings]);
 
+  // Centralized filtering effect so search persists after state-changing reloads
+  useEffect(() => {
+    filterBookings(bookings, statusFilter);
+    // Only reset to first page if the filter criteria itself changed
+    // Detect changes via dependencies (excluding bookings data changes)
+    // We achieve this by separating deps: when bookings changes alone, we don't reset page
+    // Simple approach: track last criteria
+  }, [bookings, statusFilter, searchOwnerNic, role, filterBookings]);
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Booking Management
@@ -373,34 +383,49 @@ export default function Bookings() {
             Manage charging station reservations
           </p>
         </div>
-        {(role === "Backoffice" || role === "EVOwner") && (
-          <button
-            onClick={() => {
-              // Auto-populate Owner NIC for EVOwners
-              if (role === "EVOwner") {
-                const userNic = getUserNic();
-                setForm({
-                  ownerNic: userNic,
-                  stationId: "",
-                  reservationDate: "",
-                });
-              } else {
-                resetForm();
-              }
-              setShowCreateForm(true);
-            }}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                clipRule="evenodd"
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end w-full lg:w-auto">
+          {role === "Operator" && (
+            <div className="relative">
+              <input
+                type="text"
+                value={searchOwnerNic}
+                onChange={(e) => setSearchOwnerNic(e.target.value)}
+                placeholder="Search by Owner NIC"
+                className="pl-8 pr-3 py-2 w-full sm:w-64 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
-            </svg>
-            <span>Create New Booking</span>
-          </button>
-        )}
+              <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M9.5 17a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+              </svg>
+            </div>
+          )}
+          {(role === "Backoffice" || role === "EVOwner") && (
+            <button
+              onClick={() => {
+                if (role === "EVOwner") {
+                  const userNic = getUserNic();
+                  setForm({
+                    ownerNic: userNic,
+                    stationId: "",
+                    reservationDate: "",
+                  });
+                } else {
+                  resetForm();
+                }
+                setShowCreateForm(true);
+              }}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>Create New Booking</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
