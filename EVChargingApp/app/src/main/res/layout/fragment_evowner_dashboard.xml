@@ -94,15 +94,15 @@
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@drawable/ic_dashboard"
-                    android:tint="@color/nexcharge_primary" />
+                    android:src="@drawable/ic_check_circle"
+                    android:tint="@color/status_active" />
 
                 <TextView
                     android:id="@+id/textViewTotalStations"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Total Stations: 0"
+                    android:text="Approved\nReservations: 0"
                     android:textAlignment="center"
                     android:textColor="@color/nexcharge_text_primary"
                     android:textSize="14sp"
@@ -136,15 +136,15 @@
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@drawable/ic_bookings"
-                    android:tint="@color/nexcharge_primary" />
+                    android:src="@drawable/ic_waiting"
+                    android:tint="@color/status_pending" />
 
                 <TextView
                     android:id="@+id/textViewActiveBookings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Active Bookings: 0"
+                    android:text="Pending\nReservations: 0"
                     android:textAlignment="center"
                     android:textColor="@color/nexcharge_text_primary"
                     android:textSize="14sp"
@@ -179,6 +179,8 @@
             android:layout_marginEnd="8dp"
             android:textColor="@color/nexcharge_text_primary"
             app:strokeColor="@color/nexcharge_primary"
+            app:icon="@drawable/ic_bookings"
+            app:iconTint="@color/nexcharge_primary"
             app:layout_constraintTop_toBottomOf="@id/textViewQuickActions"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/buttonViewReports" />
@@ -193,6 +195,8 @@
             android:text="View Reports"
             android:textColor="@color/nexcharge_text_primary"
             app:strokeColor="@color/nexcharge_primary"
+            app:icon="@drawable/ic_add"
+            app:iconTint="@color/nexcharge_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/buttonAddStation"
             app:layout_constraintTop_toBottomOf="@id/textViewQuickActions" />
@@ -253,7 +257,7 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:src="@drawable/ic_bookings"
+                            android:src="@drawable/ic_search"
                             android:tint="@color/nexcharge_primary"
                             android:layout_marginEnd="8dp" />
 
@@ -278,35 +282,30 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonFindStations"
                             style="@style/Widget.Material3.Button"
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:text="Find Stations"
-                            android:textSize="12sp"
-                            android:textColor="@android:color/white"
+                            android:layout_weight="1"
                             android:backgroundTint="@color/nexcharge_primary"
+                            android:text="Find Stations"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
                             app:cornerRadius="12dp"
-                            app:icon="@drawable/ic_bookings"
+                            app:icon="@drawable/ic_charging_station"
                             app:iconSize="16dp"
                             app:iconTint="@android:color/white" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonLocateMe"
                             style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="0dp"
-                            android:layout_height="48dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:text="My Location"
-                            android:textSize="12sp"
+                            android:layout_width="75dp"
+                            android:layout_height="wrap_content"
                             android:textColor="@color/nexcharge_primary"
                             app:cornerRadius="12dp"
-                            app:strokeColor="@color/nexcharge_primary"
-                            app:strokeWidth="1.5dp"
-                            app:icon="@drawable/ic_dashboard"
-                            app:iconSize="16dp"
-                            app:iconTint="@color/nexcharge_primary" />
+                            app:icon="@android:drawable/ic_menu_mylocation"
+                            app:iconSize="30dp"
+                            app:iconTint="@color/nexcharge_primary"
+                            app:strokeColor="@color/nexcharge_primary" />
 
                     </LinearLayout>
 
