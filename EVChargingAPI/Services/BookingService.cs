@@ -108,13 +108,22 @@ namespace EVChargingAPI.Services
             return existing;
         }
 
+        public async Task<Booking> CompleteAsync(string id)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            if (existing.Status != "Approved") throw new Exception("Only approved bookings can be completed");
+            existing.Status = "Completed";
+            await _repo.UpdateAsync(id, existing);
+            return existing;
+        }
+
         public async Task DeleteAsync(string id)
         {
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
             // Allow deletion if booking is Cancelled or Pending
-            if (existing.Status == "Approved")
+            if (existing.Status == "Approved" || existing.Status == "Completed")
             {
-                throw new Exception("Cannot delete approved bookings. Please cancel first.");
+                throw new Exception("Cannot delete approved or completed bookings. Please cancel first (only approved) or this booking is finalized.");
             }
             await _repo.DeleteAsync(id);
         }

@@ -203,6 +203,19 @@ export default function Bookings() {
     }
   };
 
+  const completeBooking = async (id) => {
+    try {
+      await api.post(`/bookings/complete/${id}`);
+      loadBookings();
+      toast.success("Booking marked as completed!");
+    } catch (err) {
+      toast.error(
+        "Error completing booking: " +
+          (err.response?.data?.message || err.message)
+      );
+    }
+  };
+
   const cancelBooking = async (id) => {
     try {
       await api.post(`/bookings/cancel/${id}`);
@@ -386,6 +399,7 @@ export default function Bookings() {
         userNic={userNic}
         getStationName={getStationName}
         approveBooking={approveBooking}
+        completeBooking={completeBooking}
         openUpdateForm={openUpdateForm}
         canModifyBooking={canModifyBooking}
         cancelBooking={cancelBooking}
