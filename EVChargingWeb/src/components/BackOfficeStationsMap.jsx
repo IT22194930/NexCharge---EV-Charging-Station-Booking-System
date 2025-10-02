@@ -7,9 +7,20 @@ import {
 } from "@react-google-maps/api";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import StationDetailsModal from "./StationDetailsModal";
 
 /*
-  BackOfficeStationsMap: Shows all stations for BackOffice users.
+  BackOfficeStati                  <div
+                  key={station.id}
+                  className={`group border rounded-xl p-3 transition-all cursor-pointer ${
+                    selectedStation?.id === station.id
+                      ? 'border-blue-300 bg-blue-50'
+                      : 'border-gray-100 hover:border-blue-300 bg-white hover:shadow-sm'
+                  }`}
+                  onClick={() => setSelectedStation(station)}
+                  onDoubleClick={() => openStationDetails(station)}
+                  title="Click to select on map, double-click to view details"
+                >hows all stations for BackOffice users.
   Allows viewing station details and managing stations from the map.
 */
 
@@ -32,6 +43,8 @@ export default function BackOfficeStationsMap() {
   const [stations, setStations] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
   const [filter, setFilter] = useState("all"); // "all", "active", "inactive"
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsStation, setDetailsStation] = useState(null);
 
   // Load all stations
   const loadStations = async () => {
@@ -88,6 +101,12 @@ export default function BackOfficeStationsMap() {
     } catch (err) {
       toast.error(`Error ${currentStatus ? 'deactivating' : 'activating'} station: ` + (err.response?.data?.message || err.message));
     }
+  };
+
+  const openStationDetails = (station) => {
+    setDetailsStation(station);
+    setShowDetailsModal(true);
+    setSelectedStation(null); // Close info window
   };
 
   const getStationIcon = (station) => {
@@ -260,10 +279,7 @@ export default function BackOfficeStationsMap() {
                             {selectedStation.isActive ? 'Deactivate' : 'Activate'}
                           </button>
                           <button
-                            onClick={() => {
-                              // You can add edit functionality here if needed
-                              toast.info('Edit functionality can be added here');
-                            }}
+                            onClick={() => openStationDetails(selectedStation)}
                             className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors"
                           >
                             View Details
@@ -379,6 +395,16 @@ export default function BackOfficeStationsMap() {
           </div>
         </div>
       </div>
+
+      {/* Station Details Modal */}
+      <StationDetailsModal
+        visible={showDetailsModal}
+        station={detailsStation}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setDetailsStation(null);
+        }}
+      />
     </div>
   );
 }

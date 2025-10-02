@@ -3,6 +3,7 @@ import api from "../api/axios";
 import toast from "react-hot-toast";
 import MapPicker from "../components/MapPicker";
 import Pagination from "../components/Pagination";
+import StationDetailsModal from "../components/StationDetailsModal";
 
 export default function Stations() {
   const [stations, setStations] = useState([]);
@@ -11,8 +12,10 @@ export default function Stations() {
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [currentStation, setCurrentStation] = useState(null);
   const [stationToDelete, setStationToDelete] = useState(null);
+  const [detailsStation, setDetailsStation] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [form, setForm] = useState({
@@ -184,11 +187,18 @@ export default function Stations() {
     });
   };
 
+  const openStationDetails = (station) => {
+    setDetailsStation(station);
+    setShowDetailsModal(true);
+  };
+
   const closeModals = () => {
     setShowCreateForm(false);
     setShowUpdateForm(false);
     setShowScheduleForm(false);
+    setShowDetailsModal(false);
     setCurrentStation(null);
+    setDetailsStation(null);
     resetForm();
   };
 
@@ -985,7 +995,12 @@ export default function Stations() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {currentStations.map((station, index) => (
-              <tr key={station.id}>
+              <tr 
+                key={station.id} 
+                onClick={() => openStationDetails(station)}
+                className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                title="Click to view station details"
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                   {startIndex + index + 1}
                 </td>
@@ -1022,19 +1037,28 @@ export default function Stations() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1">
                   <button
-                    onClick={() => openUpdateForm(station)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openUpdateForm(station);
+                    }}
                     className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => openScheduleForm(station)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openScheduleForm(station);
+                    }}
                     className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
                   >
                     Schedule
                   </button>
                   <button
-                    onClick={() => toggleStationStatus(station.id, station.isActive)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStationStatus(station.id, station.isActive);
+                    }}
                     className={`px-2 py-1 rounded text-xs text-white ${
                       station.isActive 
                         ? "bg-orange-600 hover:bg-orange-700" 
@@ -1044,7 +1068,10 @@ export default function Stations() {
                     {station.isActive ? "Deactivate" : "Activate"}
                   </button>
                   <button
-                    onClick={() => deleteStation(station.id, station.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteStation(station.id, station.name);
+                    }}
                     className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
                   >
                     Delete
@@ -1115,6 +1142,16 @@ export default function Stations() {
           </div>
         </div>
       )}
+
+      {/* Station Details Modal */}
+      <StationDetailsModal
+        visible={showDetailsModal}
+        station={detailsStation}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setDetailsStation(null);
+        }}
+      />
     </div>
   );
 }
