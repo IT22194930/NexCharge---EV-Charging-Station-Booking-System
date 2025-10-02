@@ -6,6 +6,7 @@ import UpdateBookingModal from "../components/bookings/UpdateBookingModal";
 import BookingTable from "../components/bookings/BookingTable";
 import DeleteConfirmDialog from "../components/bookings/DeleteConfirmDialog";
 import Pagination from "../components/Pagination";
+import ConfirmActionDialog from "../components/bookings/ConfirmActionDialog";
 import { extractDateOnly } from "../utils/dateUtils";
 
 export default function Bookings() {
@@ -21,6 +22,7 @@ export default function Bookings() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [actionConfirm, setActionConfirm] = useState({ visible: false });
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
@@ -191,42 +193,78 @@ export default function Bookings() {
   };
 
   const approveBooking = async (id) => {
-    try {
-      await api.post(`/bookings/approve/${id}`);
-      loadBookings();
-      toast.success("Booking approved successfully!");
-    } catch (err) {
-      toast.error(
-        "Error approving booking: " +
-          (err.response?.data?.message || err.message)
-      );
-    }
+    setActionConfirm({
+      visible: true,
+      tone: "green",
+      title: "Approve Booking",
+      message: "Are you sure you want to approve this booking?",
+      confirmLabel: "Approve",
+      onConfirm: async () => {
+        try {
+          await api.post(`/bookings/approve/${id}`);
+          toast.success("Booking approved successfully!");
+          loadBookings();
+        } catch (err) {
+          toast.error(
+            "Error approving booking: " +
+              (err.response?.data?.message || err.message)
+          );
+        } finally {
+          setActionConfirm({ visible: false });
+        }
+      },
+      onCancel: () => setActionConfirm({ visible: false })
+    });
   };
 
   const completeBooking = async (id) => {
-    try {
-      await api.post(`/bookings/complete/${id}`);
-      loadBookings();
-      toast.success("Booking marked as completed!");
-    } catch (err) {
-      toast.error(
-        "Error completing booking: " +
-          (err.response?.data?.message || err.message)
-      );
-    }
+    setActionConfirm({
+      visible: true,
+      tone: "emerald",
+      title: "Complete Charging Session",
+      message: "Mark this approved booking as completed session?",
+      confirmLabel: "Complete",
+      onConfirm: async () => {
+        try {
+          await api.post(`/bookings/complete/${id}`);
+          toast.success("Booking marked as completed!");
+          loadBookings();
+        } catch (err) {
+          toast.error(
+            "Error completing booking: " +
+              (err.response?.data?.message || err.message)
+          );
+        } finally {
+          setActionConfirm({ visible: false });
+        }
+      },
+      onCancel: () => setActionConfirm({ visible: false })
+    });
   };
 
   const cancelBooking = async (id) => {
-    try {
-      await api.post(`/bookings/cancel/${id}`);
-      loadBookings();
-      toast.success("Booking cancelled successfully!");
-    } catch (err) {
-      toast.error(
-        "Error cancelling booking: " +
-          (err.response?.data?.message || err.message)
-      );
-    }
+    setActionConfirm({
+      visible: true,
+      tone: "orange",
+      title: "Cancel Booking",
+      message: "Are you sure you want to cancel this booking?",
+      confirmLabel: "Cancel Booking",
+      onConfirm: async () => {
+        try {
+          await api.post(`/bookings/cancel/${id}`);
+          toast.success("Booking cancelled successfully!");
+          loadBookings();
+        } catch (err) {
+          toast.error(
+            "Error cancelling booking: " +
+              (err.response?.data?.message || err.message)
+          );
+        } finally {
+          setActionConfirm({ visible: false });
+        }
+      },
+      onCancel: () => setActionConfirm({ visible: false })
+    });
   };
 
   const deleteBooking = async (id) => {
@@ -425,6 +463,16 @@ export default function Bookings() {
         cancelDelete={cancelDelete}
         confirmDelete={confirmDelete}
         handleDeleteBackdropClick={handleDeleteBackdropClick}
+      />
+
+      <ConfirmActionDialog
+        visible={actionConfirm.visible}
+        tone={actionConfirm.tone}
+        title={actionConfirm.title}
+        message={actionConfirm.message}
+        confirmLabel={actionConfirm.confirmLabel}
+        onConfirm={actionConfirm.onConfirm}
+        onCancel={actionConfirm.onCancel}
       />
     </div>
   );
