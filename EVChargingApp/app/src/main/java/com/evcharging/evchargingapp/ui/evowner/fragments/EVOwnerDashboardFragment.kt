@@ -286,18 +286,85 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
 
     private suspend fun loadDashboardDataSync() {
         try {
-            val response = apiService.getDashboardStats()
+            Log.d("DashboardAPI", "Starting to load dashboard data...")
             
-            if (!isAdded || _binding == null) return
-            
-            if (response.isSuccessful && response.body() != null) {
-                val stats = response.body()!!
-                updateDashboardUI(stats)
-            } else {
-                val errorMsg = "Failed to load dashboard data. Response code: ${response.code()}"
-                Log.e("EVOwnerDashboardFragment", errorMsg)
-                showError(errorMsg)
+            // Get current user NIC for filtering bookings
+            val userNic = TokenUtils.getCurrentUserNic(requireContext())
+            if (userNic == null) {
+                Log.e("DashboardAPI", "User NIC is null, cannot load bookings")
+                showError("Authentication error: Please login again")
                 updateDashboardUI(DashboardStats())
+                return
+            }
+            
+            Log.d("DashboardAPI", "Loading bookings for user: $userNic")
+            
+            // Load bookings for current user only
+            val bookingsResponse = apiService.getBookingsByOwner(userNic)
+            
+            Log.d("DashboardAPI", "API response received: success=${bookingsResponse.isSuccessful}, code=${bookingsResponse.code()}")
+            
+            if (!isAdded || _binding == null) {
+                Log.w("DashboardAPI", "Fragment not attached, skipping UI update")
+                return
+            }
+            
+            if (bookingsResponse.isSuccessful && bookingsResponse.body() != null) {
+                val allBookings = bookingsResponse.body()!!
+                
+                Log.d("DashboardStats", "Loaded ${allBookings.size} total bookings for user $userNic")
+                
+                // If no bookings, show zeros
+                if (allBookings.isEmpty()) {
+                    Log.d("DashboardStats", "No bookings found for user")
+                    updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
+                    return
+                }
+                
+                // Calculate approved future reservations count
+                val currentDate = java.util.Date()
+                val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+                
+                Log.d("DashboardStats", "Current date: $currentDate, current hour: $currentHour")
+                
+                val approvedFutureCount = allBookings.count { booking ->
+                    val isApproved = booking.status.equals("Approved", ignoreCase = true)
+                    val isFuture = isBookingInFuture(booking, currentDate, currentHour)
+                    Log.d("DashboardStats", "Booking ${booking.id}: status='${booking.status}', isApproved=$isApproved, isFuture=$isFuture, date=${booking.reservationDate}, hour=${booking.reservationHour}")
+                    isApproved && isFuture
+                }
+                
+                // Calculate pending reservations count
+                val pendingCount = allBookings.count { booking ->
+                    val isPending = booking.status.equals("Pending", ignoreCase = true)
+                    Log.d("DashboardStats", "Booking ${booking.id}: status='${booking.status}', isPending=$isPending")
+                    isPending
+                }
+                
+                Log.d("DashboardStats", "Final counts - Approved future reservations: $approvedFutureCount, Pending reservations: $pendingCount")
+                
+                // Create custom stats with our calculated values
+                val customStats = DashboardStats(
+                    totalUsers = 0, // Not relevant for EV owner
+                    totalStations = 0, // Not relevant for EV owner
+                    totalBookings = approvedFutureCount, // Now shows approved future reservations
+                    activeBookings = pendingCount // Now shows pending reservations
+                )
+                
+                updateDashboardUI(customStats)
+            } else {
+                val errorMsg = "Failed to load dashboard data. Response code: ${bookingsResponse.code()}"
+                Log.e("EVOwnerDashboardFragment", errorMsg)
+                
+                if (bookingsResponse.body() == null) {
+                    Log.e("EVOwnerDashboardFragment", "Response body is null")
+                } else {
+                    Log.e("EVOwnerDashboardFragment", "Response not successful")
+                }
+                
+                showError("Could not load booking data")
+                // Show zero counts as fallback
+                updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             Log.w("EVOwnerDashboardFragment", "Dashboard data request was cancelled")
@@ -305,27 +372,62 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             Log.e("EVOwnerDashboardFragment", "Request timed out", e)
             if (isAdded && _binding != null) {
                 showError("Request timed out. Please check your internet connection.")
-                updateDashboardUI(DashboardStats())
+                updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
             }
         } catch (e: java.net.ConnectException) {
             Log.e("EVOwnerDashboardFragment", "Connection failed", e)
             if (isAdded && _binding != null) {
                 showError("Cannot connect to server. Please check if the API server is running.")
-                updateDashboardUI(DashboardStats())
+                updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
             }
         } catch (e: java.net.UnknownHostException) {
             Log.e("EVOwnerDashboardFragment", "Unknown host", e)
             if (isAdded && _binding != null) {
                 showError("Cannot reach server. Please check your network connection.")
-                updateDashboardUI(DashboardStats())
+                updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
             }
         } catch (e: Exception) {
             Log.e("EVOwnerDashboardFragment", "Unexpected error loading dashboard data", e)
             if (isAdded && _binding != null) {
                 showError("Network error: ${e.message}")
                 // Show default values on error
-                updateDashboardUI(DashboardStats())
+                updateDashboardUI(DashboardStats(totalBookings = 0, activeBookings = 0))
             }
+        }
+    }
+
+    private fun isBookingInFuture(booking: Booking, currentDate: java.util.Date, currentHour: Int): Boolean {
+        return try {
+            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val bookingDate = dateFormat.parse(booking.reservationDate)
+            
+            if (bookingDate == null) return false
+            
+            // Compare dates
+            val calendar = java.util.Calendar.getInstance()
+            calendar.time = currentDate
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            calendar.set(java.util.Calendar.MINUTE, 0)
+            calendar.set(java.util.Calendar.SECOND, 0)
+            calendar.set(java.util.Calendar.MILLISECOND, 0)
+            val todayMidnight = calendar.time
+            
+            val bookingCalendar = java.util.Calendar.getInstance()
+            bookingCalendar.time = bookingDate
+            bookingCalendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            bookingCalendar.set(java.util.Calendar.MINUTE, 0)
+            bookingCalendar.set(java.util.Calendar.SECOND, 0)
+            bookingCalendar.set(java.util.Calendar.MILLISECOND, 0)
+            val bookingMidnight = bookingCalendar.time
+            
+            when {
+                bookingMidnight.after(todayMidnight) -> true // Future date
+                bookingMidnight.equals(todayMidnight) -> booking.reservationHour > currentHour // Today but future hour
+                else -> false // Past date
+            }
+        } catch (e: Exception) {
+            Log.e("EVOwnerDashboard", "Error parsing booking date: ${booking.reservationDate}", e)
+            false
         }
     }
 
@@ -339,8 +441,10 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun updateDashboardUI(stats: DashboardStats) {
-        binding.textViewTotalStations.text = "My Bookings\n${stats.totalBookings}"
-        binding.textViewActiveBookings.text = "Active Bookings\n${stats.activeBookings}"
+        Log.d("DashboardUI", "Updating UI with stats: totalBookings=${stats.totalBookings}, activeBookings=${stats.activeBookings}")
+        binding.textViewTotalStations.text = "Approved\nReservations\n ${stats.totalBookings}"
+        binding.textViewActiveBookings.text = "Pending\nReservations\n ${stats.activeBookings}"
+        Log.d("DashboardUI", "UI updated successfully")
     }
 
     private fun calculateRevenue(stats: DashboardStats): String {
@@ -1370,6 +1474,14 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             }
             .setCancelable(false)
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh dashboard data when fragment becomes visible
+        Log.d("EVOwnerDashboard", "Fragment resumed, refreshing dashboard data")
+        LoadingManager.show(requireContext(), "Refreshing dashboard...")
+        loadUserProfileAndDashboard()
     }
 
     override fun onDestroyView() {
