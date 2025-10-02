@@ -731,6 +731,11 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         Log.d("NearestStations", "stationsList size: ${stationsList.size}")
         Log.d("NearestStations", "userLocation: $userLocation")
         
+        // Debug: Check isActive values in all stations
+        stationsList.forEachIndexed { index, station ->
+            Log.d("NearestStations", "Station $index: ${station.name}, isActive: ${station.isActive}")
+        }
+        
         userLocation?.let { userLoc ->
             // Calculate distances and get nearest 3 stations
             val stationsWithDistance = stationsList.mapNotNull { station ->
@@ -780,10 +785,10 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         // Add station cards to container
         stationsWithDistance.forEachIndexed { index, (station, distance) ->
-            Log.d("DialogCreation", "Creating card $index for station: ${station.name}")
+            Log.d("DialogCreation", "Creating card $index for station: ${station.name}, isActive: ${station.isActive}")
             
-            // Create professional looking card with guaranteed visibility
-            val stationCard = createProfessionalCardV2(station, distance, index + 1)
+            // Use the new professional layout instead of programmatic creation
+            val stationCard = createStationCardFromLayout(station, distance, index + 1)
             stationCard.setOnClickListener {
                 dialog.dismiss()
                 showStationOnMapAndBooking(station)
@@ -805,10 +810,72 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         dialog.show()
         
-        // Make dialog responsive to theme
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
     }
     
+    private fun createStationCardFromLayout(station: Station, distance: Double, position: Int): View {
+        val cardView = LayoutInflater.from(requireContext()).inflate(R.layout.item_station_card_nearest, null)
+        
+        try {
+            // Debug logging
+            Log.d("StationCard", "Station: ${station.name}, isActive: ${station.isActive}")
+            
+            // Find views with null safety
+            val stationName = cardView.findViewById<TextView>(R.id.textViewStationName)
+            val stationLocation = cardView.findViewById<TextView>(R.id.textViewStationLocation)
+            val stationType = cardView.findViewById<TextView>(R.id.textViewStationType)
+            val stationSlots = cardView.findViewById<TextView>(R.id.textViewStationSlots)
+            val distanceText = cardView.findViewById<TextView>(R.id.textViewDistance)
+            val statusText = cardView.findViewById<TextView>(R.id.textViewStatus)
+            
+            // Debug logging for views
+            Log.d("StationCard", "statusText found: ${statusText != null}")
+            
+            // Set data with null checks
+            stationName?.text = "#$position ${station.name}"
+            stationLocation?.text = station.location
+            stationType?.text = "Type: ${station.type}"
+            stationSlots?.text = "• ${station.availableSlots} slots"
+            distanceText?.text = LocationUtils.formatDistance(distance) + " away"
+            
+            // Set status with appropriate color
+            statusText?.let { status ->
+                Log.d("StationCard", "Setting status for ${station.name}: isActive = ${station.isActive}")
+                
+                // Ensure visibility and proper styling
+                status.visibility = View.VISIBLE
+                status.textSize = 12f
+                status.setPadding(16, 8, 16, 8)
+                
+                if (station.isActive) {
+                    status.text = "ACTIVE"
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_active_background)
+                    Log.d("StationCard", "Set status to ACTIVE, text: '${status.text}'")
+                } else {
+                    status.text = "INACTIVE"
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_cancelled_background)
+                    Log.d("StationCard", "Set status to INACTIVE, text: '${status.text}'")
+                }
+                
+                // Force layout update
+                status.requestLayout()
+                status.invalidate()
+                
+                Log.d("StationCard", "Final status text: '${status.text}', visibility: ${status.visibility}")
+            } ?: Log.e("StationCard", "statusText is null!")
+            
+        } catch (e: Exception) {
+            Log.e("StationCard", "Error setting up station card", e)
+        }
+        
+        return cardView
+    }
+    
+    // Keep the old method for backward compatibility but mark it as deprecated
+    @Deprecated("Use createStationCardFromLayout instead")
     private fun createProfessionalCardV2(station: Station, distance: Double, position: Int): View {
         val cardView = com.google.android.material.card.MaterialCardView(requireContext()).apply {
             layoutParams = ViewGroup.MarginLayoutParams(
@@ -1037,8 +1104,8 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         dialog.show()
         
-        // Make dialog responsive to theme
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
     }
     
     private fun showDatePicker(onDateSelected: (String) -> Unit) {
@@ -1226,18 +1293,72 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun showBookingSuccessDialog(booking: Booking, stationName: String) {
-        val hourText = "${booking.reservationHour}:00 - ${booking.reservationHour + 1}:00"
-        val message = "🎉 Booking Created Successfully!\n\n" +
-                "📋 Booking ID: ${booking.id}\n" +
-                "⚡ Station: $stationName\n" +
-                "📅 Date: ${booking.reservationDate}\n" +
-                "⏰ Time Slot: $hourText\n" +
-                "📊 Status: ${booking.status}\n\n" +
-                "You can view and manage this booking in the Reservations tab."
+        // Use professional layout instead of simple message dialog
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_booking_success, null)
+        
+        // Find views and set data
+        val bookingId = dialogView.findViewById<TextView>(R.id.textViewBookingId)
+        val stationNameView = dialogView.findViewById<TextView>(R.id.textViewStationName)
+        val bookingDate = dialogView.findViewById<TextView>(R.id.textViewBookingDate)
+        val timeSlot = dialogView.findViewById<TextView>(R.id.textViewTimeSlot)
+        val bookingStatus = dialogView.findViewById<TextView>(R.id.textViewBookingStatus)
+        
+        bookingId.text = booking.id
+        stationNameView.text = stationName
+        bookingDate.text = booking.reservationDate
+        timeSlot.text = "${booking.reservationHour}:00 - ${booking.reservationHour + 1}:00"
+        
+        // Enhanced status styling with proper visibility and colors
+        bookingStatus?.let { status ->
+            Log.d("BookingSuccess", "Setting booking status: ${booking.status}")
+            
+            // Ensure visibility and proper styling
+            status.visibility = View.VISIBLE
+            status.textSize = 14f
+            status.setPadding(16, 8, 16, 8)
+            
+            val statusText = booking.status.uppercase()
+            status.text = statusText
+            
+            // Apply appropriate colors based on booking status
+            when (statusText) {
+                "PENDING" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_pending_background)
+                    Log.d("BookingSuccess", "Applied PENDING styling")
+                }
+                "APPROVED", "CONFIRMED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_active_background)
+                    Log.d("BookingSuccess", "Applied APPROVED/CONFIRMED styling")
+                }
+                "CANCELLED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_cancelled_background)
+                    Log.d("BookingSuccess", "Applied CANCELLED styling")
+                }
+                "COMPLETED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_completed_background)
+                    Log.d("BookingSuccess", "Applied COMPLETED styling")
+                }
+                else -> {
+                    // Default styling for unknown status
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_active_background)
+                    Log.d("BookingSuccess", "Applied default styling for status: $statusText")
+                }
+            }
+            
+            // Force layout update
+            status.requestLayout()
+            status.invalidate()
+            
+            Log.d("BookingSuccess", "Final booking status: '${status.text}', visibility: ${status.visibility}")
+        } ?: Log.e("BookingSuccess", "bookingStatus TextView is null!")
         
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("✅ Booking Confirmed")
-            .setMessage(message)
+            .setView(dialogView)
             .setPositiveButton("View on Map") { dialog, _ ->
                 dialog.dismiss()
                 // Keep the station visible on map
@@ -1247,6 +1368,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                 // Show all stations again
                 displayStationsOnMap()
             }
+            .setCancelable(false)
             .show()
     }
 

@@ -125,7 +125,21 @@ class ActiveBookingsTabFragment : Fragment() {
                         
                         allBookings = allBookingsFromApi.filter { booking ->
                             booking.status.lowercase() in listOf("pending", "approved", "confirmed")
-                        }
+                        }.sortedWith(compareBy<Booking> { booking ->
+                            // First sort criteria: Status priority (approved/confirmed first, then pending)
+                            when (booking.status.lowercase()) {
+                                "approved", "confirmed" -> 0 // Highest priority
+                                "pending" -> 1 // Lower priority
+                                else -> 2 // Fallback for any other status
+                            }
+                        }.thenByDescending { booking ->
+                            // Second sort criteria: Within each status group, sort by date (most recent first)
+                            try {
+                                booking.reservationDate ?: "1970-01-01"
+                            } catch (e: Exception) {
+                                "1970-01-01"
+                            }
+                        })
                         Log.d("ActiveBookings", "Filtered active bookings: ${allBookings.size}")
                         updateBookingsUI()
                         Log.d("ActiveBookings", "Loaded ${allBookings.size} active bookings")

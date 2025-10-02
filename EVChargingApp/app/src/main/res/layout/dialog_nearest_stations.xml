@@ -8,16 +8,16 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="24dp"
+        android:layout_margin="14dp"
         app:cardCornerRadius="24dp"
         app:cardElevation="12dp"
-        app:cardBackgroundColor="?attr/colorSurface">
+        app:cardBackgroundColor="@color/nexcharge_surface">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="32dp">
+            android:padding="20dp">
 
 
             <!-- Stations Container -->
@@ -35,7 +35,7 @@
                     android:layout_height="32dp"
                     android:layout_marginEnd="12dp"
                     android:src="@drawable/ic_dashboard"
-                    android:tint="?attr/colorOnPrimary" />
+                    android:tint="@color/white" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -47,7 +47,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Nearest Charging Stations"
-                        android:textColor="?attr/colorOnPrimary"
+                        android:textColor="@color/white"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -57,7 +57,7 @@
                         android:layout_marginTop="4dp"
                         android:alpha="0.9"
                         android:text="Select a station to view on map and book"
-                        android:textColor="?attr/colorOnPrimary"
+                        android:textColor="@color/white"
                         android:textSize="14sp" />
 
                 </LinearLayout>
@@ -82,8 +82,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Close"
-                android:textColor="?attr/colorPrimary"
-                app:strokeColor="?attr/colorPrimary"
+                android:textColor="@color/nexcharge_primary"
+                app:strokeColor="@color/nexcharge_primary"
                 app:cornerRadius="12dp" />
 
         </LinearLayout>

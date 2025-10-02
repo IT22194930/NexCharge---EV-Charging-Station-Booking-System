@@ -14,6 +14,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -348,8 +349,8 @@ class EVOwnerReservationsFragment : Fragment() {
         
         dialog.show()
         
-        // Make dialog responsive to theme
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
     }
 
     private fun showCreateBookingDialogForStation(selectedStation: Station) {
@@ -434,8 +435,8 @@ class EVOwnerReservationsFragment : Fragment() {
         
         dialog.show()
         
-        // Make dialog responsive to theme
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
     }
 
     private fun showNearbyStationsDialog() {
@@ -552,29 +553,90 @@ class EVOwnerReservationsFragment : Fragment() {
     }
 
     private fun showBookingSuccessDialog(booking: Booking, stationName: String) {
-        val message = """
-            🎉 Reservation Created Successfully!
+        // Use professional layout instead of simple message dialog
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_booking_success, null)
+        
+        // Find views and set data
+        val bookingId = dialogView.findViewById<TextView>(R.id.textViewBookingId)
+        val stationNameView = dialogView.findViewById<TextView>(R.id.textViewStationName)
+        val bookingDate = dialogView.findViewById<TextView>(R.id.textViewBookingDate)
+        val timeSlot = dialogView.findViewById<TextView>(R.id.textViewTimeSlot)
+        val bookingStatus = dialogView.findViewById<TextView>(R.id.textViewBookingStatus)
+        
+        bookingId.text = booking.id
+        stationNameView.text = stationName
+        bookingDate.text = booking.reservationDate
+        timeSlot.text = "${booking.reservationHour}:00 - ${booking.reservationHour + 1}:00"
+        
+        // Enhanced status styling with proper visibility and colors
+        bookingStatus?.let { status ->
+            Log.d("ReservationsBookingSuccess", "Setting booking status: ${booking.status}")
             
-            Your booking has been submitted and is now pending approval from the station operator.
+            // Ensure visibility and proper styling
+            status.visibility = View.VISIBLE
+            status.textSize = 14f
+            status.setPadding(16, 8, 16, 8)
             
-            🏢 Station: $stationName
-            📅 Time Slot: ${DateTimeUtils.formatBookingTimeRange(booking.reservationDate, booking.reservationHour)}
-            🆔 Booking ID: ${booking.id}
-            📊 Status: ${booking.status.uppercase()}
+            val statusText = booking.status.uppercase()
+            status.text = statusText
             
-            You'll receive a QR code once your booking is approved. You can track your reservation status in the bookings section.
-        """.trimIndent()
+            // Apply appropriate colors based on booking status
+            when (statusText) {
+                "PENDING" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_pending_background)
+                    Log.d("ReservationsBookingSuccess", "Applied PENDING styling")
+                }
+                "APPROVED", "CONFIRMED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_active_background)
+                    Log.d("ReservationsBookingSuccess", "Applied APPROVED/CONFIRMED styling")
+                }
+                "CANCELLED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_cancelled_background)
+                    Log.d("ReservationsBookingSuccess", "Applied CANCELLED styling")
+                }
+                "COMPLETED" -> {
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_completed_background)
+                    Log.d("ReservationsBookingSuccess", "Applied COMPLETED styling")
+                }
+                else -> {
+                    // Default styling for unknown status
+                    status.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    status.setBackgroundResource(R.drawable.status_active_background)
+                    Log.d("ReservationsBookingSuccess", "Applied default styling for status: $statusText")
+                }
+            }
+            
+            // Force layout update
+            status.requestLayout()
+            status.invalidate()
+            
+            Log.d("ReservationsBookingSuccess", "Final booking status: '${status.text}', visibility: ${status.visibility}")
+        } ?: Log.e("ReservationsBookingSuccess", "bookingStatus TextView is null!")
         
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Booking Confirmed")
-            .setMessage(message)
-            .setIcon(android.R.drawable.ic_dialog_info)
-            .setPositiveButton("View My Bookings") { _, _ ->
-                // Could navigate to bookings fragment if needed
+            .setView(dialogView)
+            .setPositiveButton("View My Bookings") { dialog, _ ->
+                dialog.dismiss()
+                // Refresh the bookings list to show the new booking
+                loadRecentBookings()
             }
-            .setNeutralButton("Create Another", null)
-            .setNegativeButton("Close", null)
+            .setNeutralButton("Create Another") { dialog, _ ->
+                dialog.dismiss()
+                showCreateBookingDialog()
+            }
+            .setNegativeButton("Close") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
             .show()
+            .apply {
+                // Apply NexCharge theme background instead of transparent
+                window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
+            }
     }
 
     private fun showBookingDetails(booking: Booking) {
