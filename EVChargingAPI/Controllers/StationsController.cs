@@ -21,6 +21,15 @@ namespace EVChargingAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var station = await _service.GetByIdAsync(id);
+            if (station == null) return NotFound();
+            return Ok(station);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Backoffice")]
         public async Task<IActionResult> Create([FromBody] StationCreateDto dto)

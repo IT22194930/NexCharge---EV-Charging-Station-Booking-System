@@ -19,6 +19,16 @@ namespace EVChargingAPI.Controllers
         private readonly BookingRepository _repo; // for simple retrieval
         public BookingsController(BookingService service, BookingRepository repo) { _service = service; _repo = repo; }
 
+        // NEW: Get single booking by id (needed for operator QR scan verification)
+        [HttpGet("{id}")]
+        [Authorize(Roles = "EVOwner,Operator,Backoffice")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var b = await _repo.GetByIdAsync(id);
+            if (b == null) return NotFound();
+            return Ok(b);
+        }
+
         [HttpPost]
         [Authorize(Roles = "EVOwner")]
         public async Task<IActionResult> Create([FromBody] BookingCreateDto dto)
@@ -74,6 +84,19 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // NEW: Mark booking as completed once charging session is finished
+        [HttpPost("complete/{id}")]
+        [Authorize(Roles = "Operator,Backoffice")]
+        public async Task<IActionResult> Complete(string id)
+        {
+            try
+            {
+                var b = await _service.CompleteAsync(id);
+                return Ok(b);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "EVOwner,Backoffice")]
         public async Task<IActionResult> Delete(string id)
@@ -86,16 +109,16 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpGet("owner/{ownerNic}")]
-        [Authorize(Roles = "EVOwner,Operator,Backoffice")]
+    [HttpGet("owner/{ownerNic}")]
+    [Authorize(Roles = "EVOwner,Operator,Backoffice")]
         public async Task<IActionResult> GetByOwner(string ownerNic)
         {
             var list = await _repo.GetByOwnerAsync(ownerNic);
             return Ok(list);
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Operator,Backoffice")]
+    [HttpGet]
+    [Authorize(Roles = "Operator,Backoffice")]
         public async Task<IActionResult> GetAll()
         {
             var list = await _repo.GetAllAsync();

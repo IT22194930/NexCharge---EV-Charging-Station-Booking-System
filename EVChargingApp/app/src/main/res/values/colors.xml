@@ -26,6 +26,11 @@
     <color name="status_completed">#2196F3</color>
     <color name="status_cancelled">#F44336</color>
     
+    <!-- Additional Status Colors for Dialog -->
+    <color name="nexcharge_success">#4CAF50</color>
+    <color name="nexcharge_warning">#FF9800</color>
+    <color name="nexcharge_error">#F44336</color>
+    
     <!-- Card and Surface Colors -->
     <color name="nexcharge_surface">#FFFFFF</color>
     <color name="nexcharge_surface_variant">#F1F8E9</color>

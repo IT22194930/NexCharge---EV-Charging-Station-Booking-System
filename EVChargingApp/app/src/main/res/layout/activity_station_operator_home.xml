@@ -110,6 +110,14 @@
 
             <!-- Feature Cards Grid can be added here -->
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonStationOperatorScanQr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scan Booking QR"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_marginTop="8dp" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

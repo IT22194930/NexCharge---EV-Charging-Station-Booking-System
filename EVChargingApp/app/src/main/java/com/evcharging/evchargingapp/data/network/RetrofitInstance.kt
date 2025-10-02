@@ -12,11 +12,11 @@ import java.util.concurrent.TimeUnit
 object RetrofitInstance {
 
     // API Base URLs - try these in order if one doesn't work
-    private const val BASE_URL_NETWORK = "http://192.168.1.63/EVChargingAPI/api/"  // Your PC's network IP with IIS
+    private const val BASE_URL_NETWORK = "http://192.168.1.103/EVChargingAPI/api/"  // Your PC's network IP with IIS
     private const val BASE_URL_EMULATOR = "http://10.0.2.2/EVChargingAPI/api/"     // For Android emulator with IIS
     private const val BASE_URL_LOCALHOST = "http://localhost/EVChargingAPI/api/"    // Localhost fallback with IIS
     
-    // Use the network IP as specified
+    // Use the development server
     private val CURRENT_BASE_URL = BASE_URL_NETWORK
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
