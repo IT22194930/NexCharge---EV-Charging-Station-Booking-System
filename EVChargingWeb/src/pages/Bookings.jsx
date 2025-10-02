@@ -54,11 +54,13 @@ export default function Bookings() {
         const nic = JSON.parse(
           atob(localStorage.getItem("token").split(".")[1])
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        const res = await api.get(`/bookings/owner/${nic}`);
-        setBookings(res.data); // filtering handled in effect
+  const res = await api.get(`/bookings/owner/${nic}`);
+  const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
+  setBookings(sorted); // filtering handled in effect
       } else {
-        const res = await api.get("/bookings");
-        setBookings(res.data); // filtering handled in effect
+  const res = await api.get("/bookings");
+  const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
+  setBookings(sorted); // filtering handled in effect
       }
     } catch (err) {
       setError("Failed to load bookings");
