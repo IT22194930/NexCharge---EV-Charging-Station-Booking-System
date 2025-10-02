@@ -819,7 +819,10 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             }
             radius = 16f
             cardElevation = 8f
-            setCardBackgroundColor(android.graphics.Color.WHITE)
+            // Use theme-aware background color
+            val typedValue = TypedValue()
+            requireContext().theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true)
+            setCardBackgroundColor(typedValue.data)
             isClickable = true
             isFocusable = true
         }
@@ -838,7 +841,10 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
 
             }
             textSize = 16f
-            setTextColor(android.graphics.Color.BLACK)
+            // Use theme-aware text color
+            val typedValue = TypedValue()
+            requireContext().theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
+            setTextColor(typedValue.data)
             setPadding(20, 20, 20, 20)
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -858,7 +864,10 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
             ).apply {
                 setMargins(24, 16, 24, 16)
             }
-            setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.nexcharge_text_secondary))
+            // Use theme-aware divider color
+            val typedValue = TypedValue()
+            requireContext().theme.resolveAttribute(com.google.android.material.R.attr.colorOutlineVariant, typedValue, true)
+            setBackgroundColor(typedValue.data)
             alpha = 0.2f
         }
     }

@@ -11,7 +11,7 @@
         android:layout_margin="16dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp"
-        app:cardBackgroundColor="@color/nexcharge_surface">
+        app:cardBackgroundColor="?attr/colorSurface">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,34 +19,58 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Professional Header -->
-            <LinearLayout
+            <!-- Header -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
                 android:layout_marginBottom="24dp"
-                android:background="@drawable/nexcharge_header_gradient"
-                android:padding="16dp"
-                android:layout_marginHorizontal="-8dp"
-                android:layout_marginTop="-8dp">
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
+                >
 
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:src="@drawable/ic_bookings"
-                    android:tint="@android:color/white"
-                    android:layout_marginEnd="12dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Update Booking Slot"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/white" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="@drawable/nexcharge_header_gradient">
 
-            </LinearLayout>
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_bookings"
+                        android:tint="?attr/colorOnPrimary"
+                        android:layout_marginEnd="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Update Booking Slot"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Modify your charging reservation"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:alpha="0.9"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Current Booking Information -->
             <com.google.android.material.card.MaterialCardView
@@ -55,7 +79,7 @@
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/nexcharge_background_center">
+                app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -69,7 +93,7 @@
                         android:text="Current Booking Details"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/nexcharge_text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
@@ -78,7 +102,7 @@
                         android:layout_height="wrap_content"
                         android:text="Station: Loading..."
                         android:textSize="14sp"
-                        android:textColor="@color/nexcharge_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="4dp" />
 
                     <TextView
@@ -87,7 +111,7 @@
                         android:layout_height="wrap_content"
                         android:text="Time Slot: Loading..."
                         android:textSize="14sp"
-                        android:textColor="@color/nexcharge_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="4dp" />
 
                     <TextView
@@ -96,7 +120,7 @@
                         android:layout_height="wrap_content"
                         android:text="Status: Loading..."
                         android:textSize="14sp"
-                        android:textColor="@color/nexcharge_text_secondary" />
+                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                 </LinearLayout>
 
@@ -157,8 +181,8 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="Cancel"
-                    android:textColor="@color/nexcharge_text_primary"
-                    app:strokeColor="@color/nexcharge_primary" />
+                    android:textColor="?attr/colorPrimary"
+                    app:strokeColor="?attr/colorPrimary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonUpdate"
@@ -167,7 +191,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="Update"
-                    android:backgroundTint="@color/nexcharge_primary" />
+                    android:backgroundTint="?attr/colorPrimary" />
 
             </LinearLayout>
 
