@@ -2,7 +2,8 @@
 // Purpose: DTOs for Users
 namespace EVChargingAPI.DTOs
 {
-   public record UserCreateDto(string Nic, string FullName, string Password, string Role);
+   public record UserCreateDto(string Nic, string FullName, string Password, string Role, string? AssignedStationId = null);
    public record UserUpdateDto(string? FullName, string? Password);
-   public record UpdateRoleDto(string NewRole);
+   public record UpdateRoleDto(string NewRole, string? AssignedStationId = null);
+   public record UpdateStationAssignmentDto(string? AssignedStationId);
 }

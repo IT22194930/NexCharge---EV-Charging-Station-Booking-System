@@ -45,7 +45,7 @@ namespace EVChargingAPI.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _service.CreateAsync(user);
+                await _service.CreateWithStationAsync(user, dto.AssignedStationId);
                 
                 return CreatedAtAction(nameof(GetByNic), new { nic = user.NIC }, user);
             }
@@ -131,8 +131,19 @@ namespace EVChargingAPI.Controllers
                     return BadRequest("Invalid role. Must be 'Backoffice', 'Operator', or 'EVOwner'");
                 }
 
-                await _service.UpdateRoleByNicAsync(nic, dto.NewRole);
+                await _service.UpdateRoleByNicAsync(nic, dto.NewRole, dto.AssignedStationId);
                 return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPatch("{nic}/station")]
+        public async Task<IActionResult> UpdateStationAssignment(string nic, [FromBody] UpdateStationAssignmentDto dto)
+        {
+            try
+            {
+                await _service.UpdateStationAssignmentByNicAsync(nic, dto.AssignedStationId);
+                return Ok("Station assignment updated successfully");
             }
             catch (Exception ex) { return BadRequest(ex.Message); }
         }

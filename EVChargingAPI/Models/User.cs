@@ -23,6 +23,12 @@ namespace EVChargingAPI.Models
         [BsonElement("passwordHash")]
         public string PasswordHash { get; set; } = "";
 
+        [BsonElement("assignedStationId")]
+        public string? AssignedStationId { get; set; } = null; // For Operators only
+
+        [BsonElement("assignedStationName")]
+        public string? AssignedStationName { get; set; } = null; // For Operators only
+
         [BsonElement("isActive")]
         public bool IsActive { get; set; } = true;
 
