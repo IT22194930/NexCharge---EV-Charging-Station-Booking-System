@@ -22,7 +22,9 @@ namespace EVChargingAPI.Repositories
             await _bookings.Find(x => x.OwnerNIC == ownerNic).ToListAsync();
 
         public async Task<List<Booking>> GetUpcomingForStationAsync(string stationId) =>
-            await _bookings.Find(x => x.StationId == stationId && x.Status != "Cancelled").ToListAsync();
+            await _bookings.Find(x => x.StationId == stationId && 
+                                     x.Status != "Cancelled" && 
+                                     x.ReservationDate > DateTime.UtcNow).ToListAsync();
 
         public async Task UpdateAsync(string id, Booking b) =>
             await _bookings.ReplaceOneAsync(x => x.Id == id, b);
