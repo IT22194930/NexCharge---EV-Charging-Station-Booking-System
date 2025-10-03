@@ -30,12 +30,13 @@ export default function Bookings() {
     reservationDate: "",
     reservationHour: 0,
   });
+  const [currentUser, setCurrentUser] = useState(null);
   const role = localStorage.getItem("role");
 
   // Get current user NIC from token
   const getCurrentUserNic = () => {
     try {
-      if (role === "EVOwner") {
+      if (role === "EVOwner" || role === "Operator") {
         return JSON.parse(atob(localStorage.getItem("token").split(".")[1]))[
           "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
@@ -48,25 +49,47 @@ export default function Bookings() {
 
   const userNic = getCurrentUserNic();
 
+  // Load current user data for operators to get assigned station
+  const loadCurrentUser = useCallback(async () => {
+    if (role === "Operator" && userNic) {
+      try {
+        const res = await api.get("/auth/profile");
+        setCurrentUser(res.data);
+      } catch (err) {
+        console.error("Failed to load current user data:", err);
+      }
+    }
+  }, [role, userNic]);
+
   const loadBookings = useCallback(async () => {
     try {
       if (role === "EVOwner") {
         const nic = JSON.parse(
           atob(localStorage.getItem("token").split(".")[1])
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-  const res = await api.get(`/bookings/owner/${nic}`);
-  const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
-  setBookings(sorted); // filtering handled in effect
+        const res = await api.get(`/bookings/owner/${nic}`);
+        const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
+        setBookings(sorted);
+      } else if (role === "Operator" && currentUser?.assignedStationId) {
+        // Load all bookings and filter by assigned station
+        const res = await api.get("/bookings");
+        const stationBookings = res.data.filter(booking => booking.stationId === currentUser.assignedStationId);
+        const sorted = [...stationBookings].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
+        setBookings(sorted);
+      } else if (role === "Backoffice") {
+        // Backoffice can see all bookings
+        const res = await api.get("/bookings");
+        const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
+        setBookings(sorted);
       } else {
-  const res = await api.get("/bookings");
-  const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
-  setBookings(sorted); // filtering handled in effect
+        // Default case or operator without assigned station
+        setBookings([]);
       }
     } catch (err) {
       setError("Failed to load bookings");
       console.error(err);
     }
-  }, [role]);
+  }, [role, currentUser?.assignedStationId]);
 
   const filterBookings = useCallback((allBookings, filter) => {
     let working = allBookings;
@@ -361,9 +384,16 @@ export default function Bookings() {
   };
 
   useEffect(() => {
-    loadBookings();
-    loadStations();
-  }, [loadBookings]);
+    if (role === "Operator") {
+      loadCurrentUser().then(() => {
+        loadBookings();
+        loadStations();
+      });
+    } else {
+      loadBookings();
+      loadStations();
+    }
+  }, [loadBookings, loadCurrentUser, role]);
 
   // Centralized filtering effect so search persists after state-changing reloads
   useEffect(() => {

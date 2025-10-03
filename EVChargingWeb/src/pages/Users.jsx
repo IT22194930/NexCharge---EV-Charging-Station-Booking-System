@@ -6,6 +6,7 @@ import Pagination from "../components/Pagination";
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [stations, setStations] = useState([]);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -22,6 +23,7 @@ export default function Users() {
     fullName: "",
     role: "Operator",
     password: "",
+    assignedStationId: "",
   });
 
   const loadUsers = useCallback(async () => {
@@ -35,6 +37,20 @@ export default function Users() {
       console.error(err);
     }
   }, [roleFilter]);
+
+  const loadStations = useCallback(async () => {
+    try {
+      const res = await api.get("/stations");
+      setStations(res.data);
+    } catch (err) {
+      console.error("Failed to load stations", err);
+    }
+  }, []);
+
+  // Helper function to get operators count for a station
+  const getOperatorsCountForStation = (stationId) => {
+    return users.filter(user => user.role === "Operator" && user.assignedStationId === stationId).length;
+  };
 
   const filterUsers = (allUsers, filter) => {
     if (filter === "All") {
@@ -64,8 +80,17 @@ export default function Users() {
   const createUser = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/users", form);
-      setForm({ nic: "", fullName: "", role: "Operator", password: "" });
+      const payload = {
+        nic: form.nic,
+        fullName: form.fullName,
+        role: form.role,
+        password: form.password,
+        ...(form.role === "Operator" && form.assignedStationId && {
+          assignedStationId: form.assignedStationId
+        })
+      };
+      await api.post("/users", payload);
+      setForm({ nic: "", fullName: "", role: "Operator", password: "", assignedStationId: "" });
       setShowCreateForm(false);
       await loadUsers(); // This will apply the current filter
       toast.success("User created successfully!");
@@ -159,7 +184,8 @@ export default function Users() {
       nic: user.nic,
       fullName: user.fullName,
       currentRole: user.role,
-      newRole: user.role
+      newRole: user.role,
+      assignedStationId: user.assignedStationId || ""
     });
     setShowUpdateForm(true);
   };
@@ -168,10 +194,15 @@ export default function Users() {
     if (!userToUpdate) return;
 
     try {
+      const payload = {
+        newRole: userToUpdate.newRole,
+        ...(userToUpdate.newRole === "Operator" && userToUpdate.assignedStationId && {
+          assignedStationId: userToUpdate.assignedStationId
+        })
+      };
+      
       // Using PATCH request to update the user role
-      await api.patch(`/users/${userToUpdate.nic}/role`, {
-        newRole: userToUpdate.newRole
-      });
+      await api.patch(`/users/${userToUpdate.nic}/role`, payload);
       await loadUsers();
       
       toast.success(`User role updated to ${userToUpdate.newRole} successfully!`, {
@@ -223,7 +254,8 @@ export default function Users() {
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+    loadStations();
+  }, [loadUsers, loadStations]);
 
   return (
     <div>
@@ -365,7 +397,7 @@ export default function Users() {
                         value="EVOwner"
                         checked={form.role === "EVOwner"}
                         onChange={(e) =>
-                          setForm({ ...form, role: e.target.value })
+                          setForm({ ...form, role: e.target.value, assignedStationId: "" })
                         }
                         className="w-3 h-3 text-green-600 focus:ring-green-500 mb-2"
                       />
@@ -394,7 +426,7 @@ export default function Users() {
                         value="Operator"
                         checked={form.role === "Operator"}
                         onChange={(e) =>
-                          setForm({ ...form, role: e.target.value })
+                          setForm({ ...form, role: e.target.value, assignedStationId: "" })
                         }
                         className="w-3 h-3 text-blue-600 focus:ring-blue-500 mb-2"
                       />
@@ -426,7 +458,7 @@ export default function Users() {
                         value="Backoffice"
                         checked={form.role === "Backoffice"}
                         onChange={(e) =>
-                          setForm({ ...form, role: e.target.value })
+                          setForm({ ...form, role: e.target.value, assignedStationId: "" })
                         }
                         className="w-3 h-3 text-purple-600 focus:ring-purple-500 mb-2"
                       />
@@ -452,6 +484,49 @@ export default function Users() {
                     </label>
                   </div>
                 </div>
+
+                {/* Station Assignment - Only for Operators */}
+                {form.role === "Operator" && (
+                  <div>
+                    <label className="flex items-center text-sm font-medium text-gray-700 mb-1.5">
+                      <svg
+                        className="w-4 h-4 mr-2 text-gray-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Assigned Station
+                    </label>
+                    <select
+                      value={form.assignedStationId}
+                      onChange={(e) =>
+                        setForm({ ...form, assignedStationId: e.target.value })
+                      }
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                      required
+                    >
+                      <option value="">Select a station</option>
+                      {stations.map((station) => {
+                          const operatorCount = getOperatorsCountForStation(station.id);
+                          return (
+                            <option key={station.id} value={station.id}>
+                              {station.name} - {station.location} ({operatorCount} operator{operatorCount !== 1 ? 's' : ''})
+                            </option>
+                          );
+                        })}
+                    </select>
+                    {stations.length === 0 && (
+                      <p className="text-xs text-red-500 mt-1">
+                        No stations available in the system.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Password Input */}
                 <div>
@@ -579,7 +654,7 @@ export default function Users() {
                 </h3>
                 <p className="text-gray-600">
                   Are you sure you want to {userToToggle?.isActive ? "deactivate" : "activate"} user{" "}
-                  <span className="font-semibold text-gray-900">{userToToggle?.fullName}</span> 
+                  <span className="font-semibold text-gray-900">{userToToggle?.fullName} </span> 
                   ({userToToggle?.nic})?
                 </p>
               </div>
@@ -694,7 +769,7 @@ export default function Users() {
                         value="EVOwner"
                         checked={userToUpdate?.newRole === "EVOwner"}
                         onChange={(e) =>
-                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value })
+                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value, assignedStationId: "" })
                         }
                         className="w-4 h-4 text-green-600 focus:ring-green-500 mr-3"
                       />
@@ -721,7 +796,7 @@ export default function Users() {
                         value="Operator"
                         checked={userToUpdate?.newRole === "Operator"}
                         onChange={(e) =>
-                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value })
+                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value, assignedStationId: "" })
                         }
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500 mr-3"
                       />
@@ -751,7 +826,7 @@ export default function Users() {
                         value="Backoffice"
                         checked={userToUpdate?.newRole === "Backoffice"}
                         onChange={(e) =>
-                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value })
+                          setUserToUpdate({ ...userToUpdate, newRole: e.target.value, assignedStationId: "" })
                         }
                         className="w-4 h-4 text-purple-600 focus:ring-purple-500 mr-3"
                       />
@@ -776,6 +851,49 @@ export default function Users() {
                   </div>
                 </div>
 
+                {/* Station Assignment - For Operators (new or existing) */}
+                {(userToUpdate?.newRole === "Operator" || userToUpdate?.currentRole === "Operator") && (
+                  <div>
+                    <label className="flex items-center text-sm font-medium text-gray-700 mb-1.5">
+                      <svg
+                        className="w-4 h-4 mr-2 text-gray-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Assigned Station
+                    </label>
+                    <select
+                      value={userToUpdate?.assignedStationId || ""}
+                      onChange={(e) =>
+                        setUserToUpdate({ ...userToUpdate, assignedStationId: e.target.value })
+                      }
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                      required
+                    >
+                      <option value="">Select a station</option>
+                      {stations.map((station) => {
+                          const operatorCount = getOperatorsCountForStation(station.id);
+                          return (
+                            <option key={station.id} value={station.id}>
+                              {station.name} - {station.location} ({operatorCount} operator{operatorCount !== 1 ? 's' : ''})
+                            </option>
+                          );
+                        })}
+                    </select>
+                    {stations.length === 0 && (
+                      <p className="text-xs text-red-500 mt-1">
+                        No stations available in the system.
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex space-x-3 pt-4">
                   <button
@@ -786,14 +904,22 @@ export default function Users() {
                   </button>
                   <button
                     onClick={confirmRoleUpdate}
-                    disabled={userToUpdate?.newRole === userToUpdate?.currentRole}
+                    disabled={
+                      userToUpdate?.newRole === userToUpdate?.currentRole && 
+                      (userToUpdate?.currentRole !== "Operator" || 
+                       userToUpdate?.assignedStationId === (users.find(u => u.nic === userToUpdate?.nic)?.assignedStationId || ""))
+                    }
                     className={`flex-1 px-4 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm ${
-                      userToUpdate?.newRole === userToUpdate?.currentRole
+                      userToUpdate?.newRole === userToUpdate?.currentRole && 
+                      (userToUpdate?.currentRole !== "Operator" || 
+                       userToUpdate?.assignedStationId === (users.find(u => u.nic === userToUpdate?.nic)?.assignedStationId || ""))
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                         : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
                     }`}
                   >
-                    Update Role
+                    {userToUpdate?.newRole === userToUpdate?.currentRole && userToUpdate?.currentRole === "Operator" 
+                      ? "Update Station" 
+                      : "Update Role"}
                   </button>
                 </div>
               </div>
@@ -838,6 +964,9 @@ export default function Users() {
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Assigned Station
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -871,6 +1000,41 @@ export default function Users() {
                   >
                     {user.role}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {user.role === "Operator" && user.assignedStationName ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-2 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-blue-600 font-medium">{user.assignedStationName}</span>
+                    </div>
+                  ) : user.role === "Operator" ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-2 text-red-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-red-600 font-medium">No station assigned</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400 text-xs">N/A</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.isActive ? (
