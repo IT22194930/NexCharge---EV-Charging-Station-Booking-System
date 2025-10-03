@@ -55,6 +55,13 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
     implementation("com.auth0.android:jwtdecode:2.0.2")
     implementation(libs.androidx.swiperefreshlayout)
+    // QR / Barcode scanning (CameraX + ML Kit / ZXing minimal)
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+    implementation("androidx.camera:camera-core:1.3.4")
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")

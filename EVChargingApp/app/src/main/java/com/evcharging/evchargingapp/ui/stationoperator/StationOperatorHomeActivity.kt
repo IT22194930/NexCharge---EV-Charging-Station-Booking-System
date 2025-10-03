@@ -30,7 +30,10 @@ class StationOperatorHomeActivity : AppCompatActivity() {
             performLogout()
         }
 
-        // TODO: Initialize Station Operator specific UI and logic
+        // Launch QR Scanner
+        binding.buttonStationOperatorScanQr.setOnClickListener {
+            startActivity(Intent(this, OperatorQrScanActivity::class.java))
+        }
     }
 
     private fun performLogout() {

@@ -26,6 +26,11 @@
     <color name="status_completed">#64B5F6</color>
     <color name="status_cancelled">#EF5350</color>
     
+    <!-- Additional Status Colors for Dialog - Dark Mode -->
+    <color name="nexcharge_success">#4CAF50</color>
+    <color name="nexcharge_warning">#FFB74D</color>
+    <color name="nexcharge_error">#EF5350</color>
+    
     <!-- Card and Surface Colors - Dark Mode -->
     <color name="nexcharge_surface">#1E1E1E</color>
     <color name="nexcharge_surface_variant">#2D2D2D</color>

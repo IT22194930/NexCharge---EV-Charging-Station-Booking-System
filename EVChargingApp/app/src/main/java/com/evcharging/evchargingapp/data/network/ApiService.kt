@@ -23,6 +23,9 @@ interface ApiService {
     @GET("stations")
     suspend fun getAllStations(): Response<List<Station>>
 
+    @GET("stations/{id}")
+    suspend fun getStationById(@Path("id") id: String): Response<Station>
+
     @GET("stations/owner/{ownerNic}")
     suspend fun getStationsByOwner(@Path("ownerNic") ownerNic: String): Response<List<Station>>
 
@@ -42,14 +45,20 @@ interface ApiService {
     @GET("bookings/owner/{ownerNic}")
     suspend fun getBookingsByOwner(@Path("ownerNic") ownerNic: String): Response<List<Booking>>
 
+    @GET("bookings/{id}")
+    suspend fun getBookingById(@Path("id") id: String): Response<Booking>
+
     @POST("bookings")
     suspend fun createBooking(@Body request: BookingCreateRequest): Response<Booking>
 
     @PUT("bookings/{id}")
     suspend fun updateBooking(@Path("id") id: String, @Body request: BookingUpdateRequest): Response<Booking>
 
-    @PUT("bookings/{id}/status")
-    suspend fun updateBookingStatus(@Path("id") id: String, @Body request: BookingStatusUpdateRequest): Response<Booking>
+    @POST("bookings/approve/{id}")
+    suspend fun approveBooking(@Path("id") id: String): Response<Booking>
+
+    @POST("bookings/complete/{id}")
+    suspend fun completeBooking(@Path("id") id: String): Response<Booking>
 
     @DELETE("bookings/{id}")
     suspend fun deleteBooking(@Path("id") id: String): Response<Unit>
