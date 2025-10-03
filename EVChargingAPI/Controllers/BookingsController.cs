@@ -84,7 +84,6 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        // NEW: Mark booking as completed once charging session is finished
         [HttpPost("complete/{id}")]
         [Authorize(Roles = "Operator,Backoffice")]
         public async Task<IActionResult> Complete(string id)
@@ -109,16 +108,16 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-    [HttpGet("owner/{ownerNic}")]
-    [Authorize(Roles = "EVOwner,Operator,Backoffice")]
+        [HttpGet("owner/{ownerNic}")]
+        [Authorize(Roles = "EVOwner,Operator,Backoffice")]
         public async Task<IActionResult> GetByOwner(string ownerNic)
         {
             var list = await _repo.GetByOwnerAsync(ownerNic);
             return Ok(list);
         }
 
-    [HttpGet]
-    [Authorize(Roles = "Operator,Backoffice")]
+        [HttpGet]
+        [Authorize(Roles = "Operator,Backoffice")]
         public async Task<IActionResult> GetAll()
         {
             var list = await _repo.GetAllAsync();
