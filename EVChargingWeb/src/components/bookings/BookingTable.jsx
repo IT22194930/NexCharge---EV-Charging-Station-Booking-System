@@ -16,6 +16,9 @@ export default function BookingTable({
   startIndex = 0,
   statusFilter = "All",
   handleStatusFilterChange,
+  stationFilter = "All",
+  handleStationFilterChange,
+  stations = [],
 }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -31,7 +34,23 @@ export default function BookingTable({
               </th>
             )}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Station
+              <div className="flex items-center space-x-3">
+                <span>Station</span>
+                {role === "Backoffice" && handleStationFilterChange && stations.length > 0 && (
+                  <select
+                    value={stationFilter}
+                    onChange={(e) => handleStationFilterChange(e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="All">All Stations</option>
+                    {stations.map((station) => (
+                      <option key={station.id} value={station.id}>
+                        {station.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Time Slot

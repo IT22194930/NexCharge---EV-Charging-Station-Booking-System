@@ -89,6 +89,12 @@ namespace EVChargingAPI.Services
             return allUsers.FirstOrDefault(u => u.Role == "Operator" && u.AssignedStationId == stationId);
         }
         
+        public async Task<List<User>> GetOperatorsByStationIdAsync(string stationId)
+        {
+            var allUsers = await _repo.GetAllAsync();
+            return allUsers.Where(u => u.Role == "Operator" && u.AssignedStationId == stationId).ToList();
+        }
+        
         public async Task<User> CreateWithStationAsync(User user, string? assignedStationId = null)
         {
             // Handle station assignment for Operators

@@ -8,6 +8,7 @@ import Users from "./pages/Users";
 import Owners from "./pages/Owners";
 import Bookings from "./pages/Bookings";
 import Stations from "./pages/Stations";
+import Profile from "./pages/Profile";
 
 function PrivateRoute({ children, roles }) {
   const token = localStorage.getItem("token");
@@ -57,6 +58,13 @@ export default function App() {
         <Route path="/bookings" element={
           <PrivateRoute roles={["Backoffice", "Operator", "EVOwner"]}>
             <Bookings />
+          </PrivateRoute>
+        } />
+        
+        {/* Profile - accessible by all authenticated users */}
+        <Route path="/profile" element={
+          <PrivateRoute>
+            <Profile />
           </PrivateRoute>
         } />
       </Routes>

@@ -10,7 +10,10 @@ export default function Dashboard() {
     totalUsers: 0,
     totalStations: 0,
     totalBookings: 0,
-    activeBookings: 0
+    activeBookings: 0,
+    pendingBookings: 0,
+    assignedStation: null,
+    message: null
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +35,10 @@ export default function Dashboard() {
           totalUsers: 0,
           totalStations: 0,
           totalBookings: 0,
-          activeBookings: 0
+          activeBookings: 0,
+          pendingBookings: 0,
+          assignedStation: null,
+          message: null
         });
       } finally {
         setLoading(false);
@@ -45,7 +51,26 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to EV Charging System</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {role === "Operator" ? "Operator Dashboard" : 
+           role === "EVOwner" ? "EV Owner Dashboard" :
+           role === "Backoffice" ? "Back Office Dashboard" :
+           "Welcome to EV Charging System"}
+        </h1>
+        {role === "Operator" && !loading && stats.assignedStation && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-800">
+              <span className="font-semibold">Managing Station:</span> {stats.assignedStation}
+            </p>
+          </div>
+        )}
+        {role === "Operator" && !loading && !stats.assignedStation && stats.message && (
+          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800">
+              <span className="font-semibold">Status:</span> {stats.message}
+            </p>
+          </div>
+        )}
         {error && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800">{error}</p>
@@ -59,6 +84,12 @@ export default function Dashboard() {
           // Show skeleton cards while loading
           <>
             {role === "Backoffice" && (
+              <>
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </>
+            )}
+            {role === "Operator" && (
               <>
                 <StatsCardSkeleton />
                 <StatsCardSkeleton />
@@ -102,6 +133,40 @@ export default function Dashboard() {
               </>
             )}
 
+            {role === "Operator" && (
+              <>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-green-100">
+                      <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Assigned Station</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {stats.assignedStation || stats.message || "Not Assigned"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-orange-100">
+                      <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.pendingBookings || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="bg-white p-6 rounded-lg shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-yellow-100">
@@ -111,7 +176,8 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    {role === "EVOwner" ? "My Bookings" : "Total Bookings"}
+                    {role === "EVOwner" ? "My Bookings" : 
+                     role === "Operator" ? "Station Bookings" : "Total Bookings"}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
                 </div>
@@ -127,7 +193,8 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    {role === "EVOwner" ? "My Active Bookings" : "Active Bookings"}
+                    {role === "EVOwner" ? "My Active Bookings" : 
+                     role === "Operator" ? "Active Bookings" : "Active Bookings"}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">{stats.activeBookings}</p>
                 </div>

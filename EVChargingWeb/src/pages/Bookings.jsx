@@ -22,6 +22,7 @@ export default function Bookings() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [stationFilter, setStationFilter] = useState("All"); // backoffice station filter
   const [actionConfirm, setActionConfirm] = useState({ visible: false });
   const [searchOwnerNic, setSearchOwnerNic] = useState(""); // operator NIC search
   const [form, setForm] = useState({
@@ -91,23 +92,38 @@ export default function Bookings() {
     }
   }, [role, currentUser?.assignedStationId]);
 
-  const filterBookings = useCallback((allBookings, filter) => {
+  const filterBookings = useCallback((allBookings, statusFilter, stationFilter) => {
     let working = allBookings;
+    
+    // Apply operator NIC search if applicable
     if (role === "Operator" && searchOwnerNic.trim()) {
       const q = searchOwnerNic.trim().toLowerCase();
       working = working.filter(b => (b.ownerNIC || "").toLowerCase().includes(q));
     }
-    if (filter === "All") {
-      setFilteredBookings(working);
-    } else {
-      setFilteredBookings(working.filter(b => b.status === filter));
+    
+    // Apply status filter
+    if (statusFilter !== "All") {
+      working = working.filter(b => b.status === statusFilter);
     }
+    
+    // Apply station filter for Backoffice users
+    if (role === "Backoffice" && stationFilter !== "All") {
+      working = working.filter(b => b.stationId === stationFilter);
+    }
+    
+    setFilteredBookings(working);
   }, [role, searchOwnerNic]);
 
   const handleStatusFilterChange = (filter) => {
     setStatusFilter(filter);
     setCurrentPage(1); // Reset to first page when filtering
-    filterBookings(bookings, filter);
+    filterBookings(bookings, filter, stationFilter);
+  };
+
+  const handleStationFilterChange = (stationId) => {
+    setStationFilter(stationId);
+    setCurrentPage(1); // Reset to first page when filtering
+    filterBookings(bookings, statusFilter, stationId);
   };
 
   // Pagination logic
@@ -397,12 +413,12 @@ export default function Bookings() {
 
   // Centralized filtering effect so search persists after state-changing reloads
   useEffect(() => {
-    filterBookings(bookings, statusFilter);
+    filterBookings(bookings, statusFilter, stationFilter);
     // Only reset to first page if the filter criteria itself changed
     // Detect changes via dependencies (excluding bookings data changes)
     // We achieve this by separating deps: when bookings changes alone, we don't reset page
     // Simple approach: track last criteria
-  }, [bookings, statusFilter, searchOwnerNic, role, filterBookings]);
+  }, [bookings, statusFilter, stationFilter, searchOwnerNic, role, filterBookings]);
 
   return (
     <div>
@@ -416,6 +432,25 @@ export default function Bookings() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end w-full lg:w-auto">
+          {role === "Backoffice" && (
+            <div className="relative">
+              <select
+                value={stationFilter}
+                onChange={(e) => handleStationFilterChange(e.target.value)}
+                className="pl-3 pr-8 py-2 w-full sm:w-64 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              >
+                <option value="All">All Stations</option>
+                {stations.map((station) => (
+                  <option key={station.id} value={station.id}>
+                    {station.name}
+                  </option>
+                ))}
+              </select>
+              <svg className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          )}
           {role === "Operator" && (
             <div className="relative">
               <input
@@ -502,6 +537,9 @@ export default function Bookings() {
         startIndex={startIndex}
         statusFilter={statusFilter}
         handleStatusFilterChange={handleStatusFilterChange}
+        stationFilter={stationFilter}
+        handleStationFilterChange={handleStationFilterChange}
+        stations={stations}
       />
 
       {/* Pagination Component */}

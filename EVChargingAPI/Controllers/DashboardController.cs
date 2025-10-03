@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Repositories;
+using EVChargingAPI.Services;
 using System.Security.Claims;
 
 namespace EVChargingAPI.Controllers
@@ -15,15 +16,18 @@ namespace EVChargingAPI.Controllers
         private readonly UserRepository _userRepo;
         private readonly StationRepository _stationRepo;
         private readonly BookingRepository _bookingRepo;
+        private readonly UserService _userService;
 
         public DashboardController(
             UserRepository userRepo,
             StationRepository stationRepo,
-            BookingRepository bookingRepo)
+            BookingRepository bookingRepo,
+            UserService userService)
         {
             _userRepo = userRepo;
             _stationRepo = stationRepo;
             _bookingRepo = bookingRepo;
+            _userService = userService;
         }
 
         [HttpGet("stats")]
@@ -32,14 +36,14 @@ namespace EVChargingAPI.Controllers
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var userNic = User.FindFirst(ClaimTypes.Name)?.Value;
 
+            if (string.IsNullOrEmpty(userNic))
+            {
+                return BadRequest("User identification not found");
+            }
+
             if (role == "EVOwner")
             {
                 // For EV Owners, return their personal stats
-                if (string.IsNullOrEmpty(userNic))
-                {
-                    return BadRequest("User identification not found");
-                }
-                
                 var userBookings = await _bookingRepo.GetByOwnerAsync(userNic);
                 var activeBookings = userBookings.Where(b => b.Status == "Approved" || b.Status == "Pending").Count();
 
@@ -51,9 +55,42 @@ namespace EVChargingAPI.Controllers
                     activeBookings = activeBookings
                 });
             }
+            else if (role == "Operator")
+            {
+                // For Operators, return stats specific to their assigned station
+                var operatorUser = await _userService.GetByNicAsync(userNic);
+                if (operatorUser == null || string.IsNullOrEmpty(operatorUser.AssignedStationId))
+                {
+                    return Ok(new
+                    {
+                        totalUsers = 0,
+                        totalStations = 0,
+                        totalBookings = 0,
+                        activeBookings = 0,
+                        assignedStation = (string?)null,
+                        message = "No station assigned"
+                    });
+                }
+
+                // Get all bookings for the operator's assigned station
+                var allBookings = await _bookingRepo.GetAllAsync();
+                var stationBookings = allBookings.Where(b => b.StationId == operatorUser.AssignedStationId).ToList();
+                var activeBookings = stationBookings.Where(b => b.Status == "Approved" || b.Status == "Pending").Count();
+                var pendingBookings = stationBookings.Where(b => b.Status == "Pending").Count();
+
+                return Ok(new
+                {
+                    totalUsers = 0,
+                    totalStations = 1, // Operator manages one station
+                    totalBookings = stationBookings.Count(),
+                    activeBookings = activeBookings,
+                    pendingBookings = pendingBookings,
+                    assignedStation = operatorUser.AssignedStationName ?? "Unknown Station"
+                });
+            }
             else
             {
-                // For Backoffice and Operators, return system-wide stats
+                // For Backoffice, return system-wide stats
                 var allUsers = await _userRepo.GetAllAsync();
                 var allStations = await _stationRepo.GetAllAsync();
                 var allBookings = await _bookingRepo.GetAllAsync();
