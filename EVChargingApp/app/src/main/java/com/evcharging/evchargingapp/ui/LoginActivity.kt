@@ -21,6 +21,7 @@ import com.evcharging.evchargingapp.ui.HomeActivity
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
 import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
 import com.evcharging.evchargingapp.utils.ThemeManager
+import com.evcharging.evchargingapp.utils.LoadingManager
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -60,6 +61,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun loginUser() {
+        // Prevent multiple login attempts
+        if (LoadingManager.isShowing()) {
+            return
+        }
+        
         // Corrected ID references for EditTexts
         val nic = binding.editTextLoginNic.text.toString().trim()
         val password = binding.editTextLoginPassword.text.toString().trim()
@@ -72,12 +78,15 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        // Corrected ProgressBar ID and enabled visibility
-        binding.progressBarLogin.visibility = View.VISIBLE
-        binding.buttonLogin.isEnabled = false
+        // Show loading screen instead of just progress bar
+        LoadingManager.show(this, "Signing you in...")
+        setLoginButtonLoading(true)
 
         lifecycleScope.launch {
             try {
+                // Update loading message for API call
+                LoadingManager.updateMessage("Verifying credentials...")
+                
                 val response = RetrofitInstance.api.login(LoginRequest(nic, password))
 
                 if (response.isSuccessful) {
@@ -85,14 +94,21 @@ class LoginActivity : AppCompatActivity() {
 
                     if (loginResponse?.token != null && loginResponse.token.isNotEmpty()) {
                         val tokenString = loginResponse.token
-                        Toast.makeText(applicationContext, "Login Successful!", Toast.LENGTH_LONG).show()
-
+                        
+                        // Update loading message
+                        LoadingManager.updateMessage("Setting up your account...")
+                        
                         saveAuthToken(tokenString)
 
                         Log.d("LoginActivity", "Login successful. Token: $tokenString")
 
                         // Decode token and navigate based on role
                         val userRole = getRoleFromToken(tokenString)
+                        
+                        // Final loading message
+                        LoadingManager.updateMessage("Redirecting to dashboard...")
+                        
+                        Toast.makeText(applicationContext, "Welcome! Redirecting to your dashboard...", Toast.LENGTH_SHORT).show()
                         navigateToDashboard(userRole)
 
                     } else {
@@ -105,13 +121,35 @@ class LoginActivity : AppCompatActivity() {
                         val errorBodyString = response.errorBody()?.string()
                         if (!errorBodyString.isNullOrEmpty()) {
                             val errorJson = JSONObject(errorBodyString)
-                            errorMessage = errorJson.optString("message", "Invalid credentials. Please check your NIC and password.")
+                            val serverMessage = errorJson.optString("message", "")
+                            
+                            // Check for specific error messages from server
+                            errorMessage = when {
+                                serverMessage.contains("inactive", ignoreCase = true) || 
+                                serverMessage.contains("deactivated", ignoreCase = true) ||
+                                serverMessage.contains("disabled", ignoreCase = true) -> {
+                                    "Your account has been deactivated. Please contact support to reactivate your account."
+                                }
+                                serverMessage.contains("suspended", ignoreCase = true) -> {
+                                    "Your account has been suspended. Please contact support for assistance."
+                                }
+                                serverMessage.contains("invalid", ignoreCase = true) && 
+                                serverMessage.contains("credentials", ignoreCase = true) -> {
+                                    "Invalid credentials. Please check your NIC and password."
+                                }
+                                serverMessage.contains("not found", ignoreCase = true) -> {
+                                    "User not found. Please check your NIC or register a new account."
+                                }
+                                serverMessage.isNotEmpty() -> serverMessage
+                                else -> "Invalid credentials. Please check your NIC and password."
+                            }
                         } else {
                             // Handle different HTTP status codes
                             errorMessage = when (response.code()) {
                                 401 -> "Invalid credentials. Please check your NIC and password."
+                                403 -> "Your account has been deactivated. Please contact support to reactivate your account."
                                 400 -> "Invalid request. Please check your input."
-                                404 -> "User not found. Please check your NIC."
+                                404 -> "User not found. Please check your NIC or register a new account."
                                 500 -> "Server error. Please try again later."
                                 else -> "Login failed. Please try again."
                             }
@@ -120,8 +158,9 @@ class LoginActivity : AppCompatActivity() {
                         Log.e("LoginActivity", "Error parsing error body: ${e.message}")
                         errorMessage = when (response.code()) {
                             401 -> "Invalid credentials. Please check your NIC and password."
+                            403 -> "Your account has been deactivated. Please contact support to reactivate your account."
                             400 -> "Invalid request. Please check your input."
-                            404 -> "User not found. Please check your NIC."
+                            404 -> "User not found. Please check your NIC or register a new account."
                             500 -> "Server error. Please try again later."
                             else -> "Login failed. Please try again."
                         }
@@ -131,39 +170,28 @@ class LoginActivity : AppCompatActivity() {
             } catch (e: java.net.SocketTimeoutException) {
                 Log.e("LoginActivity", "Connection timeout: ${e.message}", e)
                 val errorMessage = """
-                    Connection timeout - Cannot reach server.
+                    Connection timeout - Server is taking too long to respond.
                     
-                    Troubleshooting steps:
-                    1. Make sure your API is running on IIS/Web Server
-                    2. Check if API is accessible at: http://192.168.1.63/EVChargingAPI/
-                    3. Verify both devices are on same network
-                    4. Test in browser first
-                    5. Check Windows Firewall settings (port 80)
-                    
-                    Current server: http://192.168.1.63/EVChargingAPI/api/
+                    Please try again or check your internet connection.
                 """.trimIndent()
                 Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
             } catch (e: java.net.ConnectException) {
                 Log.e("LoginActivity", "Connection failed: ${e.message}", e)
                 val errorMessage = """
-                    Cannot connect to server.
+                    Unable to connect to server.
                     
-                    Please check:
-                    1. Is IIS running with EVChargingAPI deployed?
-                    2. Server should be at: http://192.168.1.63/EVChargingAPI/
-                    3. Check Windows Firewall settings
-                    4. Try accessing from browser first
+                    Please check your internet connection and try again.
                 """.trimIndent()
                 Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_LONG).show()
             } catch (e: java.net.UnknownHostException) {
                 Log.e("LoginActivity", "Unknown host: ${e.message}", e)
-                Toast.makeText(applicationContext, "Cannot resolve server address. Check network connection.", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Network error: Please check your internet connection and try again.", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
                 Log.e("LoginActivity", "Login exception: ${e.message}", e)
-                Toast.makeText(applicationContext, "Login error: Check network connection.", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Login error: Please check your connection and try again.", Toast.LENGTH_LONG).show()
             } finally {
-                binding.progressBarLogin.visibility = View.GONE
-                binding.buttonLogin.isEnabled = true
+                LoadingManager.dismiss()
+                setLoginButtonLoading(false)
             }
         }
     }
@@ -203,5 +231,23 @@ class LoginActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish() // Close LoginActivity so user can't go back
+    }
+
+    private fun setLoginButtonLoading(isLoading: Boolean) {
+        binding.buttonLogin.apply {
+            isEnabled = !isLoading
+            text = if (isLoading) "Signing in..." else "Login"
+            if (isLoading) {
+                setIconResource(android.R.drawable.ic_popup_sync)
+                iconTint = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.WHITE
+                )
+            } else {
+                setIconResource(R.drawable.ic_person)
+                iconTint = android.content.res.ColorStateList.valueOf(
+                    android.graphics.Color.WHITE
+                )
+            }
+        }
     }
 }

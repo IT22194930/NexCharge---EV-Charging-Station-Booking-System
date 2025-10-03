@@ -130,7 +130,10 @@
                 android:textStyle="bold"
                 style="@style/Widget.Material3.Button.UnelevatedButton"
                 app:backgroundTint="@color/nexcharge_primary"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_person"
+                app:iconGravity="textStart"
+                app:iconTint="@android:color/white" />
 
             <!-- Register Link -->
             <TextView

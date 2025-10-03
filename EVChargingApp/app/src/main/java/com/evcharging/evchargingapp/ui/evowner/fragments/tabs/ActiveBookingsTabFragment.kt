@@ -25,6 +25,7 @@ import com.evcharging.evchargingapp.ui.evowner.adapters.BookingAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.EVOwnerBookingsFragment
 import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.DateTimeUtils
+import com.evcharging.evchargingapp.utils.LoadingManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
@@ -506,7 +507,7 @@ class ActiveBookingsTabFragment : Fragment() {
     private fun deleteBooking(bookingId: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                showLoading(true)
+                LoadingManager.show(requireContext(), "Deleting booking...")
                 val response = apiService.deleteBooking(bookingId)
                 
                 if (!isAdded || _binding == null) return@launch
@@ -521,7 +522,7 @@ class ActiveBookingsTabFragment : Fragment() {
                 Log.e("ActiveBookings", "Error deleting booking", e)
                 showError("Network error: ${e.message}")
             } finally {
-                showLoading(false)
+                LoadingManager.dismiss()
             }
         }
     }
