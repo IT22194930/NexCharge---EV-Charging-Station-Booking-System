@@ -909,7 +909,7 @@ class EVOwnerReservationsFragment : Fragment() {
     private fun deleteBooking(bookingId: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                showLoading(true)
+                LoadingManager.show(requireContext(), "Deleting reservation...")
                 val response = apiService.deleteBooking(bookingId)
                 
                 if (!isAdded || _binding == null) return@launch
@@ -924,7 +924,7 @@ class EVOwnerReservationsFragment : Fragment() {
                 Log.e("EVOwnerReservations", "Error deleting booking", e)
                 showError("Network error: ${e.message}")
             } finally {
-                showLoading(false)
+                LoadingManager.dismiss()
             }
         }
     }

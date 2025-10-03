@@ -292,7 +292,7 @@
                             android:textSize="12sp"
                             app:cornerRadius="12dp"
                             app:icon="@drawable/ic_charging_station"
-                            app:iconSize="16dp"
+                            app:iconSize="30dp"
                             app:iconTint="@android:color/white" />
 
                         <com.google.android.material.button.MaterialButton
