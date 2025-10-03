@@ -40,6 +40,8 @@ class HistoryBookingsTabFragment : Fragment() {
     private var allBookings = listOf<Booking>()
     private var allStations = listOf<Station>()
     private var searchQuery = ""
+    private var selectedYear: Int? = null
+    private var selectedMonth: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,9 +55,38 @@ class HistoryBookingsTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
+        setupFilterTrigger()
         loadStationsAndBookings()
     }
 
+    private fun setupFilterTrigger() {
+        // Setup the FAB filter button
+        binding.fabFilter.setOnClickListener {
+            showMonthYearFilterDialog()
+        }
+        
+        // Setup clear filter button
+        binding.imageViewClearFilter.setOnClickListener {
+            clearDateFilter()
+        }
+        
+        // Add long press on the RecyclerView container to show filter (backup)
+        binding.recyclerViewHistoryBookings.setOnLongClickListener {
+            showMonthYearFilterDialog()
+            true
+        }
+        
+        // Also add a touch listener to show filter info
+        binding.root.setOnLongClickListener {
+            if (hasActiveFilter()) {
+                showError("Current filter: ${getCurrentFilterStatus()}")
+            } else {
+                showMonthYearFilterDialog()
+            }
+            true
+        }
+    }
+    
     private fun setupRecyclerView() {
         bookingAdapter = BookingAdapter(
             onBookingClick = { booking ->
@@ -116,8 +147,18 @@ class HistoryBookingsTabFragment : Fragment() {
                     if (response.isSuccessful && response.body() != null) {
                         allBookings = response.body()!!.filter { booking ->
                             booking.status.lowercase() in listOf("completed", "cancelled")
+                        }.sortedByDescending { booking ->
+                            // Sort by reservation date, most recent first
+                            try {
+                                // Use the reservation date string for sorting (ISO format should sort correctly)
+                                booking.reservationDate
+                            } catch (e: Exception) {
+                                // If any issues, use a default old date to put it at the end
+                                "2000-01-01"
+                            }
                         }
                         updateBookingsUI()
+                        updateFilterStatusCard(getCurrentFilterStatus())
                         Log.d("HistoryBookings", "Loaded ${allBookings.size} history bookings")
                     } else {
                         showError("Failed to load bookings: ${response.message()}")
@@ -142,11 +183,137 @@ class HistoryBookingsTabFragment : Fragment() {
         updateBookingsUI()
     }
 
-    private fun updateBookingsUI() {
-        val filteredBookings = if (searchQuery.isEmpty()) {
-            allBookings
+    fun showMonthYearFilter() {
+        showMonthYearFilterDialog()
+    }
+
+    fun clearDateFilter() {
+        selectedYear = null
+        selectedMonth = null
+        updateBookingsUI()
+        updateFilterStatusCard("All History")
+        showError("Date filter cleared")
+    }
+
+    private fun showMonthYearFilterDialog() {
+        Log.d("HistoryBookings", "showMonthYearFilterDialog called")
+        
+        // Use the proper layout file instead of programmatic creation
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_month_year_filter, null)
+        
+        val yearSpinner = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerYear)
+        val monthSpinner = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerMonth)
+        
+        // Setup year spinner
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val years = (currentYear - 5..currentYear).map { it.toString() }.toTypedArray()
+        val yearAdapter = android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, years)
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        yearSpinner.adapter = yearAdapter
+        
+        // Setup month spinner
+        val months = arrayOf("All Months", "January", "February", "March", "April", "May", "June", 
+                           "July", "August", "September", "October", "November", "December")
+        val monthAdapter = android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, months)
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        monthSpinner.adapter = monthAdapter
+        
+        // Set current selections or defaults to current date
+        val calendar = Calendar.getInstance()
+        val currentYearValue = calendar.get(Calendar.YEAR)
+        val currentMonthValue = calendar.get(Calendar.MONTH) // 0-based month
+        
+        // Set year selection (default to current year if no filter is set)
+        val yearToSelect = selectedYear ?: currentYearValue
+        val yearIndex = years.indexOf(yearToSelect.toString())
+        if (yearIndex >= 0) {
+            yearSpinner.setSelection(yearIndex)
+        }
+        
+        // Set month selection (default to current month if no filter is set)
+        val monthToSelect = selectedMonth ?: currentMonthValue
+        monthSpinner.setSelection(monthToSelect + 1) // +1 because index 0 is "All Months"
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Filter by Month & Year")
+            .setView(dialogView)
+            .setPositiveButton("Apply") { _, _ ->
+                val selectedYearStr = yearSpinner.selectedItem.toString()
+                val selectedMonthIndex = monthSpinner.selectedItemPosition
+                
+                selectedYear = selectedYearStr.toInt()
+                selectedMonth = if (selectedMonthIndex == 0) null else selectedMonthIndex - 1 // -1 because index 0 is "All Months"
+                
+                updateBookingsUI()
+                showFilterStatus()
+            }
+            .setNegativeButton("Clear Filter") { _, _ ->
+                clearDateFilter()
+            }
+            .setNeutralButton("Cancel", null)
+            .show()
+    }
+    
+    private fun showFilterStatus() {
+        val status = when {
+            selectedYear != null && selectedMonth != null -> {
+                val monthNames = arrayOf("January", "February", "March", "April", "May", "June", 
+                                       "July", "August", "September", "October", "November", "December")
+                "Filtered: ${monthNames[selectedMonth!!]} $selectedYear"
+            }
+            selectedYear != null -> "Filtered: Year $selectedYear"
+            else -> "All History"
+        }
+        
+        // Update filter status card
+        updateFilterStatusCard(status)
+    }
+    
+    private fun updateFilterStatusCard(status: String) {
+        if (!isAdded || _binding == null) return
+        
+        if (hasActiveFilter()) {
+            binding.cardFilterStatus.visibility = View.VISIBLE
+            binding.textViewFilterStatus.text = status
         } else {
-            allBookings.filter { booking ->
+            binding.cardFilterStatus.visibility = View.GONE
+        }
+    }
+
+    private fun updateBookingsUI() {
+        var filteredBookings = allBookings
+        
+        // Apply month/year filter first
+        if (selectedYear != null || selectedMonth != null) {
+            filteredBookings = filteredBookings.filter { booking ->
+                try {
+                    val reservationDate = booking.reservationDate
+                    if (reservationDate.isNullOrEmpty()) return@filter false
+                    
+                    // Parse the date string (assuming ISO format like "2024-01-15T14:30" or "2024-01-15")
+                    val dateStr = reservationDate.split("T")[0] // Get just the date part
+                    val dateParts = dateStr.split("-")
+                    if (dateParts.size >= 3) {
+                        val bookingYear = dateParts[0].toInt()
+                        val bookingMonth = dateParts[1].toInt() - 1 // Convert to 0-based month
+                        
+                        val yearMatches = selectedYear == null || bookingYear == selectedYear
+                        val monthMatches = selectedMonth == null || bookingMonth == selectedMonth
+                        
+                        yearMatches && monthMatches
+                    } else {
+                        false
+                    }
+                } catch (e: Exception) {
+                    Log.e("HistoryBookings", "Error parsing date for filtering: ${booking.reservationDate}", e)
+                    false
+                }
+            }
+        }
+        
+        // Apply search query filter
+        if (searchQuery.isNotEmpty()) {
+            filteredBookings = filteredBookings.filter { booking ->
                 val stationName = getStationName(booking.stationId)
                 val bookingDate = booking.reservationDate?.let { DateTimeUtils.formatToUserFriendly(it) } ?: ""
                 
@@ -160,7 +327,21 @@ class HistoryBookingsTabFragment : Fragment() {
         }
         
         if (filteredBookings.isEmpty()) {
-            showEmptyState(if (searchQuery.isEmpty()) "No booking history yet" else "No bookings match \"$searchQuery\"")
+            val emptyMessage = when {
+                selectedYear != null || selectedMonth != null -> {
+                    val monthNames = arrayOf("January", "February", "March", "April", "May", "June", 
+                                           "July", "August", "September", "October", "November", "December")
+                    val filterDesc = when {
+                        selectedYear != null && selectedMonth != null -> "${monthNames[selectedMonth!!]} $selectedYear"
+                        selectedYear != null -> "year $selectedYear"
+                        else -> "selected period"
+                    }
+                    "No bookings found for $filterDesc"
+                }
+                searchQuery.isNotEmpty() -> "No bookings match \"$searchQuery\""
+                else -> "No booking history yet"
+            }
+            showEmptyState(emptyMessage)
         } else {
             hideEmptyState()
             bookingAdapter.submitList(filteredBookings)
@@ -526,6 +707,22 @@ class HistoryBookingsTabFragment : Fragment() {
 
     fun refreshBookings() {
         loadStationsAndBookings()
+    }
+
+    fun getCurrentFilterStatus(): String {
+        return when {
+            selectedYear != null && selectedMonth != null -> {
+                val monthNames = arrayOf("January", "February", "March", "April", "May", "June", 
+                                       "July", "August", "September", "October", "November", "December")
+                "Filtered: ${monthNames[selectedMonth!!]} $selectedYear"
+            }
+            selectedYear != null -> "Filtered: Year $selectedYear"
+            else -> "All History"
+        }
+    }
+
+    fun hasActiveFilter(): Boolean {
+        return selectedYear != null || selectedMonth != null
     }
 
     private fun showEmptyState(message: String) {

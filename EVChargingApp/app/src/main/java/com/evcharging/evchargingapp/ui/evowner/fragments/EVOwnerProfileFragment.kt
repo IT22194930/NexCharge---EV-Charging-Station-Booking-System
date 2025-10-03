@@ -206,8 +206,8 @@ class EVOwnerProfileFragment : Fragment() {
             .setCancelable(true)
             .create()
 
-        // Remove white background from dialog
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
 
         // Set up button click listeners
         changePasswordButton.setOnClickListener {
@@ -316,8 +316,8 @@ class EVOwnerProfileFragment : Fragment() {
             .setCancelable(true)
             .create()
             
-        // Remove white background from dialog
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        // Apply NexCharge theme background instead of transparent
+        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
         
         buttonCancel.setOnClickListener {
             dialog.dismiss()
