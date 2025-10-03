@@ -8,6 +8,7 @@ export default function BookingTable({
   userNic,
   getStationName,
   approveBooking,
+  completeBooking,
   openUpdateForm,
   canModifyBooking,
   cancelBooking,
@@ -65,6 +66,15 @@ export default function BookingTable({
                       }
                       )
                     </option>
+                    <option value="Completed">
+                      Completed (
+                      {
+                        (allBookings || bookings).filter(
+                          (b) => b.status === "Completed"
+                        ).length
+                      }
+                      )
+                    </option>
                     <option value="Cancelled">
                       Cancelled (
                       {
@@ -108,6 +118,8 @@ export default function BookingTable({
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     booking.status === "Approved"
                       ? "bg-green-100 text-green-800"
+                      : booking.status === "Completed"
+                      ? "bg-emerald-100 text-emerald-800"
                       : booking.status === "Pending"
                       ? "bg-yellow-100 text-yellow-800"
                       : booking.status === "Cancelled"
@@ -144,6 +156,28 @@ export default function BookingTable({
                         </button>
                       )}
 
+                    {(role === "Backoffice" || role === "Operator") &&
+                      booking.status === "Approved" && (
+                        <button
+                          onClick={() => completeBooking(booking.id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-emerald-600 text-white rounded-md text-xs font-medium hover:bg-emerald-700 transition-colors duration-200 shadow-sm hover:shadow-md"
+                          title="Mark as completed"
+                        >
+                          <svg
+                            className="w-3 h-3 mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 10-1.414 1.414L9 13.414l4.707-4.707z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Complete
+                        </button>
+                      )}
+
                     {(role === "Backoffice" || role === "EVOwner") &&
                       booking.status === "Pending" &&
                       canModifyBooking(booking) && (
@@ -164,6 +198,7 @@ export default function BookingTable({
                       )}
 
                     {booking.status !== "Cancelled" &&
+                      booking.status !== "Completed" &&
                       canModifyBooking(booking) && (
                         <button
                           onClick={() => cancelBooking(booking.id)}
