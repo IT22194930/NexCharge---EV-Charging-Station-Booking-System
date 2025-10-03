@@ -148,6 +148,27 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        [HttpGet("station/{stationId}/operators")]
+        public async Task<IActionResult> GetOperatorsByStation(string stationId)
+        {
+            try
+            {
+                var operators = await _service.GetOperatorsByStationIdAsync(stationId);
+                var operatorDtos = operators.Select(op => new
+                {
+                    nic = op.NIC,
+                    fullName = op.FullName,
+                    isActive = op.IsActive,
+                    createdAt = op.CreatedAt,
+                    assignedStationId = op.AssignedStationId,
+                    assignedStationName = op.AssignedStationName
+                }).ToList();
+                
+                return Ok(operatorDtos);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
         [HttpDelete("{nic}")]
         public async Task<IActionResult> Delete(string nic)
         {
