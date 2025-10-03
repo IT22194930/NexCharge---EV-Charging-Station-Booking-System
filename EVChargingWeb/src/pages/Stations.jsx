@@ -135,8 +135,16 @@ export default function Stations() {
       const endpoint = isActive ? "deactivate" : "activate";
       await api.post(`/stations/${endpoint}/${id}`);
       loadStations();
+      toast.success(`Station ${isActive ? "deactivated" : "activated"} successfully!`);
     } catch (err) {
-      toast.error(`Error ${isActive ? "deactivating" : "activating"} station: ` + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message;
+      
+      // Provide specific feedback for booking conflicts
+      if (errorMessage.includes("active future bookings")) {
+        toast.error("Cannot deactivate station: There are upcoming bookings scheduled. Please cancel future bookings first or wait until they are completed.");
+      } else {
+        toast.error(`Error ${isActive ? "deactivating" : "activating"} station: ${errorMessage}`);
+      }
     }
   };
 

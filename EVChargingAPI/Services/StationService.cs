@@ -52,8 +52,8 @@ namespace EVChargingAPI.Services
         public async Task DeactivateAsync(string id)
         {
             var station = await _repo.GetByIdAsync(id) ?? throw new Exception("Station not found");
-            var bookings = await _bookingRepo.GetUpcomingForStationAsync(id);
-            if (bookings.Any(b => b.Status != "Cancelled" && b.ReservationDate > DateTime.UtcNow))
+            var upcomingBookings = await _bookingRepo.GetUpcomingForStationAsync(id);
+            if (upcomingBookings.Any())
                 throw new Exception("Cannot deactivate station with active future bookings");
             station.IsActive = false;
             await _repo.UpdateAsync(id, station);
