@@ -57,6 +57,9 @@ interface ApiService {
     @POST("bookings/approve/{id}")
     suspend fun approveBooking(@Path("id") id: String): Response<Booking>
 
+    @POST("bookings/confirm/{id}")
+    suspend fun confirmBooking(@Path("id") id: String): Response<Booking>
+
     @POST("bookings/complete/{id}")
     suspend fun completeBooking(@Path("id") id: String): Response<Booking>
 

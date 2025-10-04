@@ -84,6 +84,18 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        [HttpPost("confirm/{id}")]
+        [Authorize(Roles = "Operator,Backoffice")]
+        public async Task<IActionResult> Confirm(string id)
+        {
+            try
+            {
+                var b = await _service.ConfirmAsync(id);
+                return Ok(b);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
         [HttpPost("complete/{id}")]
         [Authorize(Roles = "Operator,Backoffice")]
         public async Task<IActionResult> Complete(string id)

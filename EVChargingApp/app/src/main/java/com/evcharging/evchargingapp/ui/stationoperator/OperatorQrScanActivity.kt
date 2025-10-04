@@ -205,8 +205,31 @@ class OperatorQrScanActivity : ComponentActivity() {
             }
             statusIndicator.setBackgroundColor(statusColor)
 
-            // Enable/disable complete button based on status
-            buttonComplete.isEnabled = booking.status.equals("Approved", ignoreCase = true)
+            // Find the confirm button that should be added to the dialog layout
+            val buttonConfirm = dialogView.findViewById<MaterialButton>(R.id.buttonConfirm)
+
+            // Enable/disable buttons based on status
+            when (booking.status.lowercase()) {
+                "approved" -> {
+                    buttonConfirm.isEnabled = true
+                    buttonComplete.isEnabled = false
+                    buttonConfirm.text = "Confirm Arrival"
+                }
+                "started" -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = true
+                    buttonConfirm.text = "Already Started"
+                }
+                "completed" -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = false
+                    buttonConfirm.text = "Completed"
+                }
+                else -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = false
+                }
+            }
             
             // Create and show dialog
             val dialog = MaterialAlertDialogBuilder(this)
@@ -221,6 +244,11 @@ class OperatorQrScanActivity : ComponentActivity() {
             buttonClose.setOnClickListener {
                 dialog.dismiss()
                 processing = false // Allow scanning again
+            }
+
+            buttonConfirm.setOnClickListener {
+                dialog.dismiss()
+                confirmBooking(booking.id)
             }
 
             buttonComplete.setOnClickListener {
@@ -278,6 +306,33 @@ class OperatorQrScanActivity : ComponentActivity() {
         runOnUiThread {
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             processing = false
+        }
+    }
+
+    private fun confirmBooking(id: String) {
+        scope.launch {
+            withContext(Dispatchers.Main) { progressBar.visibility = View.VISIBLE }
+            try {
+                val api = RetrofitInstance.createApiService(this@OperatorQrScanActivity)
+                val response = withContext(Dispatchers.IO) { api.confirmBooking(id) }
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@OperatorQrScanActivity, "✅ Arrival confirmed successfully! Charging session started.", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                } else {
+                    val body = response.errorBody()?.string()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@OperatorQrScanActivity, "Failed to confirm: ${response.code()} ${response.message()} ${body ?: ""}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@OperatorQrScanActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                withContext(Dispatchers.Main) { progressBar.visibility = View.GONE }
+            }
         }
     }
 

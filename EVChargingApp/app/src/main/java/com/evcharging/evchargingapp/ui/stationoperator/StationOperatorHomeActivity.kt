@@ -34,6 +34,22 @@ class StationOperatorHomeActivity : AppCompatActivity() {
         binding.buttonStationOperatorScanQr.setOnClickListener {
             startActivity(Intent(this, OperatorQrScanActivity::class.java))
         }
+
+        // View Approved Bookings
+        binding.buttonViewApproved.setOnClickListener {
+            startActivity(Intent(this, OperatorBookingsActivity::class.java).apply {
+                putExtra("BOOKING_STATUS", "Approved")
+                putExtra("TITLE", "Approved Bookings")
+            })
+        }
+
+        // View Completed Bookings
+        binding.buttonViewCompleted.setOnClickListener {
+            startActivity(Intent(this, OperatorBookingsActivity::class.java).apply {
+                putExtra("BOOKING_STATUS", "Completed")
+                putExtra("TITLE", "Completed Bookings")
+            })
+        }
     }
 
     private fun performLogout() {
