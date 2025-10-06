@@ -89,6 +89,10 @@ interface ApiService {
     @PUT("evowner/profile/deactivate")
     suspend fun deactivateOwnAccount(): Response<MessageResponse>
 
+    // General auth profile endpoint for all user types
+    @GET("auth/profile")
+    suspend fun getCurrentUserProfile(): Response<UserProfile>
+
     // Deprecated endpoints - keeping for backward compatibility if needed
     @GET("users/{nic}")
     suspend fun getOwnerByNic(@Path("nic") nic: String): Response<EVOwner>

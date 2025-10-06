@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.data.model.Booking
 import com.evcharging.evchargingapp.data.model.Station
+import com.evcharging.evchargingapp.data.model.UserProfile
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.databinding.FragmentCompletedBookingsBinding
 import com.evcharging.evchargingapp.ui.stationoperator.adapters.OperatorBookingAdapter
@@ -28,6 +29,7 @@ class CompletedBookingsTabFragment : Fragment() {
     private var allBookings = listOf<Booking>()
     private var allStations = listOf<Station>()
     private var searchQuery = ""
+    private var operatorStationId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,6 +68,9 @@ class CompletedBookingsTabFragment : Fragment() {
             try {
                 showLoading(true)
                 
+                // First get current user profile to get assigned station
+                getCurrentUserProfile()
+                
                 // Load stations first
                 val stationsResponse = apiService.getAllStations()
                 if (stationsResponse.isSuccessful && stationsResponse.body() != null) {
@@ -83,6 +88,21 @@ class CompletedBookingsTabFragment : Fragment() {
         }
     }
 
+    private suspend fun getCurrentUserProfile() {
+        try {
+            val response = apiService.getCurrentUserProfile()
+            if (response.isSuccessful && response.body() != null) {
+                val userProfile = response.body()!!
+                operatorStationId = userProfile.assignedStationId
+                Log.d("CompletedBookingsTab", "Operator assigned to station: $operatorStationId")
+            } else {
+                Log.e("CompletedBookingsTab", "Failed to load user profile: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("CompletedBookingsTab", "Error loading user profile", e)
+        }
+    }
+
     private fun loadCompletedBookings() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -93,12 +113,14 @@ class CompletedBookingsTabFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null) {
                     val allBookingsFromApi = response.body()!!
                     
-                    // Filter for completed bookings only
-                    allBookings = allBookingsFromApi.filter { 
-                        it.status.equals("Completed", ignoreCase = true) 
+                    // Filter for completed bookings only and by assigned station
+                    allBookings = allBookingsFromApi.filter { booking ->
+                        val isCompleted = booking.status.equals("Completed", ignoreCase = true)
+                        val isAssignedStation = operatorStationId == null || booking.stationId == operatorStationId
+                        isCompleted && isAssignedStation
                     }
                     
-                    Log.d("CompletedBookingsTab", "Total completed bookings loaded: ${allBookings.size}")
+                    Log.d("CompletedBookingsTab", "Total completed bookings for station $operatorStationId: ${allBookings.size}")
                     
                     // Apply search filter if exists
                     filterBookings(searchQuery)
