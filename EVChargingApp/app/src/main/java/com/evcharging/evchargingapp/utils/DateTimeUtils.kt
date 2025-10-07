@@ -227,6 +227,71 @@ object DateTimeUtils {
     }
 
     /**
+     * Formats date and time for booking details display
+     * Returns: "Dec 25, 2024 at 2:30 PM"
+     */
+    fun formatDateTime(dateTimeString: String): String {
+        return formatToUserFriendly(dateTimeString)
+    }
+
+    /**
+     * Formats date and hour for booking details display
+     * Combines reservation date with reservation hour
+     * Returns: "Dec 25, 2024 at 5:00 AM"
+     */
+    fun formatDateTimeWithHour(dateString: String, hour: Int): String {
+        return try {
+            var parsedDate: Date? = null
+            
+            // Try different input formats to parse the date
+            for (format in inputFormats) {
+                try {
+                    parsedDate = format.parse(dateString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+            
+            if (parsedDate != null) {
+                // Create calendar and set the hour
+                val calendar = Calendar.getInstance()
+                calendar.time = parsedDate
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                
+                // Format with the correct hour
+                outputFormat.format(calendar.time)
+            } else {
+                // Fallback: format manually
+                val hourFormatted = if (hour == 0) {
+                    "12:00 AM"
+                } else if (hour < 12) {
+                    "${hour}:00 AM"
+                } else if (hour == 12) {
+                    "12:00 PM"
+                } else {
+                    "${hour - 12}:00 PM"
+                }
+                "$dateString at $hourFormatted"
+            }
+        } catch (e: Exception) {
+            // Final fallback
+            val hourFormatted = if (hour == 0) {
+                "12:00 AM"
+            } else if (hour < 12) {
+                "${hour}:00 AM"
+            } else if (hour == 12) {
+                "12:00 PM"
+            } else {
+                "${hour - 12}:00 PM"
+            }
+            "$dateString at $hourFormatted"
+        }
+    }
+
+    /**
      * Extracts just the date part from a datetime string
      * Returns: "2025-10-03" from "2025-10-03T00:00:00" or similar formats
      */

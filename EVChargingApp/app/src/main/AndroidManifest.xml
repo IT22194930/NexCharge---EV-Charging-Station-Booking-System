@@ -54,6 +54,9 @@
         <activity
             android:name=".ui.stationoperator.OperatorQrScanActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.stationoperator.OperatorBookingsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

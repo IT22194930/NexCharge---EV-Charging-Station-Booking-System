@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.data.model.Booking
 import com.evcharging.evchargingapp.data.model.Station
+import com.evcharging.evchargingapp.data.model.UserProfile
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.button.MaterialButton
@@ -44,6 +45,9 @@ class OperatorQrScanActivity : ComponentActivity() {
 
     private var processing = false
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
+    private var operatorStationId: String? = null
+
+    private var operatorStationName: String? = null
 
     private val cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -59,6 +63,11 @@ class OperatorQrScanActivity : ComponentActivity() {
 
         previewView = findViewById(R.id.previewView)
         progressBar = findViewById(R.id.progressBar)
+
+        // Get operator's assigned station first
+        scope.launch {
+            getCurrentUserProfile()
+        }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             startCamera()
@@ -132,6 +141,25 @@ class OperatorQrScanActivity : ComponentActivity() {
         }
     }
 
+    private suspend fun getCurrentUserProfile() {
+        try {
+            val api = RetrofitInstance.createApiService(this@OperatorQrScanActivity)
+            val response = withContext(Dispatchers.IO) { api.getCurrentUserProfile() }
+            if (response.isSuccessful && response.body() != null) {
+                val userProfile = response.body()!!
+                operatorStationId = userProfile.assignedStationId
+                operatorStationName = userProfile.assignedStationName
+                Log.d("OperatorQrScan", "Operator assigned to station: $operatorStationName (ID: $operatorStationId)")
+            } else {
+                Log.e("OperatorQrScan", "Failed to load user profile: ${response.code()}")
+                showError("Failed to load operator profile. Please try again.")
+            }
+        } catch (e: Exception) {
+            Log.e("OperatorQrScan", "Error loading user profile", e)
+            showError("Error loading operator profile: ${e.message}")
+        }
+    }
+
     private suspend fun fetchBooking(id: String) {
         withContext(Dispatchers.Main) { progressBar.visibility = View.VISIBLE }
         try {
@@ -139,7 +167,7 @@ class OperatorQrScanActivity : ComponentActivity() {
             val response = withContext(Dispatchers.IO) { api.getBookingById(id) }
             if (response.isSuccessful) {
                 val booking = response.body()
-                showReservationDetailsDialog(booking)
+                validateStationAssignment(booking)
             } else {
                 val errorBody = response.errorBody()?.string()
                 val msg = when (response.code()) {
@@ -154,6 +182,100 @@ class OperatorQrScanActivity : ComponentActivity() {
             showError("Network error: ${e.message}")
         } finally {
             withContext(Dispatchers.Main) { progressBar.visibility = View.GONE }
+        }
+    }
+
+    private fun validateStationAssignment(booking: Booking?) {
+        if (booking == null) { 
+            showError("Invalid booking data")
+            return 
+        }
+
+        // Check if operator has an assigned station
+        if (operatorStationId.isNullOrEmpty()) {
+            showError("⚠️ Station Assignment Error\n\nYou are not assigned to any station. Please contact your administrator to assign you to a station before scanning QR codes.")
+            return
+        }
+
+        // Check if the booking belongs to the operator's assigned station
+        if (booking.stationId != operatorStationId) {
+            showStationMismatchError(booking)
+            return
+        }
+
+        // If validation passes, show the booking details
+        showReservationDetailsDialog(booking)
+    }
+
+    private fun showStationMismatchError(booking: Booking) {
+        runOnUiThread {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_error_station_mismatch, null)
+                ?: LayoutInflater.from(this).inflate(android.R.layout.select_dialog_singlechoice, null) // Fallback
+
+            // Try to find custom views, fall back to basic layout if not available
+            val titleText = dialogView.findViewById<TextView>(R.id.titleText) 
+                ?: dialogView.findViewById<TextView>(android.R.id.title)
+            val messageText = dialogView.findViewById<TextView>(R.id.messageText)
+                ?: dialogView.findViewById<TextView>(android.R.id.text1)
+            val buttonOk = dialogView.findViewById<MaterialButton>(R.id.buttonOk)
+
+            titleText?.text = "❌ Station Assignment Error"
+            
+            // Handle null or empty station name by showing station ID and fetching name if possible
+            val bookingStationDisplay = if (booking.stationName.isNullOrEmpty()) {
+                "Station ID: ${booking.stationId} (Loading name...)"
+            } else {
+                booking.stationName
+            }
+            
+            val message = "This booking is not assigned to your station.\n\n" +
+                    "• Your assigned station: $operatorStationName\n" +
+                    "• Booking station: $bookingStationDisplay\n" +
+                    "• Booking ID: ${booking.id}\n\n" +
+                    "You can only scan QR codes for bookings at your assigned station. " +
+                    "Please direct the customer to the correct station or contact your administrator if there's an error."
+            
+            messageText?.text = message
+            
+            // If station name is null/empty, fetch it in background and update the message
+            if (booking.stationName.isNullOrEmpty()) {
+                scope.launch {
+                    fetchStationNameAndUpdateDialog(booking.stationId, messageText)
+                }
+            }
+
+            val dialog = MaterialAlertDialogBuilder(this)
+                .setView(dialogView)
+                .setCancelable(true)
+                .create()
+
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+            // Set up OK button click listener
+            buttonOk?.setOnClickListener {
+                dialog.dismiss()
+                processing = false // Allow scanning again
+            } ?: run {
+                // Fallback for basic dialog
+                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK") { _, _ ->
+                    processing = false
+                }
+            }
+
+            dialog.setOnDismissListener {
+                processing = false // Allow scanning again when dialog is dismissed
+            }
+
+            dialog.show()
+
+            // Fallback toast message if dialog creation fails
+            if (titleText == null && messageText == null) {
+                val bookingStationDisplay = booking.stationName ?: "Station ID: ${booking.stationId}"
+                Toast.makeText(this, 
+                    "❌ Station Assignment Error: This booking (${booking.id}) is for station $bookingStationDisplay, but you are assigned to station $operatorStationName. Please scan QR codes only for your assigned station.",
+                    Toast.LENGTH_LONG).show()
+                processing = false
+            }
         }
     }
 
@@ -205,8 +327,31 @@ class OperatorQrScanActivity : ComponentActivity() {
             }
             statusIndicator.setBackgroundColor(statusColor)
 
-            // Enable/disable complete button based on status
-            buttonComplete.isEnabled = booking.status.equals("Approved", ignoreCase = true)
+            // Find the confirm button that should be added to the dialog layout
+            val buttonConfirm = dialogView.findViewById<MaterialButton>(R.id.buttonConfirm)
+
+            // Enable/disable buttons based on status
+            when (booking.status.lowercase()) {
+                "approved" -> {
+                    buttonConfirm.isEnabled = true
+                    buttonComplete.isEnabled = false
+                    buttonConfirm.text = "Confirm Arrival"
+                }
+                "started" -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = true
+                    buttonConfirm.text = "Already Started"
+                }
+                "completed" -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = false
+                    buttonConfirm.text = "Completed"
+                }
+                else -> {
+                    buttonConfirm.isEnabled = false
+                    buttonComplete.isEnabled = false
+                }
+            }
             
             // Create and show dialog
             val dialog = MaterialAlertDialogBuilder(this)
@@ -223,6 +368,11 @@ class OperatorQrScanActivity : ComponentActivity() {
                 processing = false // Allow scanning again
             }
 
+            buttonConfirm.setOnClickListener {
+                dialog.dismiss()
+                confirmBooking(booking.id)
+            }
+
             buttonComplete.setOnClickListener {
                 dialog.dismiss()
                 completeBooking(booking.id)
@@ -233,6 +383,29 @@ class OperatorQrScanActivity : ComponentActivity() {
             }
 
             dialog.show()
+        }
+    }
+
+    private suspend fun fetchStationNameAndUpdateDialog(stationId: String, messageTextView: TextView?) {
+        try {
+            val api = RetrofitInstance.createApiService(this@OperatorQrScanActivity)
+            val response = withContext(Dispatchers.IO) { api.getStationById(stationId) }
+            if (response.isSuccessful) {
+                val station = response.body()
+                withContext(Dispatchers.Main) {
+                    if (station != null && messageTextView != null) {
+                        val currentText = messageTextView.text.toString()
+                        val updatedText = currentText.replace(
+                            "Station ID: $stationId (Loading name...)",
+                            station.name
+                        )
+                        messageTextView.text = updatedText
+                        Log.d("OperatorQrScan", "Updated station name in dialog: ${station.name}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("OperatorQrScan", "Error fetching station name for dialog", e)
         }
     }
 
@@ -278,6 +451,33 @@ class OperatorQrScanActivity : ComponentActivity() {
         runOnUiThread {
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             processing = false
+        }
+    }
+
+    private fun confirmBooking(id: String) {
+        scope.launch {
+            withContext(Dispatchers.Main) { progressBar.visibility = View.VISIBLE }
+            try {
+                val api = RetrofitInstance.createApiService(this@OperatorQrScanActivity)
+                val response = withContext(Dispatchers.IO) { api.confirmBooking(id) }
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@OperatorQrScanActivity, "✅ Arrival confirmed successfully! Charging session started.", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                } else {
+                    val body = response.errorBody()?.string()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@OperatorQrScanActivity, "Failed to confirm: ${response.code()} ${response.message()} ${body ?: ""}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@OperatorQrScanActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                withContext(Dispatchers.Main) { progressBar.visibility = View.GONE }
+            }
         }
     }
 

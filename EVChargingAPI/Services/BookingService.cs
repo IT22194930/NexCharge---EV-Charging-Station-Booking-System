@@ -108,10 +108,20 @@ namespace EVChargingAPI.Services
             return existing;
         }
 
+        public async Task<Booking> ConfirmAsync(string id)
+        {
+            var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            if (existing.Status != "Approved") throw new Exception("Only approved bookings can be confirmed");
+            existing.Status = "Started";
+            await _repo.UpdateAsync(id, existing);
+            return existing;
+        }
+
         public async Task<Booking> CompleteAsync(string id)
         {
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
-            if (existing.Status != "Approved") throw new Exception("Only approved bookings can be completed");
+            if (existing.Status != "Started" && existing.Status != "Approved") 
+                throw new Exception("Only started or approved bookings can be completed");
             existing.Status = "Completed";
             await _repo.UpdateAsync(id, existing);
             return existing;

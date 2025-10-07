@@ -260,28 +260,46 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
+                android:orientation="vertical">
 
+                <!-- First Row: Confirm and Complete -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2"
+                    android:layout_marginBottom="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonConfirm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="Confirm Arrival"
+                        android:backgroundTint="@color/nexcharge_success"
+                        android:textColor="@android:color/white" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonComplete"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="Mark Complete"
+                        android:backgroundTint="@color/nexcharge_primary" />
+
+                </LinearLayout>
+
+                <!-- Second Row: Close Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/buttonClose"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
                     android:text="Close"
                     android:textColor="@color/nexcharge_text_primary"
                     app:strokeColor="@color/nexcharge_primary" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/buttonComplete"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="Mark Complete"
-                    android:backgroundTint="@color/nexcharge_primary" />
 
             </LinearLayout>
 

@@ -57,6 +57,9 @@ interface ApiService {
     @POST("bookings/approve/{id}")
     suspend fun approveBooking(@Path("id") id: String): Response<Booking>
 
+    @POST("bookings/confirm/{id}")
+    suspend fun confirmBooking(@Path("id") id: String): Response<Booking>
+
     @POST("bookings/complete/{id}")
     suspend fun completeBooking(@Path("id") id: String): Response<Booking>
 
@@ -85,6 +88,10 @@ interface ApiService {
 
     @PUT("evowner/profile/deactivate")
     suspend fun deactivateOwnAccount(): Response<MessageResponse>
+
+    // General auth profile endpoint for all user types
+    @GET("auth/profile")
+    suspend fun getCurrentUserProfile(): Response<UserProfile>
 
     // Deprecated endpoints - keeping for backward compatibility if needed
     @GET("users/{nic}")
