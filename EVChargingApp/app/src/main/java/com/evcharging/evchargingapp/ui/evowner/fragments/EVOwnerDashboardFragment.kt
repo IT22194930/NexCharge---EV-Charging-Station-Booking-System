@@ -914,8 +914,8 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         dialog.show()
         
-        // Apply NexCharge theme background instead of transparent
-        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
+        // Make dialog background transparent
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
     }
     
     private fun createStationCardFromLayout(station: Station, distance: Double, position: Int): View {
@@ -1208,8 +1208,8 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         dialog.show()
         
-        // Apply NexCharge theme background instead of transparent
-        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
+        // Make dialog background transparent
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
     }
     
     private fun showDatePicker(onDateSelected: (String) -> Unit) {

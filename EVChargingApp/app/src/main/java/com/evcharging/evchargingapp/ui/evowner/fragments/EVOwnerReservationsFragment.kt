@@ -349,8 +349,8 @@ class EVOwnerReservationsFragment : Fragment() {
         
         dialog.show()
         
-        // Apply NexCharge theme background instead of transparent
-        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
+        // Make dialog background transparent
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
     }
 
     private fun showCreateBookingDialogForStation(selectedStation: Station) {
@@ -435,8 +435,8 @@ class EVOwnerReservationsFragment : Fragment() {
         
         dialog.show()
         
-        // Apply NexCharge theme background instead of transparent
-        dialog.window?.setBackgroundDrawableResource(R.color.nexcharge_surface)
+        // Make dialog background transparent
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
     }
 
     private fun showNearbyStationsDialog() {
