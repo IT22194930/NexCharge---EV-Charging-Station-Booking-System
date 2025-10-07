@@ -228,6 +228,36 @@ export default function Stations() {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
+      {/* Mobile Info Section */}
+      <div className="md:hidden mb-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-700">Total Stations</p>
+              <p className="text-2xl font-bold text-blue-600">{stations.length}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Active: {stations.filter(s => s.isActive).length}</p>
+              <p className="text-xs text-gray-500">Inactive: {stations.filter(s => !s.isActive).length}</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs">
+            <div className="text-center">
+              <p className="text-gray-500">AC Stations</p>
+              <p className="font-medium text-green-600">{stations.filter(s => s.type === "AC").length}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-500">DC Stations</p>
+              <p className="font-medium text-yellow-600">{stations.filter(s => s.type === "DC").length}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-500">Total Slots</p>
+              <p className="font-medium text-blue-600">{stations.reduce((sum, s) => sum + s.availableSlots, 0)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Create Station Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -986,19 +1016,28 @@ export default function Stations() {
         </div>
       )}
 
-      {/* Stations Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
+      {/* Stations Table - Desktop View */}
+      <div className="bg-white rounded-lg shadow overflow-hidden hidden md:block">
+        <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 lg:hidden">
+          <p className="text-xs text-blue-700 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+            Scroll horizontally to see all columns
+          </p>
+        </div>
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <table className="w-full min-w-[1100px]">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slots</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">Name</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">Location</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">Type</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">Slots</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Hours</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">Status</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[300px]">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -1009,30 +1048,36 @@ export default function Stations() {
                 className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
                 title="Click to view station details"
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                   {startIndex + index + 1}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {station.name}
+                <td className="px-3 py-4 text-sm font-medium text-gray-900">
+                  <div className="max-w-[180px] truncate" title={station.name}>
+                    {station.name}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {station.location}
+                <td className="px-3 py-4 text-sm text-gray-900">
+                  <div className="max-w-[150px] truncate" title={station.location}>
+                    {station.location}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     station.type === "DC" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
                   }`}>
                     {station.type}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                   {station.availableSlots}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {station.operatingHours?.isOpen24Hours ? "24/7" : 
-                    `${station.operatingHours?.openTime || "06:00"} - ${station.operatingHours?.closeTime || "22:00"}`}
+                <td className="px-3 py-4 text-sm text-gray-900">
+                  <div className="text-xs">
+                    {station.operatingHours?.isOpen24Hours ? "24/7" : 
+                      `${station.operatingHours?.openTime || "06:00"} - ${station.operatingHours?.closeTime || "22:00"}`}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   {station.isActive ? (
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Active
@@ -1043,55 +1088,172 @@ export default function Stations() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openUpdateForm(station);
-                    }}
-                    className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openScheduleForm(station);
-                    }}
-                    className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
-                  >
-                    Schedule
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStationStatus(station.id, station.isActive);
-                    }}
-                    className={`px-2 py-1 rounded text-xs text-white ${
-                      station.isActive 
-                        ? "bg-orange-600 hover:bg-orange-700" 
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {station.isActive ? "Deactivate" : "Activate"}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteStation(station.id, station.name);
-                    }}
-                    className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
+                <td className="px-3 py-4 text-sm font-medium">
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openUpdateForm(station);
+                      }}
+                      className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openScheduleForm(station);
+                      }}
+                      className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                    >
+                      Schedule
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleStationStatus(station.id, station.isActive);
+                      }}
+                      className={`px-2 py-1 rounded text-xs text-white ${
+                        station.isActive 
+                          ? "bg-orange-600 hover:bg-orange-700" 
+                          : "bg-green-600 hover:bg-green-700"
+                      }`}
+                    >
+                      {station.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteStation(station.id, station.name);
+                      }}
+                      className="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
         
         {stations.length === 0 && (
           <div className="text-center py-8 text-gray-500">
+            No charging stations found. Create your first station above.
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {currentStations.map((station, index) => (
+          <div key={station.id} className="bg-white rounded-lg shadow p-4">
+            {/* Station Number and Actions */}
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-sm font-medium text-gray-500">#{startIndex + index + 1}</span>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openUpdateForm(station);
+                  }}
+                  className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openScheduleForm(station);
+                  }}
+                  className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                >
+                  Schedule
+                </button>
+              </div>
+            </div>
+
+            {/* Station Details */}
+            <div 
+              onClick={() => openStationDetails(station)}
+              className="cursor-pointer space-y-2"
+              title="Tap to view station details"
+            >
+              <div>
+                <p className="text-sm font-medium text-gray-900">{station.name}</p>
+                <p className="text-xs text-gray-500 flex items-center mt-1">
+                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  </svg>
+                  {station.location}
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    station.type === "DC" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                  }`}>
+                    {station.type}
+                  </span>
+                  
+                  <span className="text-xs text-gray-600">
+                    {station.availableSlots} slot{station.availableSlots !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                
+                {station.isActive ? (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Inactive
+                  </span>
+                )}
+              </div>
+
+              {/* Operating Hours */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-500 mb-1">Operating Hours:</p>
+                <p className="text-sm font-medium text-gray-700">
+                  {station.operatingHours?.isOpen24Hours ? "24/7" : 
+                    `${station.operatingHours?.openTime || "06:00"} - ${station.operatingHours?.closeTime || "22:00"}`}
+                </p>
+              </div>
+            </div>
+
+            {/* Additional Actions */}
+            <div className="pt-3 border-t border-gray-100 mt-3 flex gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleStationStatus(station.id, station.isActive);
+                }}
+                className={`flex-1 px-2 py-1 rounded text-xs text-white ${
+                  station.isActive 
+                    ? "bg-orange-600 hover:bg-orange-700" 
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {station.isActive ? "Deactivate" : "Activate"}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteStation(station.id, station.name);
+                }}
+                className="flex-1 px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {stations.length === 0 && (
+          <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
             No charging stations found. Create your first station above.
           </div>
         )}
