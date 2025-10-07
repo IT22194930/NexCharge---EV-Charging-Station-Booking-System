@@ -336,21 +336,25 @@ export default function CreateBookingModal({
               </select>
               <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-700 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2 text-blue-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
                   <span>
-                    <strong>Booking Rules:</strong> 1) Select charging station
-                    2) Select date (within 7 days) 3) Choose available time
-                    slot. Only available hours are shown.
+                    <div className="flex items-center justify-between mb-1">
+                      <strong>Booking Rules:</strong>
+                      <svg
+                        className="w-4 h-4 mr-2 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    1) Select charging station<br />
+                    2) Select date (within 7 days)<br />
+                    3) Choose available time slot. Only available hours are
+                    shown.
                   </span>
                 </p>
               </div>
