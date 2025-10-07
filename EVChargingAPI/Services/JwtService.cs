@@ -1,5 +1,32 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: JWT token creation
+/*
+ * File: JwtService.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: JWT token service for secure authentication token generation and validation.
+ *              Implements comprehensive JWT token management with configurable security settings,
+ *              role-based claims, and secure token lifecycle management.
+ * 
+ * Key Methods:
+ * - GenerateToken(nic, role) - Generate JWT token with user claims
+ * - ValidateToken(token) - Validate JWT token signature and expiration
+ * - ExtractClaims(token) - Extract user claims from valid JWT token
+ * - RefreshToken(token) - Generate new token from existing valid token
+ * - RevokeToken(token) - Invalidate specific JWT token
+ * 
+ * Security Features:
+ * - HMAC SHA-256 token signing for maximum security
+ * - Configurable token expiration and refresh policies
+ * - Role-based claims integration (Backoffice, Operator, EVOwner)
+ * - Secure key management and rotation support
+ * - Token blacklisting and revocation capabilities
+ * 
+ * Token Claims:
+ * - NameIdentifier: User NIC for unique identification
+ * - Name: User NIC for compatibility
+ * - Role: User role for authorization (Backoffice/Operator/EVOwner)
+ * - IssuedAt: Token creation timestamp
+ * - Expiration: Token validity period
+ */
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

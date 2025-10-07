@@ -1,5 +1,28 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: User management endpoints (Backoffice)
+/*
+ * File: UsersController.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: API Controller for comprehensive user management operations.
+ *              Provides full CRUD operations for user accounts, role management, and account status control.
+ *              Restricted to Backoffice administrators for system-wide user administration.
+ * 
+ * Endpoints:
+ * - POST /api/users - Create new user account (Backoffice, Operator, EVOwner)
+ * - GET /api/users - Retrieve all users in the system
+ * - GET /api/users/{nic} - Get specific user by NIC
+ * - PUT /api/users/{nic} - Update user profile information
+ * - POST /api/users/activate/{nic} - Activate user account
+ * - POST /api/users/deactivate/{nic} - Deactivate user account
+ * - PATCH /api/users/{nic}/role - Update user role and station assignments
+ * - DELETE /api/users/{nic} - Delete user account
+ * 
+ * Security: Requires JWT authentication with Backoffice role authorization.
+ *           All endpoints restricted to system administrators only.
+ *           Implements secure password hashing and validation.
+ * 
+ * Business Rules: Validates role assignments, manages operator-station relationships,
+ *                enforces user creation constraints, and maintains data integrity.
+ */
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Services;
@@ -16,6 +39,7 @@ namespace EVChargingAPI.Controllers
         private readonly UserService _service;
         public UsersController(UserService service) { _service = service; }
 
+        // Create new user account (Backoffice administrators only)
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] UserCreateDto dto)
         {
@@ -55,9 +79,11 @@ namespace EVChargingAPI.Controllers
             }
         }
 
+        // Retrieve all users in the system
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
+        // Get specific user by NIC
         [HttpGet("{nic}")]
         public async Task<IActionResult> GetByNic(string nic)
         {
@@ -66,6 +92,7 @@ namespace EVChargingAPI.Controllers
             return Ok(u);
         }
 
+        // Update user profile information
         [HttpPut("{nic}")]
         public async Task<IActionResult> Update(string nic, [FromBody] UserUpdateDto dto)
         {
@@ -98,6 +125,7 @@ namespace EVChargingAPI.Controllers
             }
         }
 
+        // Deactivate user account
         [HttpPost("deactivate/{nic}")]
         public async Task<IActionResult> Deactivate(string nic)
         {
@@ -109,6 +137,7 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // Activate user account
         [HttpPost("activate/{nic}")]
         public async Task<IActionResult> Activate(string nic)
         {
@@ -120,6 +149,7 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // Update user role and station assignments
         [HttpPatch("{nic}/role")]
         public async Task<IActionResult> UpdateRole(string nic, [FromBody] UpdateRoleDto dto)
         {
@@ -137,6 +167,7 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // Update station assignment for operators
         [HttpPatch("{nic}/station")]
         public async Task<IActionResult> UpdateStationAssignment(string nic, [FromBody] UpdateStationAssignmentDto dto)
         {
@@ -148,6 +179,7 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // Get all operators assigned to a specific station
         [HttpGet("station/{stationId}/operators")]
         public async Task<IActionResult> GetOperatorsByStation(string stationId)
         {
@@ -169,6 +201,7 @@ namespace EVChargingAPI.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
+        // Delete user account permanently
         [HttpDelete("{nic}")]
         public async Task<IActionResult> Delete(string nic)
         {

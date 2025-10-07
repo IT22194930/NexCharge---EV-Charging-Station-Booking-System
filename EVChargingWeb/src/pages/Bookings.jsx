@@ -432,6 +432,35 @@ export default function Bookings() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end w-full lg:w-auto">
+          {/* Status Filter */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
+              className="pl-3 pr-8 py-2 w-full sm:w-48 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            >
+              <option value="All">
+                All Status ({bookings?.length || 0})
+              </option>
+              <option value="Pending">
+                Pending (
+                {bookings.filter((b) => b.status === "Pending").length})
+              </option>
+              <option value="Approved">
+                Approved (
+                {bookings.filter((b) => b.status === "Approved").length})
+              </option>
+              <option value="Completed">
+                Completed (
+                {bookings.filter((b) => b.status === "Completed").length})
+              </option>
+              <option value="Cancelled">
+                Cancelled (
+                {bookings.filter((b) => b.status === "Cancelled").length})
+              </option>
+            </select>
+          </div>
+
           {role === "Backoffice" && (
             <div className="relative">
               <select
@@ -446,9 +475,6 @@ export default function Bookings() {
                   </option>
                 ))}
               </select>
-              <svg className="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
             </div>
           )}
           {role === "Operator" && (
@@ -535,8 +561,6 @@ export default function Bookings() {
         cancelBooking={cancelBooking}
         deleteBooking={deleteBooking}
         startIndex={startIndex}
-        statusFilter={statusFilter}
-        handleStatusFilterChange={handleStatusFilterChange}
         stationFilter={stationFilter}
         handleStationFilterChange={handleStationFilterChange}
         stations={stations}

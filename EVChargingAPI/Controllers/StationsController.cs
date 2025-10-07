@@ -55,7 +55,6 @@ namespace EVChargingAPI.Controllers
             try
             {
                 Console.WriteLine($"Updating station with ID: {id}");
-                Console.WriteLine($"Request data: {JsonSerializer.Serialize(requestData)}");
                 
                 // Convert to JSON string and back to JsonElement for processing
                 var jsonString = JsonSerializer.Serialize(requestData);

@@ -1,5 +1,28 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: Authentication helpers
+/*
+ * File: AuthService.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: Core authentication service providing secure user authentication and registration.
+ *              Implements comprehensive authentication logic with BCrypt password hashing,
+ *              JWT token generation, and user credential validation.
+ * 
+ * Key Methods:
+ * - AuthenticateAsync(nic, password) - Validate user credentials and return JWT token
+ * - RegisterEVOwnerAsync(nic, fullName, password) - Register new EV Owner account
+ * - ValidateUserAsync(nic) - Check user existence and active status
+ * - HashPassword(password) - Secure password hashing using BCrypt
+ * - VerifyPassword(password, hash) - Password verification against stored hash
+ * 
+ * Security Features:
+ * - BCrypt password hashing with salt rounds for maximum security
+ * - JWT token generation with role-based claims
+ * - User account status validation (active/inactive)
+ * - Secure credential verification with timing attack protection
+ * - Input validation and sanitization
+ * 
+ * Dependencies: UserRepository for data access, JwtService for token generation,
+ *              BCrypt.Net for secure password operations.
+ */
+
 using EVChargingAPI.Models;
 using EVChargingAPI.Repositories;
 using BCrypt.Net;
@@ -16,6 +39,7 @@ namespace EVChargingAPI.Services
             _jwt = jwt;
         }
 
+        // Validate user credentials and return JWT token
         public async Task<string?> AuthenticateAsync(string nic, string password)
         {
             var user = await _users.GetByNICAsync(nic);
@@ -24,6 +48,7 @@ namespace EVChargingAPI.Services
             return _jwt.GenerateToken(user.NIC, user.Role);
         }
 
+        // Register new EV Owner account with secure password hashing
         public async Task<User> RegisterEVOwnerAsync(string nic, string fullName, string password)
         {
             var existing = await _users.GetByNICAsync(nic);

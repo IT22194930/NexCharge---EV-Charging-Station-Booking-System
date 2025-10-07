@@ -271,6 +271,31 @@ export default function Users() {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
+      {/* Mobile Filter Section */}
+      <div className="md:hidden mb-6">
+        <div className="bg-white rounded-lg shadow p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Filter by Role
+          </label>
+          <select
+            value={roleFilter}
+            onChange={(e) => handleRoleFilterChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="All">All Users ({users.length})</option>
+            <option value="Backoffice">
+              Backoffice ({users.filter(u => u.role === "Backoffice").length})
+            </option>
+            <option value="Operator">
+              Operator ({users.filter(u => u.role === "Operator").length})
+            </option>
+            <option value="EVOwner">
+              EV Owner ({users.filter(u => u.role === "EVOwner").length})
+            </option>
+          </select>
+        </div>
+      </div>
+
       {/* Create User Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -928,27 +953,37 @@ export default function Users() {
         </div>
       )}
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
+      {/* Users Table - Desktop View */}
+      <div className="bg-white rounded-lg shadow overflow-hidden hidden md:block">
+        <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 lg:hidden">
+          <p className="text-xs text-blue-700 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+            Scroll horizontally to see all columns
+          </p>
+        </div>
+        {/* Responsive table wrapper */}
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <table className="w-full min-w-[1000px]">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                 #
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                 NIC
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
                 Full Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <div className="flex items-center space-x-3">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                <div className="flex flex-col space-y-2">
                   <span>Role</span>
                   <select
                     value={roleFilter}
                     onChange={(e) => handleRoleFilterChange(e.target.value)}
-                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
                   >
                     <option value="All">All ({users.length})</option>
                     <option value="Backoffice">
@@ -963,13 +998,13 @@ export default function Users() {
                   </select>
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">
                 Assigned Station
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[250px]">
                 Actions
               </th>
             </tr>
@@ -977,16 +1012,18 @@ export default function Users() {
           <tbody className="bg-white divide-y divide-gray-200">
             {currentUsers.map((user, index) => (
               <tr key={user.nic}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                   {startIndex + index + 1}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-3 py-4 text-sm font-medium text-gray-900 break-all">
                   {user.nic}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.fullName}
+                <td className="px-3 py-4 text-sm text-gray-900">
+                  <div className="max-w-[150px] truncate" title={user.fullName}>
+                    {user.fullName}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       user.role === "Backoffice"
@@ -1001,11 +1038,11 @@ export default function Users() {
                     {user.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 text-sm text-gray-900">
                   {user.role === "Operator" && user.assignedStationName ? (
                     <div className="flex items-center">
                       <svg
-                        className="w-4 h-4 mr-2 text-blue-500"
+                        className="w-4 h-4 mr-1 text-blue-500 flex-shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -1015,12 +1052,14 @@ export default function Users() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-blue-600 font-medium">{user.assignedStationName}</span>
+                      <span className="text-blue-600 font-medium truncate" title={user.assignedStationName}>
+                        {user.assignedStationName}
+                      </span>
                     </div>
                   ) : user.role === "Operator" ? (
                     <div className="flex items-center">
                       <svg
-                        className="w-4 h-4 mr-2 text-red-500"
+                        className="w-4 h-4 mr-1 text-red-500 flex-shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -1030,13 +1069,13 @@ export default function Users() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-red-600 font-medium">No station assigned</span>
+                      <span className="text-red-600 font-medium text-xs">Not assigned</span>
                     </div>
                   ) : (
                     <span className="text-gray-400 text-xs">N/A</span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.isActive ? (
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Active
@@ -1047,37 +1086,157 @@ export default function Users() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <button
-                    onClick={() => toggleUserStatus(user.nic, user.isActive, user.fullName)}
-                    className={`px-3 py-1 rounded text-white ${
-                      user.isActive
-                        ? "bg-orange-600 hover:bg-orange-700"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {user.isActive ? "Deactivate" : "Activate"}
-                  </button>
-                  <button
-                    onClick={() => updateUserRole(user)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Update Role
-                  </button>
-                  <button
-                    onClick={() => deleteUser(user.nic)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
+                <td className="px-3 py-4 text-sm font-medium">
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      onClick={() => toggleUserStatus(user.nic, user.isActive, user.fullName)}
+                      className={`px-2 py-1 rounded text-white text-xs ${
+                        user.isActive
+                          ? "bg-orange-600 hover:bg-orange-700"
+                          : "bg-green-600 hover:bg-green-700"
+                      }`}
+                    >
+                      {user.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                    <button
+                      onClick={() => updateUserRole(user)}
+                      className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => deleteUser(user.nic)}
+                      className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
 
         {filteredUsers.length === 0 && (
           <div className="text-center py-8 text-gray-500">
+            {roleFilter === "All" 
+              ? "No system users found. Create your first user above."
+              : `No users found with role "${roleFilter}". Try selecting a different role filter.`
+            }
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {currentUsers.map((user, index) => (
+          <div key={user.nic} className="bg-white rounded-lg shadow p-4">
+            {/* User Number */}
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-sm font-medium text-gray-500">#{startIndex + index + 1}</span>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  onClick={() => toggleUserStatus(user.nic, user.isActive, user.fullName)}
+                  className={`px-2 py-1 rounded text-white text-xs ${
+                    user.isActive
+                      ? "bg-orange-600 hover:bg-orange-700"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {user.isActive ? "Deactivate" : "Activate"}
+                </button>
+                <button
+                  onClick={() => updateUserRole(user)}
+                  className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => deleteUser(user.nic)}
+                  className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            {/* User Details */}
+            <div className="space-y-2">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+                <p className="text-xs text-gray-500">NIC: {user.nic}</p>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    user.role === "Backoffice"
+                      ? "bg-purple-100 text-purple-800"
+                      : user.role === "Operator"
+                      ? "bg-blue-100 text-blue-800"
+                      : user.role === "EVOwner"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {user.role}
+                </span>
+                
+                {user.isActive ? (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Inactive
+                  </span>
+                )}
+              </div>
+
+              {/* Station Assignment */}
+              {user.role === "Operator" && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">Assigned Station:</p>
+                  {user.assignedStationName ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-blue-600 font-medium text-sm">{user.assignedStationName}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1 text-red-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-red-600 font-medium text-sm">Not assigned</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {filteredUsers.length === 0 && (
+          <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
             {roleFilter === "All" 
               ? "No system users found. Create your first user above."
               : `No users found with role "${roleFilter}". Try selecting a different role filter.`

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardViewBooking"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/nexcharge_surface"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header with Booking ID and Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/textViewBookingId"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ID: 12345"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/nexcharge_text_primary"
+                tools:text="ID: BK-2024-001" />
+
+            <TextView
+                android:id="@+id/textViewStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Approved"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/status_approved"
+                android:background="@drawable/status_approved_background"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                tools:text="Approved" />
+
+        </LinearLayout>
+
+        <!-- Station Information -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_ev_station"
+                android:tint="@color/nexcharge_primary"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Station" />
+
+            <TextView
+                android:id="@+id/textViewStationName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Station Name - Location"
+                android:textSize="14sp"
+                android:textColor="@color/nexcharge_text_primary"
+                tools:text="Central Plaza Station - Colombo 03" />
+
+        </LinearLayout>
+
+        <!-- Customer Information -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_person"
+                android:tint="@color/nexcharge_text_secondary"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Customer" />
+
+            <TextView
+                android:id="@+id/textViewCustomerNic"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Customer: 123456789V"
+                android:textSize="14sp"
+                android:textColor="@color/nexcharge_text_secondary"
+                tools:text="Customer: 123456789V" />
+
+        </LinearLayout>
+
+        <!-- Date and Time -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_calendar"
+                android:tint="@color/nexcharge_text_secondary"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Date Time" />
+
+            <TextView
+                android:id="@+id/textViewDateTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Dec 25, 2024 - 2:30 PM"
+                android:textSize="14sp"
+                android:textColor="@color/nexcharge_text_secondary"
+                tools:text="Dec 25, 2024 - 2:30 PM" />
+
+            <TextView
+                android:id="@+id/textViewDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 hour(s)"
+                android:textSize="12sp"
+                android:textColor="@color/nexcharge_text_hint"
+                android:background="@drawable/duration_background"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                tools:text="2 hour(s)" />
+
+        </LinearLayout>
+
+        <!-- Action Button (Complete) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonComplete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mark as Complete"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            style="@style/Widget.Material3.Button.TonalButton"
+            app:backgroundTint="@color/status_completed"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_done_all"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
