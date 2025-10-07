@@ -1,5 +1,22 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: Authentication endpoints
+/*
+ * File: AuthController.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: API Controller for user authentication and authorization operations.
+ *              Handles user login, registration, and profile retrieval with secure JWT token-based authentication.
+ *              Provides comprehensive authentication services for all user roles in the system.
+ * 
+ * Endpoints:
+ * - POST /api/auth/login - Authenticate user credentials and return JWT token
+ * - POST /api/auth/register - Register new EV Owner account (public endpoint)
+ * - GET /api/auth/profile - Get authenticated user's profile information
+ * 
+ * Security: Uses JWT Bearer token authentication for protected endpoints.
+ *           Implements BCrypt password hashing for secure credential storage.
+ *           Supports role-based authorization for Backoffice, Operator, and EVOwner roles.
+ * 
+ * Dependencies: AuthService for authentication logic, UserService for user data operations.
+ */
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Services;
@@ -20,6 +37,7 @@ namespace EVChargingAPI.Controllers
             _userService = userService;
         }
 
+        // Authenticate user credentials and return JWT token
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
@@ -28,6 +46,7 @@ namespace EVChargingAPI.Controllers
             return Ok(new LoginResponse(token));
         }
 
+        // Register new EV Owner account (public endpoint)
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest req)
         {
@@ -42,6 +61,7 @@ namespace EVChargingAPI.Controllers
             }
         }
 
+        // Get authenticated user's profile information
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()

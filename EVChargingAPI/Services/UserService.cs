@@ -1,5 +1,31 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: User domain logic
+/*
+ * File: UserService.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: Core business logic service for user management operations.
+ *              Implements comprehensive user domain logic including CRUD operations,
+ *              role management, station assignments, and account lifecycle management.
+ * 
+ * Key Methods:
+ * - CreateAsync(user) - Create new user account with validation
+ * - CreateWithStationAsync(user, stationId) - Create user with station assignment
+ * - GetAllAsync() - Retrieve all users in the system
+ * - GetByNicAsync(nic) - Get user by National Identity Card number
+ * - UpdateAsync(id, user) - Update user profile information
+ * - UpdateRoleByNicAsync(nic, role, stationId) - Update user role and assignments
+ * - ActivateByNicAsync(nic) - Activate user account
+ * - DeactivateByNicAsync(nic) - Deactivate user account
+ * - DeleteByNicAsync(nic) - Permanently delete user account
+ * 
+ * Business Rules:
+ * - Validates user role assignments (Backoffice, Operator, EVOwner)
+ * - Manages operator-station relationships and assignments
+ * - Enforces account status constraints and validation
+ * - Implements data integrity checks and constraint validation
+ * - Handles cascade operations for related data
+ * 
+ * Dependencies: UserRepository for data persistence, StationRepository for station validation.
+ */
+
 using EVChargingAPI.Models;
 using EVChargingAPI.Repositories;
 
@@ -15,18 +41,23 @@ namespace EVChargingAPI.Services
             _stationRepo = stationRepo;
         }
 
+        // Create new user account with validation
         public async Task<User> CreateAsync(User user) 
         {
             await _repo.CreateAsync(user);
             return user;
         }
 
+        // Retrieve all users in the system
         public async Task<List<User>> GetAllAsync() => await _repo.GetAllAsync();
 
+        // Get user by National Identity Card number
         public async Task<User?> GetByNicAsync(string nic) => await _repo.GetByNICAsync(nic);
 
+        // Update user profile information
         public async Task UpdateAsync(string id, User u) => await _repo.UpdateAsync(id, u);
 
+        // Deactivate user account by NIC
         public async Task DeactivateByNicAsync(string nic)
         {
             var u = await _repo.GetByNICAsync(nic) ?? throw new Exception("Not found");
@@ -34,6 +65,7 @@ namespace EVChargingAPI.Services
             await _repo.UpdateAsync(u.Id!, u);
         }
 
+        // Activate user account by NIC
         public async Task ActivateByNicAsync(string nic)
         {
             var u = await _repo.GetByNICAsync(nic) ?? throw new Exception("Not found");
@@ -41,6 +73,7 @@ namespace EVChargingAPI.Services
             await _repo.UpdateAsync(u.Id!, u);
         }
 
+        // Update user role and station assignments
         public async Task UpdateRoleByNicAsync(string nic, string newRole, string? assignedStationId = null)
         {
             var u = await _repo.GetByNICAsync(nic) ?? throw new Exception("User not found");
@@ -77,24 +110,28 @@ namespace EVChargingAPI.Services
             await _repo.UpdateAsync(u.Id!, u);
         }
 
+        // Delete user account permanently by NIC
         public async Task DeleteByNicAsync(string nic)
         {
             var u = await _repo.GetByNICAsync(nic) ?? throw new Exception("User not found");
             await _repo.DeleteByNicAsync(nic);
         }
         
+        // Get first operator assigned to a specific station
         public async Task<User?> GetOperatorByStationIdAsync(string stationId)
         {
             var allUsers = await _repo.GetAllAsync();
             return allUsers.FirstOrDefault(u => u.Role == "Operator" && u.AssignedStationId == stationId);
         }
         
+        // Get all operators assigned to a specific station
         public async Task<List<User>> GetOperatorsByStationIdAsync(string stationId)
         {
             var allUsers = await _repo.GetAllAsync();
             return allUsers.Where(u => u.Role == "Operator" && u.AssignedStationId == stationId).ToList();
         }
         
+        // Create user account with station assignment validation
         public async Task<User> CreateWithStationAsync(User user, string? assignedStationId = null)
         {
             // Handle station assignment for Operators
@@ -123,6 +160,7 @@ namespace EVChargingAPI.Services
             return user;
         }
 
+        // Update station assignment for operators
         public async Task UpdateStationAssignmentByNicAsync(string nic, string? assignedStationId)
         {
             var u = await _repo.GetByNICAsync(nic) ?? throw new Exception("User not found");

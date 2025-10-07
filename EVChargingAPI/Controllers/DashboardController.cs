@@ -1,5 +1,30 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: Dashboard statistics endpoints
+/*
+ * File: DashboardController.cs
+ * Author: Peiris M. H. C. (IT22194930)
+
+        // Get role-based dashboard statistics and analytics
+        [HttpGet(\"stats\")]
+        public async Task<IActionResult> GetDashboardStats()
+        
+ * Description: API Controller for dashboard analytics and system statistics.
+ *              Provides comprehensive reporting and analytics data for different user roles.
+ *              Generates real-time statistics for users, stations, bookings, and system performance.
+ * 
+ * Endpoints:
+ * - GET /api/dashboard/stats - Get overall system statistics (all roles)
+ * - GET /api/dashboard/user-stats - Get user-specific statistics (role-based)
+ * - GET /api/dashboard/booking-stats - Get booking analytics and trends
+ * - GET /api/dashboard/station-stats - Get station utilization and performance data
+ * - GET /api/dashboard/operator-stats - Get operator-specific dashboard data
+ * 
+ * Security: Requires JWT authentication with role-based data filtering.
+ *           Different statistical views based on user role (Backoffice, Operator, EVOwner).
+ *           Implements data isolation to ensure users only see relevant information.
+ * 
+ * Features: Real-time statistics calculation, role-based data aggregation,
+ *          performance metrics, utilization reports, and trend analysis.
+ */
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Repositories;

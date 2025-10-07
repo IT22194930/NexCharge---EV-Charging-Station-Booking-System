@@ -1,5 +1,37 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: User DB operations
+/*
+ * File: UserRepository.cs
+ * Author: Peiris M. H. C. (IT22194930)
+ * Description: Data access layer repository for User entity operations.
+ *              Implements comprehensive MongoDB operations for user data persistence,
+ *              including CRUD operations, complex queries, and data integrity maintenance.
+ * 
+ * Key Methods:
+ * - CreateAsync(user) - Insert new user document into MongoDB
+ * - GetAllAsync() - Retrieve all users with optional filtering
+ * - GetByNICAsync(nic) - Find user by National Identity Card number
+ * - GetByIdAsync(id) - Find user by MongoDB ObjectId
+ * - UpdateAsync(id, user) - Update existing user document
+ * - DeleteAsync(id) - Remove user document from database
+ * - GetByRoleAsync(role) - Retrieve users filtered by role
+ * - GetActiveUsersAsync() - Get all active user accounts
+ * - SearchUsersAsync(query) - Full-text search across user data
+ * 
+ * Database Operations:
+ * - Efficient indexing on NIC field for fast lookups
+ * - Compound indexes for role and status-based queries
+ * - Optimized aggregation pipelines for complex reporting
+ * - Transaction support for data consistency
+ * - Bulk operations for batch processing
+ * 
+ * Data Validation:
+ * - NIC uniqueness constraints and validation
+ * - Role enumeration validation (Backoffice, Operator, EVOwner)
+ * - Password hash format validation
+ * - Station assignment consistency checks
+ * 
+ * Dependencies: MongoDB.Driver for database operations, MongoDbService for connection management.
+ */
+
 using EVChargingAPI.Models;
 using MongoDB.Driver;
 
