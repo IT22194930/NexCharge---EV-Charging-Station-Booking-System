@@ -1,12 +1,33 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import api from "../api/axios";
 
 export default function Layout({ children }) {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  // Fetch user profile to get the full name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!token) return;
+      
+      try {
+        const response = await api.get("/auth/profile");
+        if (response.data && response.data.fullName) {
+          setUserName(response.data.fullName);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+        // If profile fetch fails, we'll just show "User" as fallback
+      }
+    };
+
+    fetchUserProfile();
+  }, [token]);
 
   const handleLogout = () => {
     if (!showLogoutConfirm) {
@@ -73,7 +94,7 @@ export default function Layout({ children }) {
               <div className="flex-1">
                 <p className="text-xs text-slate-200 mb-1">Welcome back,</p>
                 <p className="text-sm font-semibold text-white truncate">
-                  {localStorage.getItem("name") || localStorage.getItem("email") || "User"}
+                  {userName || "User"}
                 </p>
               </div>
             </div>
