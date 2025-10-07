@@ -1,12 +1,14 @@
 import axios from "axios";
 
-// Base URL configuration for different environments
+// Base URL configuration from environment variables
 const BASE_URLS = {
-  local: "http://localhost:5274/api",
-  network: "http://192.168.1.63/EVChargingAPI/api",
+  local: import.meta.env.VITE_API_BASE_URL_LOCAL,
+  network: import.meta.env.VITE_API_BASE_URL_NETWORK,
 };
 
-const currentBaseURL = BASE_URLS.local; // Change to BASE_URLS.local for local development
+// Determine current base URL from environment variable
+const currentEnvironment = import.meta.env.VITE_API_BASE_URL_CURRENT;
+const currentBaseURL = BASE_URLS[currentEnvironment];
 
 const api = axios.create({
   baseURL: currentBaseURL,
