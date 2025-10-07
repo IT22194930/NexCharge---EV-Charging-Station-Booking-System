@@ -40,16 +40,20 @@ export default function Layout({ children }) {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-transparent to-teal-700/30 pointer-events-none"></div>
         {/* Logo Section */}
-        <div className="p-6 border-b border-emerald-700 relative z-10">
+        <div className="p-4 border-b border-emerald-700 relative z-10">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-700"></div>
           <Link to="/dashboard" className="block">
-            <div className="flex flex-row items-center text-center justify-around cursor-pointer hover:bg-emerald-800/30 rounded-lg p-2 transition-all duration-200 group">
-              <img 
-                src="/NexCharge-logo.png" 
-                alt="NexCharge Logo" 
-                className="w-16 h-auto drop-shadow-lg group-hover:scale-105 transition-transform duration-200"
-              />
-              <div className="flex flex-col items-center text-center">
+            <div className="flex items-center space-x-4 cursor-pointer hover:bg-emerald-800/30 rounded-lg p-4 transition-all duration-200 group">
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                  <img 
+                    src="/NexCharge-logo.png" 
+                    alt="NexCharge Logo" 
+                    className="w-12 h-12 object-contain group-hover:scale-105 transition-transform duration-200"
+                  />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
                 <h1 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors duration-200">NEXCHARGE</h1>
                 <p className="text-xs text-emerald-300 uppercase tracking-wider group-hover:text-emerald-200 transition-colors duration-200">Stay Charged</p>
               </div>
@@ -67,7 +71,7 @@ export default function Layout({ children }) {
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-xs text-emerald-300 mb-1">Welcome back,</p>
+                <p className="text-xs text-slate-200 mb-1">Welcome back,</p>
                 <p className="text-sm font-semibold text-white truncate">
                   {localStorage.getItem("name") || localStorage.getItem("email") || "User"}
                 </p>
@@ -75,15 +79,15 @@ export default function Layout({ children }) {
             </div>
             
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-emerald-900/30 rounded-lg p-2 text-center">
-                <p className="text-emerald-400 mb-1">Role</p>
+              <div className="bg-slate-800/40 rounded-lg p-2 text-center border border-slate-600/30">
+                <p className="text-slate-300 mb-1">Role</p>
                 <p className="text-white font-medium">{role}</p>
               </div>
-              <div className="bg-emerald-900/30 rounded-lg p-2 text-center">
-                <p className="text-emerald-400 mb-1">Status</p>
+              <div className="bg-slate-800/40 rounded-lg p-2 text-center border border-slate-600/30">
+                <p className="text-slate-300 mb-1">Status</p>
                 <div className="flex items-center justify-center space-x-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <p className="text-green-300 font-medium">Online</p>
+                  <p className="text-white font-medium">Online</p>
                 </div>
               </div>
             </div>
