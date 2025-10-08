@@ -40,10 +40,8 @@ class OperatorBookingAdapter(
     inner class BookingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val cardView: MaterialCardView = itemView.findViewById(R.id.cardViewBooking)
         private val textViewBookingId: TextView = itemView.findViewById(R.id.textViewBookingId)
-        private val textViewStationName: TextView = itemView.findViewById(R.id.textViewStationName)
-        private val textViewDateTime: TextView = itemView.findViewById(R.id.textViewDateTime)
-        private val textViewDuration: TextView = itemView.findViewById(R.id.textViewDuration)
-        private val textViewStatus: TextView = itemView.findViewById(R.id.textViewStatus)
+    private val textViewStationName: TextView = itemView.findViewById(R.id.textViewStationName)
+    private val textViewDateTime: TextView = itemView.findViewById(R.id.textViewDateTime)
         private val textViewCustomerNic: TextView = itemView.findViewById(R.id.textViewCustomerNic)
         private val buttonComplete: MaterialButton = itemView.findViewById(R.id.buttonComplete)
 
@@ -51,25 +49,9 @@ class OperatorBookingAdapter(
             textViewBookingId.text = "ID: ${booking.id}"
             textViewStationName.text = getStationName(booking.stationId)
             textViewDateTime.text = DateTimeUtils.formatDateTimeWithHour(booking.reservationDate, booking.reservationHour)
-            textViewDuration.text = "${booking.duration} hour(s)"
             textViewCustomerNic.text = "Customer: ${booking.ownerNic}"
-            textViewStatus.text = booking.status
 
-            // Set status color and styling
-            when (booking.status.lowercase()) {
-                "approved" -> {
-                    textViewStatus.setTextColor(ContextCompat.getColor(itemView.context, R.color.status_approved))
-                    textViewStatus.setBackgroundResource(R.drawable.status_approved_background)
-                }
-                "completed" -> {
-                    textViewStatus.setTextColor(ContextCompat.getColor(itemView.context, R.color.status_completed))
-                    textViewStatus.setBackgroundResource(R.drawable.status_completed_background)
-                }
-                else -> {
-                    textViewStatus.setTextColor(ContextCompat.getColor(itemView.context, R.color.nexcharge_text_secondary))
-                    textViewStatus.setBackgroundResource(R.drawable.status_default_background)
-                }
-            }
+            // Status pill removed from layout; keep card stroke changes for visual cue below
 
             // Show/hide complete button based on status and callback
             if (booking.status.equals("Approved", ignoreCase = true) && onCompleteClick != null) {
