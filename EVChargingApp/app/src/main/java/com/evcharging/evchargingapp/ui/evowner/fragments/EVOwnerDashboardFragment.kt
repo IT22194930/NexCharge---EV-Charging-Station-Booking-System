@@ -1285,7 +1285,7 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                     ownerNic = userNic,
                     stationId = station.id,
                     reservationDate = dateTime,
-                    reservationHour = 0 // TODO: This method should be removed/updated
+                    reservationHour = 0
                 )
                 
                 val response = apiService.createBooking(request)

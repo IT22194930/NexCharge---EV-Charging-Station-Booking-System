@@ -129,23 +129,18 @@ class EVOwnerReservationsFragment : Fragment() {
                     
                     if (response.isSuccessful && response.body() != null) {
                         val allBookings = response.body()!!
-                        // Filter out completed bookings and show only the 5 most recent active bookings
                         recentBookings = allBookings
                             .filter { it.status != "Completed" }
                             .sortedByDescending { it.createdAt ?: "" }
                             .take(5)
                         recentBookingAdapter.submitList(recentBookings)
-                        Log.d("EVOwnerReservations", "Loaded ${recentBookings.size} recent active bookings (excluding completed)")
                     } else {
-                        Log.w("EVOwnerReservations", "Failed to load recent bookings: ${response.code()}")
                         showError("Failed to load recent bookings")
                     }
                 } else {
-                    Log.w("EVOwnerReservations", "User NIC not found")
                     showError("User authentication error")
                 }
             } catch (e: Exception) {
-                Log.e("EVOwnerReservations", "Error loading recent bookings", e)
                 if (isAdded && _binding != null) {
                     showError("Network error loading bookings")
                 }
@@ -165,17 +160,11 @@ class EVOwnerReservationsFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null) {
                     allStations.clear()
                     allStations.addAll(response.body()!!)
-                    updateStationsUI(allStations) // Update the stations list
-                    Log.d("EVOwnerReservations", "Loaded ${allStations.size} stations")
-                    allStations.forEach { station ->
-                        Log.d("EVOwnerReservations", "Station: ${station.name} - ${station.location} (${station.type}, ${station.availableSlots} slots)")
-                    }
+                    updateStationsUI(allStations)
                 } else {
-                    Log.w("EVOwnerReservations", "Failed to load stations: ${response.code()}")
                     showError("Failed to load stations: ${response.code()}")
                 }
             } catch (e: Exception) {
-                Log.e("EVOwnerReservations", "Error loading stations", e)
                 if (isAdded && _binding != null) {
                     showError("Error loading stations: ${e.message}")
                 }
@@ -234,11 +223,9 @@ class EVOwnerReservationsFragment : Fragment() {
         
         // Setup station dropdown with enhanced information
         val stationDisplayNames = allStations.map { station ->
-            val dailyCapacity = station.availableSlots * 24 // Total EVs that can be charged per day
+            val dailyCapacity = station.availableSlots * 24
             "🔌 ${station.name} - ${station.location}\n   ${station.type} | ${station.availableSlots} machines/hour | Up to ${dailyCapacity} EVs/day"
         }
-        
-        Log.d("EVOwnerReservations", "Setting up dropdown with ${stationDisplayNames.size} stations")
         
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, stationDisplayNames)
         autoCompleteStation.setAdapter(adapter)
@@ -261,7 +248,6 @@ class EVOwnerReservationsFragment : Fragment() {
         var selectedStationIndex = -1
         autoCompleteStation.setOnItemClickListener { parent, view, position, id ->
             selectedStationIndex = position
-            Log.d("EVOwnerReservations", "Selected station index: $position")
         }
         
         // Setup date picker with validation
