@@ -642,7 +642,13 @@ class EVOwnerReservationsFragment : Fragment() {
     private fun showBookingDetails(booking: Booking) {
         val stationName = getStationName(booking.stationId)
         val statusMessage = when (booking.status.lowercase()) {
-            "pending" -> "Your reservation is waiting for station operator approval."
+            "pending" -> {
+                if (isBookingOlderThan12Hours(booking)) {
+                    "Your reservation is waiting for station operator approval.\n\nNote: This booking can no longer be updated as it was created more than 12 hours ago."
+                } else {
+                    "Your reservation is waiting for station operator approval."
+                }
+            }
             "approved" -> "Your reservation is confirmed! You can start charging."
             "completed" -> "Charging session completed successfully."
             "cancelled" -> "This reservation has been cancelled."
@@ -666,8 +672,8 @@ class EVOwnerReservationsFragment : Fragment() {
             .setMessage(message)
             .setPositiveButton("Close", null)
         
-        // Add Update button for pending bookings
-        if (booking.status.lowercase() == "pending") {
+        // Add Update button for pending bookings that are not older than 12 hours
+        if (booking.status.lowercase() == "pending" && !isBookingOlderThan12Hours(booking)) {
             alertDialog.setNeutralButton("Update") { _, _ ->
                 showUpdateBookingDialog(booking)
             }
@@ -676,7 +682,59 @@ class EVOwnerReservationsFragment : Fragment() {
         alertDialog.show()
     }
 
+    private fun isBookingOlderThan12Hours(booking: Booking): Boolean {
+        try {
+            // Parse the booking creation time
+            val createdAt = booking.createdAt
+            if (createdAt.isNullOrEmpty()) {
+                Log.w("EVOwnerReservations", "Booking createdAt is null or empty, allowing update")
+                return false // If no creation time, allow update for safety
+            }
+            
+            // Parse the creation date (assuming ISO format like "2024-10-08T10:30:00")
+            val bookingCreationTime = Calendar.getInstance().apply {
+                val isoDate = createdAt.replace("T", " ").substring(0, 16) 
+                val parts = isoDate.split(" ")
+                val dateParts = parts[0].split("-")
+                val timeParts = parts[1].split(":")
+                
+                set(Calendar.YEAR, dateParts[0].toInt())
+                set(Calendar.MONTH, dateParts[1].toInt() - 1) // Month is 0-based
+                set(Calendar.DAY_OF_MONTH, dateParts[2].toInt())
+                set(Calendar.HOUR_OF_DAY, timeParts[0].toInt())
+                set(Calendar.MINUTE, timeParts[1].toInt())
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            
+            val currentTime = Calendar.getInstance()
+            val twelveHoursAgo = Calendar.getInstance().apply {
+                add(Calendar.HOUR_OF_DAY, -12)
+            }
+            
+            Log.d("EVOwnerReservations", "Checking booking age - Created: ${bookingCreationTime.time}, 12h ago: ${twelveHoursAgo.time}")
+            
+            // Return true if booking was created more than 12 hours ago
+            return bookingCreationTime.before(twelveHoursAgo)
+            
+        } catch (e: Exception) {
+            Log.e("EVOwnerReservations", "Error parsing booking creation time: ${booking.createdAt}", e)
+            return false // If parsing fails, allow update for safety
+        }
+    }
+
     private fun showUpdateBookingDialog(booking: Booking) {
+        // Check if booking is older than 12 hours and prevent update
+        if (isBookingOlderThan12Hours(booking)) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Update Not Allowed")
+                .setMessage("This booking cannot be updated because it was created more than 12 hours ago. Bookings can only be modified within 12 hours of creation.")
+                .setPositiveButton("OK", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
+            return
+        }
+        
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_update_booking, null)
         val editTextDate = dialogView.findViewById<TextInputEditText>(R.id.editTextDate)
         val editTextHour = dialogView.findViewById<TextInputEditText>(R.id.editTextHour)
