@@ -72,25 +72,14 @@ class EVOwnerReservationsFragment : Fragment() {
 
     private fun setupRecyclerView() {
         recentBookingAdapter = RecentBookingAdapter(
-            onBookingClick = { booking ->
-                showBookingDetails(booking)
-            },
-            onViewQRClick = { booking ->
-                showQRCode(booking)
-            },
-            onDeleteClick = { booking ->
-                confirmDeleteBooking(booking)
-            },
-            onUpdateClick = { booking ->
-                showUpdateBookingDialog(booking)
-            },
-            getStationName = { stationId ->
-                getStationName(stationId)
-            }
+            onBookingClick = { booking -> showBookingDetails(booking) },
+            onViewQRClick = { booking -> showQRCode(booking) },
+            onDeleteClick = { booking -> confirmDeleteBooking(booking) },
+            onUpdateClick = { booking -> showUpdateBookingDialog(booking) },
+            getStationName = { stationId -> getStationName(stationId) }
         )
         
         stationsAdapter = StationsAdapter { station ->
-            // When a station is clicked, show booking dialog for that specific station
             showCreateBookingDialogForStation(station)
         }
         
@@ -493,7 +482,7 @@ class EVOwnerReservationsFragment : Fragment() {
                     stationId = stationId,
                     ownerNic = userNic,
                     reservationDate = formattedDateTime,
-                    reservationHour = 0 // TODO: Update to support hour selection
+                    reservationHour = 0
                 )
                 
                 val response = apiService.createBooking(request)
@@ -844,7 +833,7 @@ class EVOwnerReservationsFragment : Fragment() {
                     booking.id,
                     BookingUpdateRequest(
                         reservationDate = formattedDateTime,
-                        reservationHour = 0, // TODO: Update to support hour selection
+                        reservationHour = 0,
                         stationId = booking.stationId
                     )
                 )
@@ -1134,10 +1123,6 @@ class EVOwnerReservationsFragment : Fragment() {
 
     private fun getStationName(stationId: String?): String {
         if (stationId.isNullOrEmpty()) return "Unknown Station"
-        
-        // Log for debugging
-        Log.d("EVOwnerReservations", "Looking for station with ID: $stationId")
-        Log.d("EVOwnerReservations", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
         
         val station = allStations.find { it.id == stationId }
         return if (station != null) {

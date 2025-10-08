@@ -71,7 +71,6 @@ class HistoryBookingsTabFragment : Fragment() {
             clearDateFilter()
         }
         
-        // Add long press on the RecyclerView container to show filter (backup)
         binding.recyclerViewHistoryBookings.setOnLongClickListener {
             showMonthYearFilterDialog()
             true
@@ -609,7 +608,7 @@ class HistoryBookingsTabFragment : Fragment() {
                     booking.id,
                     BookingUpdateRequest(
                         reservationDate = formattedDateTime,
-                        reservationHour = 0, // TODO: Update to support hour selection
+                        reservationHour = 0,
                         stationId = booking.stationId
                     )
                 )

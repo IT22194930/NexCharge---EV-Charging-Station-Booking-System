@@ -72,21 +72,16 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
         
-        Log.d("EVOwnerDashboard", "Permission results: Fine=$fineLocationGranted, Coarse=$coarseLocationGranted")
-        
         when {
             fineLocationGranted -> {
-                Log.d("EVOwnerDashboard", "Fine location permission granted")
                 Toast.makeText(requireContext(), "Location permission granted! ", Toast.LENGTH_SHORT).show()
                 enableUserLocation()
             }
             coarseLocationGranted -> {
-                Log.d("EVOwnerDashboard", "Coarse location permission granted")
                 Toast.makeText(requireContext(), "Approximate location permission granted ", Toast.LENGTH_SHORT).show()
                 enableUserLocation()
             }
             else -> {
-                Log.w("EVOwnerDashboard", "Location permissions denied")
                 Toast.makeText(
                     requireContext(), 
                     "Location permission is required to show your location on the map", 
@@ -113,7 +108,6 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         val tokenValid = TokenUtils.isTokenValid(requireContext())
         
         if (userNic == null) {
-            Log.e("EVOwnerDashboardFragment", "User NIC is null - authentication issue")
             Toast.makeText(requireContext(), "Authentication issue: Please login again", Toast.LENGTH_LONG).show()
             return
         }
@@ -174,8 +168,6 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
         
         // Setup find stations button
         binding.buttonFindStations.setOnClickListener {
-            Log.d("EVOwnerDashboard", "Find stations button clicked")
-            
             if (userLocation != null && stationsList.isNotEmpty()) {
                 // Show nearest 3 stations dialog
                 showNearestStationsDialog()

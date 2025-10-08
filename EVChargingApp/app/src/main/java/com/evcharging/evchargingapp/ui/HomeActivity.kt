@@ -23,12 +23,5 @@ class HomeActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        // You can add logic here to display user-specific information
-        // For example, retrieve user details from an Intent extra passed by LoginActivity
-        // val userName = intent.getStringExtra("USER_NAME")
-        // if (userName != null) {
-        //     binding.textViewWelcome.text = "Welcome, $userName!"
-        // }
     }
 }
