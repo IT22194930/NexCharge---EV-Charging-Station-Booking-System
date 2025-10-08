@@ -114,13 +114,10 @@ class EVOwnerBookingsFragment : Fragment() {
                 
                 if (response.isSuccessful && response.body() != null) {
                     allStations = response.body()!!
-                    Log.d("EVOwnerBookings", "Loaded ${allStations.size} stations")
                 } else {
-                    Log.w("EVOwnerBookings", "Failed to load stations: ${response.code()}")
                     showError("Failed to load stations")
                 }
             } catch (e: Exception) {
-                Log.e("EVOwnerBookings", "Error loading stations", e)
                 if (isAdded && _binding != null) {
                     showError("Network error loading stations")
                 }
@@ -168,15 +165,10 @@ class EVOwnerBookingsFragment : Fragment() {
 
     fun showQRCode(booking: Booking) {
         try {
-            Log.d("EVOwnerBookings", "Attempting to show QR for booking: ${booking.id}, status: ${booking.status}")
-            Log.d("EVOwnerBookings", "QR Base64 available: ${!booking.qrBase64.isNullOrEmpty()}")
-            
             val stationName = getStationName(booking.stationId)
             
             // Check if booking has QR code from backend (like web version)
             if (!booking.qrBase64.isNullOrEmpty()) {
-                Log.d("EVOwnerBookings", "QR Base64 length: ${booking.qrBase64!!.length}")
-                // Use backend-provided QR code (similar to web version)
                 val qrBytes = Base64.decode(booking.qrBase64, Base64.DEFAULT)
                 val qrBitmap = BitmapFactory.decodeByteArray(qrBytes, 0, qrBytes.size)
                 
@@ -192,15 +184,10 @@ class EVOwnerBookingsFragment : Fragment() {
                         .setMessage("Show this QR code at $stationName\n📅 $timeSlot\n🆔 Booking: ${booking.id}")
                         .setPositiveButton("Close", null)
                         .show()
-                    
-                    Log.d("EVOwnerBookings", "QR Code dialog displayed successfully")
                 } else {
-                    Log.e("EVOwnerBookings", "Failed to decode QR code bitmap")
                     showError("QR code format is invalid")
                 }
             } else {
-                // Show message if QR code is not yet available
-                Log.d("EVOwnerBookings", "No QR code available for booking ${booking.id}")
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle("QR Code Unavailable")
                     .setMessage("QR code will be available once your booking is approved by the station operator.\n\nStation: $stationName")
@@ -209,7 +196,6 @@ class EVOwnerBookingsFragment : Fragment() {
             }
                 
         } catch (e: Exception) {
-            Log.e("EVOwnerBookings", "Error displaying QR code", e)
             showError("Failed to display QR code")
         }
     }
@@ -293,10 +279,6 @@ class EVOwnerBookingsFragment : Fragment() {
 
     private fun getStationName(stationId: String?): String {
         if (stationId.isNullOrEmpty()) return "Unknown Station"
-        
-        // Log for debugging
-        Log.d("EVOwnerBookings", "Looking for station with ID: $stationId")
-        Log.d("EVOwnerBookings", "Available stations: ${allStations.map { "${it.id} -> ${it.name}" }}")
         
         val station = allStations.find { it.id == stationId }
         return if (station != null) {

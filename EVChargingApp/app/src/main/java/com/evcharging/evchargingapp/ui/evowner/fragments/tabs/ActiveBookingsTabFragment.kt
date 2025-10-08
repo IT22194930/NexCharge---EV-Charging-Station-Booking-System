@@ -119,11 +119,6 @@ class ActiveBookingsTabFragment : Fragment() {
                         val allBookingsFromApi = response.body()!!
                         Log.d("ActiveBookings", "Total bookings from API: ${allBookingsFromApi.size}")
                         
-                        // Log all booking statuses to debug
-                        allBookingsFromApi.forEach { booking ->
-                            Log.d("ActiveBookings", "Booking ${booking.id}: status='${booking.status}', hasQR=${!booking.qrBase64.isNullOrEmpty()}")
-                        }
-                        
                         allBookings = allBookingsFromApi.filter { booking ->
                             booking.status.lowercase() in listOf("pending", "approved", "confirmed")
                         }.sortedWith(compareBy<Booking> { booking ->
@@ -502,7 +497,7 @@ class ActiveBookingsTabFragment : Fragment() {
                     booking.id,
                     BookingUpdateRequest(
                         reservationDate = formattedDateTime,
-                        reservationHour = 0, // TODO: Update to support hour selection
+                        reservationHour = 0,
                         stationId = booking.stationId
                     )
                 )
