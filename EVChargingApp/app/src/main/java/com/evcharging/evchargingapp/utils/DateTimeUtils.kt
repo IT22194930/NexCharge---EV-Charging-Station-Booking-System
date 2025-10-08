@@ -13,6 +13,21 @@ object DateTimeUtils {
     )
     
     private val outputFormat = SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault())
+    private val dateOnlyOutFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+
+    /**
+     * Formats an hour in 24h to "hh.mm am/pm" with a leading zero and lowercase period marker.
+     * Example: 0 -> "12.00 am", 13 -> "01.00 pm"
+     */
+    private fun formatHourDotAmPm(hour24: Int): String {
+        val normalized = ((hour24 % 24) + 24) % 24
+        val period = if (normalized < 12) "am" else "pm"
+        val hour12 = when (normalized % 12) {
+            0 -> 12
+            else -> normalized % 12
+        }
+        return String.format(Locale.getDefault(), "%02d.%02d %s", hour12, 0, period)
+    }
     
     /**
      * Formats a datetime string to a user-friendly format
@@ -254,40 +269,19 @@ object DateTimeUtils {
             }
             
             if (parsedDate != null) {
-                // Create calendar and set the hour
-                val calendar = Calendar.getInstance()
-                calendar.time = parsedDate
-                calendar.set(Calendar.HOUR_OF_DAY, hour)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                
-                // Format with the correct hour
-                outputFormat.format(calendar.time)
+                val dateStr = dateOnlyOutFormat.format(parsedDate)
+                val start = formatHourDotAmPm(hour)
+                val end = formatHourDotAmPm((hour + 1) % 24)
+                "$dateStr - $start to $end"
             } else {
-                // Fallback: format manually
-                val hourFormatted = if (hour == 0) {
-                    "12:00 AM"
-                } else if (hour < 12) {
-                    "${hour}:00 AM"
-                } else if (hour == 12) {
-                    "12:00 PM"
-                } else {
-                    "${hour - 12}:00 PM"
-                }
-                "$dateString at $hourFormatted"
+                val start = formatHourDotAmPm(hour)
+                val end = formatHourDotAmPm((hour + 1) % 24)
+                "$dateString - $start to $end"
             }
         } catch (e: Exception) {
-            // Final fallback
-            val hourFormatted = if (hour == 0) {
-                "12:00 AM"
-            } else if (hour < 12) {
-                "${hour}:00 AM"
-            } else if (hour == 12) {
-                "12:00 PM"
-            } else {
-                "${hour - 12}:00 PM"
-            }
-            "$dateString at $hourFormatted"
+            val start = formatHourDotAmPm(hour)
+            val end = formatHourDotAmPm((hour + 1) % 24)
+            "$dateString - $start to $end"
         }
     }
 

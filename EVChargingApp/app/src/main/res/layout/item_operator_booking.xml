@@ -38,19 +38,6 @@
                 android:textColor="@color/nexcharge_text_primary"
                 tools:text="ID: BK-2024-001" />
 
-            <TextView
-                android:id="@+id/textViewStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Approved"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/status_approved"
-                android:background="@drawable/status_approved_background"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                tools:text="Approved" />
-
         </LinearLayout>
 
         <!-- Station Information -->
@@ -134,18 +121,6 @@
                 android:textSize="14sp"
                 android:textColor="@color/nexcharge_text_secondary"
                 tools:text="Dec 25, 2024 - 2:30 PM" />
-
-            <TextView
-                android:id="@+id/textViewDuration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2 hour(s)"
-                android:textSize="12sp"
-                android:textColor="@color/nexcharge_text_hint"
-                android:background="@drawable/duration_background"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
-                tools:text="2 hour(s)" />
 
         </LinearLayout>
 

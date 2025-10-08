@@ -438,13 +438,11 @@ class OperatorQrScanActivity : ComponentActivity() {
     }
 
     private fun formatDateTime(reservationDate: String, reservationHour: Int): String {
-        return try {
-            // Format the date and time for display
-            val datePart = reservationDate.split("T")[0] // Extract date part if it's in ISO format
-            "$datePart at ${reservationHour}:00 - ${reservationHour + 1}:00"
-        } catch (e: Exception) {
-            "$reservationDate at ${reservationHour}:00 - ${reservationHour + 1}:00"
-        }
+        // Use shared utility to keep formatting consistent across the app
+        return com.evcharging.evchargingapp.utils.DateTimeUtils.formatDateTimeWithHour(
+            reservationDate,
+            reservationHour
+        )
     }
 
     private fun showError(msg: String) {
