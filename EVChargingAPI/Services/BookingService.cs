@@ -22,6 +22,7 @@ namespace EVChargingAPI.Services
 {
     public class BookingService
     {
+        // Repository and auxiliary services injected via DI.
         private readonly BookingRepository _repo;
         private readonly StationRepository _stations;
         private readonly UserRepository _users;
@@ -76,6 +77,7 @@ namespace EVChargingAPI.Services
             // Validate new station if changed
             if (updated.StationId != existing.StationId)
             {
+                // Ensure target station exists and active prior to moving the booking
                 var station = await _stations.GetByIdAsync(updated.StationId) ?? throw new Exception("Station not found");
                 if (!station.IsActive) throw new Exception("Station not active");
             }
@@ -89,12 +91,14 @@ namespace EVChargingAPI.Services
                 updated.ReservationHour != existing.ReservationHour ||
                 updated.StationId != existing.StationId)
             {
+                // Use station capacity to ensure no overbooking on the new slot
                 var station = await _stations.GetByIdAsync(updated.StationId) ?? throw new Exception("Station not found for availability check");
                 var bookedCount = await _repo.GetBookedCountForHourAsync(updated.StationId, updated.ReservationDate, updated.ReservationHour);
                 if (bookedCount >= station.AvailableSlots)
                     throw new Exception($"No available slots for hour {updated.ReservationHour}:00. All {station.AvailableSlots} slots are booked.");
             }
 
+            // Persist only allowed fields (status managed by workflow endpoints)
             existing.ReservationDate = updated.ReservationDate;
             existing.ReservationHour = updated.ReservationHour;
             existing.StationId = updated.StationId;
@@ -105,9 +109,11 @@ namespace EVChargingAPI.Services
         public async Task CancelAsync(string id)
         {
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // Enforce 12-hour cancellation window relative to reservation date+hour
             var reservationDateTime = existing.ReservationDate.Date.AddHours(existing.ReservationHour);
             if (DateTime.UtcNow > reservationDateTime.AddHours(-12))
                 throw new Exception("Cannot cancel booking less than 12 hours before reservation");
+            // Status moved to terminal "Cancelled"
             existing.Status = "Cancelled";
             await _repo.UpdateAsync(id, existing);
         }
@@ -117,6 +123,7 @@ namespace EVChargingAPI.Services
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
             // in production: decrement station availableSlots etc.
             existing.Status = "Approved";
+            // QR payload encodes immutable session identifiers; image generated as Base64 for the client
             existing.QrBase64 = _qr.GenerateQrBase64($"booking:{existing.Id}|owner:{existing.OwnerNIC}|station:{existing.StationId}|date:{existing.ReservationDate:o}|hour:{existing.ReservationHour}");
             await _repo.UpdateAsync(id, existing);
             return existing;
@@ -125,6 +132,7 @@ namespace EVChargingAPI.Services
         public async Task<Booking> ConfirmAsync(string id)
         {
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // Transitional "Started" state (scan/arrival) before completing the session
             if (existing.Status != "Approved") throw new Exception("Only approved bookings can be confirmed");
             existing.Status = "Started";
             await _repo.UpdateAsync(id, existing);
@@ -134,6 +142,7 @@ namespace EVChargingAPI.Services
         public async Task<Booking> CompleteAsync(string id)
         {
             var existing = await _repo.GetByIdAsync(id) ?? throw new Exception("Booking not found");
+            // Allow completion from "Started" (normal) or directly from "Approved" if session ended without confirm.
             if (existing.Status != "Started" && existing.Status != "Approved") 
                 throw new Exception("Only started or approved bookings can be completed");
             existing.Status = "Completed";
@@ -147,6 +156,7 @@ namespace EVChargingAPI.Services
             // Allow deletion if booking is Cancelled or Pending
             if (existing.Status == "Approved" || existing.Status == "Completed")
             {
+                // Deletion is blocked for protected states to preserve audit/history
                 throw new Exception("Cannot delete approved or completed bookings. Please cancel first (only approved) or this booking is finalized.");
             }
             await _repo.DeleteAsync(id);
@@ -161,12 +171,15 @@ namespace EVChargingAPI.Services
 
             for (int hour = 0; hour < 24; hour++)
             {
+                // Count how many bookings exist for the current hour
                 var bookedCount = bookings.Count(b => b.ReservationHour == hour);
                 var availableSlots = station.AvailableSlots - bookedCount;
 
+                // Clamp at 0 to avoid negative numbers if data races occur
                 availableHours.Add(new AvailableSlotDto(hour, Math.Max(0, availableSlots), station.AvailableSlots));
             }
 
+            // Returns a per-hour view for the station-date pair
             return new StationAvailabilityDto(stationId, station.Name, date, availableHours);
         }
 
@@ -179,6 +192,7 @@ namespace EVChargingAPI.Services
 
             for (int hour = 0; hour < 24; hour++)
             {
+                // Accept hour if current bookings < capacity
                 var bookedCount = bookings.Count(b => b.ReservationHour == hour);
                 if (bookedCount < station.AvailableSlots)
                 {
@@ -186,6 +200,7 @@ namespace EVChargingAPI.Services
                 }
             }
 
+            // Sorted ascending by hour by construction (0..23)
             return availableHours;
         }
     }

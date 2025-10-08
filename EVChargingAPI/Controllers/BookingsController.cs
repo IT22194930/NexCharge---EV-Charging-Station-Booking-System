@@ -36,6 +36,8 @@ namespace EVChargingAPI.Controllers
     {
         private readonly BookingService _service;
         private readonly BookingRepository _repo; // for simple retrieval
+
+        // DI-injected controller: service encapsulates business rules; repo used for read-only lookups.
         public BookingsController(BookingService service, BookingRepository repo) { _service = service; _repo = repo; }
 
         // NEW: Get single booking by id (needed for operator QR scan verification)
@@ -44,8 +46,8 @@ namespace EVChargingAPI.Controllers
         public async Task<IActionResult> GetById(string id)
         {
             var b = await _repo.GetByIdAsync(id);
-            if (b == null) return NotFound();
-            return Ok(b);
+            if (b == null) return NotFound(); // 404 when the booking cannot be found
+            return Ok(b); // 200 with booking body
         }
 
         [HttpPost]
@@ -54,6 +56,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Map DTO to domain model; status set by service as "Pending"
                 var b = new Booking
                 {
                     OwnerNIC = dto.OwnerNic,
@@ -62,9 +65,9 @@ namespace EVChargingAPI.Controllers
                     ReservationHour = dto.ReservationHour
                 };
                 var created = await _service.CreateAsync(b);
-                return Ok(created);
+                return Ok(created); // 200 OK; could be 201 Created in future with Location header
             }
-            catch (Exception ex) { return BadRequest(ex.Message); }
+            catch (Exception ex) { return BadRequest(ex.Message); } // 400 with error text
         }
 
         [HttpPut("{id}")]
@@ -73,6 +76,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Only reservation fields are updatable; service enforces 12-hour rule and availability
                 var updated = await _service.UpdateAsync(id, new Booking { ReservationDate = dto.ReservationDate, ReservationHour = dto.ReservationHour, StationId = dto.StationId });
                 return Ok(updated);
             }
@@ -85,6 +89,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Cancels a booking if time-window allows; status becomes "Cancelled"
                 await _service.CancelAsync(id);
                 return Ok();
             }
@@ -97,6 +102,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Approves a Pending booking; QR image payload generated and persisted
                 var b = await _service.ApproveAsync(id);
                 return Ok(b);
             }
@@ -109,6 +115,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Moves from Approved → Started (arrival/scan step)
                 var b = await _service.ConfirmAsync(id);
                 return Ok(b);
             }
@@ -121,6 +128,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Completes a session from Started (or directly from Approved as a safe fallback)
                 var b = await _service.CompleteAsync(id);
                 return Ok(b);
             }
@@ -133,6 +141,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Deletes Pending/Cancelled bookings; Approved/Completed are protected by service guard
                 await _service.DeleteAsync(id);
                 return Ok();
             }
@@ -143,6 +152,7 @@ namespace EVChargingAPI.Controllers
         [Authorize(Roles = "EVOwner,Operator,Backoffice")]
         public async Task<IActionResult> GetByOwner(string ownerNic)
         {
+            // Simple owner-scoped listing; callers should apply additional filters on the client if needed
             var list = await _repo.GetByOwnerAsync(ownerNic);
             return Ok(list);
         }
@@ -151,6 +161,7 @@ namespace EVChargingAPI.Controllers
         [Authorize(Roles = "Operator,Backoffice")]
         public async Task<IActionResult> GetAll()
         {
+            // Unscoped list for operational dashboards (role-restricted)
             var list = await _repo.GetAllAsync();
             return Ok(list);
         }
@@ -161,6 +172,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Returns per-hour available slot counts for the requested station/date
                 var availability = await _service.GetStationAvailabilityAsync(stationId, date);
                 return Ok(availability);
             }
@@ -173,6 +185,7 @@ namespace EVChargingAPI.Controllers
         {
             try
             {
+                // Returns list of hour indexes [0..23] that are not fully booked
                 var availableHours = await _service.GetAvailableHoursAsync(stationId, date);
                 return Ok(availableHours);
             }
