@@ -1,5 +1,17 @@
-// Author: Peiris M. H. C. (IT22194930)
-// Purpose: Generate QR code Base64 string
+/*
+ * File: QrCodeService.cs
+ * Author: Welikanna S. T. (IT22196910)
+ * Description: Service for generating QR code assets for bookings.
+ *              Uses QRCoder to produce consistent, scannable QR images.
+ * 
+ * Features:
+ * - Fixed error correction (ECC), quiet zone (margin), and size for reliability
+ * - Returns image data (e.g., PNG/Base64) from a compact payload
+ * - (Optional) Can compose auxiliary text (NIC/session) beneath the QR if configured
+ * 
+ * Security: Prefer opaque/signed payloads; avoid embedding sensitive PII directly in the QR content.
+ */
+
 using QRCoder;
 
 namespace EVChargingAPI.Services

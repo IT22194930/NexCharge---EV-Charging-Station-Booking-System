@@ -1,5 +1,19 @@
-// Author: Welikanna S. T. (IT22196910)
-// Purpose: Booking logic enforcing rules
+/*
+ * File: BookingService.cs
+ * Author: Welikanna S. T. (IT22196910)
+ * Description: Application service implementing booking business rules and workflow management.
+ * 
+ * Responsibilities:
+ * - Enforce future-date and 7-day advance booking limits
+ * - Validate 12-hour modification/cancellation window
+ * - Check station availability before create/update
+ * - Manage status transitions: Pending → Approved → Completed, Pending → Cancelled
+ * - Generate QR payload/image upon approval
+ * - Guard invalid transitions and prevent deletion of protected states
+ * 
+ * Notes: Single source of truth for booking invariants; controllers delegate validation here.
+ */
+
 using EVChargingAPI.Models;
 using EVChargingAPI.Repositories;
 using EVChargingAPI.DTOs;

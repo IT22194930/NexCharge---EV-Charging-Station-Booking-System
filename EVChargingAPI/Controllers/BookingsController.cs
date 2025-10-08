@@ -1,5 +1,24 @@
-// Author: Welikanna S. T. (IT22196910)
-// Purpose: Booking endpoints for owners and operators
+/*
+ * File: BookingsController.cs
+ * Author: Welikanna S. T. (IT22196910)
+ * Description: API Controller for booking management operations.
+ *              Exposes endpoints to create, update, approve, complete, cancel, retrieve, and delete bookings
+ *              with validation and role-based authorization.
+ * 
+ * Endpoints:
+ * - GET    /api/bookings                  - Get all bookings (role-scoped)
+ * - GET    /api/bookings/{id}             - Get a booking by ID
+ * - POST   /api/bookings                  - Create a new booking
+ * - PUT    /api/bookings/{id}             - Update an existing booking
+ * - POST   /api/bookings/approve/{id}     - Approve a pending booking (generates QR)
+ * - POST   /api/bookings/complete/{id}    - Complete an approved booking
+ * - POST   /api/bookings/cancel/{id}      - Cancel a pending booking
+ * - DELETE /api/bookings/{id}             - Delete a booking (guarded by workflow rules)
+ * 
+ * Security: Requires JWT authentication. Role-based authorization (EVOwner, Operator, Backoffice).
+ *           Delegates business rule enforcement to BookingService and returns appropriate HTTP codes.
+ */
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Services;

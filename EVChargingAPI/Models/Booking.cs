@@ -1,5 +1,18 @@
-// Author: Welikanna S. T. (IT22196910)
-// Purpose: Booking model
+/*
+ * File: Booking.cs
+ * Author: Welikanna S. T. (IT22196910)
+ * Description: Domain model representing an EV charging booking and its lifecycle.
+ * 
+ * Typical Properties:
+ * - Id, OwnerNIC, StationId
+ * - ReservationDate (date) and ReservationHour (slot)
+ * - Status: Pending, Approved, Completed, Cancelled
+ * - QR data (e.g., QRPayload or QrBase64)
+ * - CreatedAtUtc, UpdatedAtUtc
+ * 
+ * Notes: Persisted by the repository and mapped to DTOs for API exposure.
+ */
+
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 

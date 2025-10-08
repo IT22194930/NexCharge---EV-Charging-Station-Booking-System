@@ -414,10 +414,7 @@ export default function Bookings() {
   // Centralized filtering effect so search persists after state-changing reloads
   useEffect(() => {
     filterBookings(bookings, statusFilter, stationFilter);
-    // Only reset to first page if the filter criteria itself changed
-    // Detect changes via dependencies (excluding bookings data changes)
-    // We achieve this by separating deps: when bookings changes alone, we don't reset page
-    // Simple approach: track last criteria
+   
   }, [bookings, statusFilter, stationFilter, searchOwnerNic, role, filterBookings]);
 
   return (

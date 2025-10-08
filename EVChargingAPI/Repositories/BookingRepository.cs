@@ -1,5 +1,17 @@
-// Author: Welikanna S. T. (IT22196910)
-// Purpose: Booking DB operations
+/*
+ * File: BookingRepository.cs
+ * Author: Welikanna S. T. (IT22196910)
+ * Description: Repository responsible for data access operations on bookings.
+ *              Encapsulates database interactions for queries and mutations.
+ * 
+ * Operations:
+ * - GetAllAsync, GetByIdAsync
+ * - CreateAsync, UpdateAsync, DeleteAsync
+ * - (Optional) Availability checks and uniqueness helpers
+ * 
+ * Persistence: Abstracts the underlying data store (e.g., MongoDB or EF Core).
+ */
+
 using EVChargingAPI.Models;
 using MongoDB.Driver;
 
