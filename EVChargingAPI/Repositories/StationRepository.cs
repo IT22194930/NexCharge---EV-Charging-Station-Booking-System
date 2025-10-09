@@ -1,5 +1,18 @@
-// Author: Wickramasooriya W. A. A. L. (IT22126160)
-// Purpose: Station DB operations
+/*
+ * File: StationRepository.cs
+ * Author: Wickramasooriya W. A. A. L. (IT22126160)
+ * Description: Repository class for MongoDB operations on charging station data.
+ *              Handles all database interactions for Station entities using MongoDB driver.
+ *              Provides data access layer abstraction for station management operations.
+ * 
+ * Operations:
+ *   - CreateAsync: Insert new station document into MongoDB collection
+ *   - GetByIdAsync: Retrieve single station by ObjectId
+ *   - GetAllAsync: Fetch all stations from the collection
+ *   - UpdateAsync: Replace existing station document with updated data
+ *   - DeleteAsync: Remove station document from collection by ID
+ */
+
 using EVChargingAPI.Models;
 using MongoDB.Driver;
 
