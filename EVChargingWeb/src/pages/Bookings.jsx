@@ -10,31 +10,46 @@ import ConfirmActionDialog from "../components/bookings/ConfirmActionDialog";
 import { extractDateOnly } from "../utils/dateUtils";
 
 export default function Bookings() {
+  // Core datasets and filtered view
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [stations, setStations] = useState([]);
+
+  // UI and error states
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [currentBooking, setCurrentBooking] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState(null);
+
+  // Pagination and filters
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState("All");
   const [stationFilter, setStationFilter] = useState("All"); // backoffice station filter
+
+  // Action confirmation dialog state (approve/complete/cancel)
   const [actionConfirm, setActionConfirm] = useState({ visible: false });
+
+  // Operator-only NIC search query
   const [searchOwnerNic, setSearchOwnerNic] = useState(""); // operator NIC search
+
+  // Form model used by create/update modals
   const [form, setForm] = useState({
     ownerNic: "",
     stationId: "",
     reservationDate: "",
     reservationHour: 0,
   });
+
+  // Logged-in user context (used to derive operator's assigned station)
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Role read from localStorage (EVOwner | Operator | Backoffice)
   const role = localStorage.getItem("role");
 
-  // Get current user NIC from token
+  // Get current user NIC from token (supports EVOwner and Operator tokens)
   const getCurrentUserNic = () => {
     try {
       if (role === "EVOwner" || role === "Operator") {
@@ -48,9 +63,10 @@ export default function Bookings() {
     return null;
   };
 
+  // Cached NIC (used for EVOwner scoping and operators where needed)
   const userNic = getCurrentUserNic();
 
-  // Load current user data for operators to get assigned station
+  // Load current operator profile to access assignedStationId
   const loadCurrentUser = useCallback(async () => {
     if (role === "Operator" && userNic) {
       try {
@@ -62,6 +78,7 @@ export default function Bookings() {
     }
   }, [role, userNic]);
 
+  // Fetch bookings list depending on role and context; sort newest-first
   const loadBookings = useCallback(async () => {
     try {
       if (role === "EVOwner") {
@@ -69,21 +86,22 @@ export default function Bookings() {
           atob(localStorage.getItem("token").split(".")[1])
         )["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
         const res = await api.get(`/bookings/owner/${nic}`);
+        // Newest-first: prefer createdAt, fallback to reservationDate
         const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
         setBookings(sorted);
       } else if (role === "Operator" && currentUser?.assignedStationId) {
-        // Load all bookings and filter by assigned station
+        // Operator: filter bookings to assigned station only
         const res = await api.get("/bookings");
         const stationBookings = res.data.filter(booking => booking.stationId === currentUser.assignedStationId);
         const sorted = [...stationBookings].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
         setBookings(sorted);
       } else if (role === "Backoffice") {
-        // Backoffice can see all bookings
+        // Backoffice: view all bookings
         const res = await api.get("/bookings");
         const sorted = [...res.data].sort((a,b) => new Date(b.createdAt || b.reservationDate) - new Date(a.createdAt || a.reservationDate));
         setBookings(sorted);
       } else {
-        // Default case or operator without assigned station
+        // Fallback: no accessible bookings for current context
         setBookings([]);
       }
     } catch (err) {
@@ -92,6 +110,7 @@ export default function Bookings() {
     }
   }, [role, currentUser?.assignedStationId]);
 
+  // Apply status filter, operator NIC search, and (for backoffice) station filter
   const filterBookings = useCallback((allBookings, statusFilter, stationFilter) => {
     let working = allBookings;
     
@@ -114,12 +133,14 @@ export default function Bookings() {
     setFilteredBookings(working);
   }, [role, searchOwnerNic]);
 
+  // Handle status filter change (reset to first page for UX)
   const handleStatusFilterChange = (filter) => {
     setStatusFilter(filter);
     setCurrentPage(1); // Reset to first page when filtering
     filterBookings(bookings, filter, stationFilter);
   };
 
+  // Handle station filter change for Backoffice (reset page 1)
   const handleStationFilterChange = (stationId) => {
     setStationFilter(stationId);
     setCurrentPage(1); // Reset to first page when filtering
@@ -132,10 +153,12 @@ export default function Bookings() {
   const endIndex = startIndex + itemsPerPage;
   const currentBookings = filteredBookings.slice(startIndex, endIndex);
 
+  // Invoked by Pagination component
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
+  // Helper to pull NIC from token for EVOwner when initializing create form
   const getUserNic = () => {
     if (role === "EVOwner") {
       return JSON.parse(atob(localStorage.getItem("token").split(".")[1]))[
@@ -145,6 +168,7 @@ export default function Bookings() {
     return "";
   };
 
+  // Load and cache active stations for select lists and name resolution
   const loadStations = async () => {
     try {
       const res = await api.get("/stations");
@@ -154,6 +178,7 @@ export default function Bookings() {
     }
   };
 
+  // Create booking with client-side validation (future & within 7 days)
   const createBooking = async (e) => {
     e.preventDefault();
 
@@ -186,6 +211,7 @@ export default function Bookings() {
     }
   };
 
+  // Update booking with 12-hour window and 7-day bounds enforced client-side
   const updateBooking = async (e) => {
     e.preventDefault();
 
@@ -234,6 +260,7 @@ export default function Bookings() {
     }
   };
 
+  // Approve booking: confirms via modal, then calls API and reloads
   const approveBooking = async (id) => {
     setActionConfirm({
       visible: true,
@@ -259,6 +286,7 @@ export default function Bookings() {
     });
   };
 
+  // Complete booking: confirms via modal, then calls API and reloads
   const completeBooking = async (id) => {
     setActionConfirm({
       visible: true,
@@ -284,6 +312,7 @@ export default function Bookings() {
     });
   };
 
+  // Cancel booking: confirms via modal, then calls API and reloads
   const cancelBooking = async (id) => {
     setActionConfirm({
       visible: true,
@@ -309,11 +338,13 @@ export default function Bookings() {
     });
   };
 
+  // Open delete confirm dialog (actual deletion in confirmDelete)
   const deleteBooking = async (id) => {
     setBookingToDelete(id);
     setShowDeleteConfirm(true);
   };
 
+  // Execute deletion after confirmation
   const confirmDelete = async () => {
     try {
       await api.delete(`/bookings/${bookingToDelete}`);
@@ -329,11 +360,13 @@ export default function Bookings() {
     setBookingToDelete(null);
   };
 
+  // Close delete dialog without action
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
     setBookingToDelete(null);
   };
 
+  // Allow backdrop click to close delete dialog
   const handleDeleteBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       setShowDeleteConfirm(false);
@@ -341,6 +374,7 @@ export default function Bookings() {
     }
   };
 
+  // Prefill and open update modal for the selected booking
   const openUpdateForm = (booking) => {
     setCurrentBooking(booking);
 
@@ -356,6 +390,7 @@ export default function Bookings() {
     setShowUpdateForm(true);
   };
 
+  // Reset form model to defaults
   const resetForm = () => {
     setForm({
       ownerNic: "",
@@ -365,6 +400,7 @@ export default function Bookings() {
     });
   };
 
+  // Close any open modals and clear current booking/form
   const closeModals = () => {
     setShowCreateForm(false);
     setShowUpdateForm(false);
@@ -372,6 +408,7 @@ export default function Bookings() {
     resetForm();
   };
 
+  // Determine whether update/cancel is allowed based on 12-hour threshold
   const canModifyBooking = (booking) => {
     const reservationDate = new Date(booking.reservationDate);
     const now = new Date();
@@ -380,6 +417,7 @@ export default function Bookings() {
     return hoursUntilReservation >= 12;
   };
 
+  // Helper to map stationId to a friendly label with location
   const getStationName = (stationId) => {
     const station = stations.find((s) => s.id === stationId);
     return station ? `${station.name} (${station.location})` : stationId;
@@ -399,6 +437,7 @@ export default function Bookings() {
     return sevenDaysFromNow.toISOString().split("T")[0]; // 7 days from today
   };
 
+  // Initial load: for operators, ensure profile is loaded then fetch data; otherwise load immediately
   useEffect(() => {
     if (role === "Operator") {
       loadCurrentUser().then(() => {
@@ -414,14 +453,12 @@ export default function Bookings() {
   // Centralized filtering effect so search persists after state-changing reloads
   useEffect(() => {
     filterBookings(bookings, statusFilter, stationFilter);
-    // Only reset to first page if the filter criteria itself changed
-    // Detect changes via dependencies (excluding bookings data changes)
-    // We achieve this by separating deps: when bookings changes alone, we don't reset page
-    // Simple approach: track last criteria
+   
   }, [bookings, statusFilter, stationFilter, searchOwnerNic, role, filterBookings]);
 
   return (
     <div>
+      {/* Header and action toolbar */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -463,6 +500,7 @@ export default function Bookings() {
 
           {role === "Backoffice" && (
             <div className="relative">
+              {/* Station filter (Backoffice only) */}
               <select
                 value={stationFilter}
                 onChange={(e) => handleStationFilterChange(e.target.value)}
@@ -479,6 +517,7 @@ export default function Bookings() {
           )}
           {role === "Operator" && (
             <div className="relative">
+              {/* Operator NIC search input */}
               <input
                 type="text"
                 value={searchOwnerNic}
@@ -523,6 +562,7 @@ export default function Bookings() {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
+      {/* Create booking modal (reuses shared form model) */}
       <CreateBookingModal
         visible={showCreateForm}
         closeModals={closeModals}
@@ -535,6 +575,7 @@ export default function Bookings() {
         getMaxDate={getMaxDate}
       />
 
+      {/* Update booking modal for selected item */}
       <UpdateBookingModal
         visible={showUpdateForm}
         closeModals={closeModals}
@@ -548,6 +589,7 @@ export default function Bookings() {
         getMaxDate={getMaxDate}
       />
 
+      {/* Main bookings table; receives current page slice and handlers */}
       <BookingTable
         bookings={currentBookings}
         allBookings={bookings}
@@ -577,6 +619,7 @@ export default function Bookings() {
         />
       )}
 
+      {/* Delete confirmation dialog */}
       <DeleteConfirmDialog
         visible={showDeleteConfirm}
         cancelDelete={cancelDelete}
@@ -584,6 +627,7 @@ export default function Bookings() {
         handleDeleteBackdropClick={handleDeleteBackdropClick}
       />
 
+      {/* Generic action confirmation dialog for approve/complete/cancel */}
       <ConfirmActionDialog
         visible={actionConfirm.visible}
         tone={actionConfirm.tone}
