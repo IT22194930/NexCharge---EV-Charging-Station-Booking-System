@@ -185,7 +185,8 @@ export default function Users() {
       fullName: user.fullName,
       currentRole: user.role,
       newRole: user.role,
-      assignedStationId: user.assignedStationId || ""
+      assignedStationId: user.assignedStationId || "",
+      assignedStationName: user.assignedStationName || ""
     });
     setShowUpdateForm(true);
   };
@@ -263,7 +264,7 @@ export default function Users() {
         <h1 className="text-2xl font-bold">User Management</h1>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded hover:from-green-700 hover:to-emerald-700 transition-all duration-200"
         >
           Create New User
         </button>
@@ -280,7 +281,7 @@ export default function Users() {
           <select
             value={roleFilter}
             onChange={(e) => handleRoleFilterChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             <option value="All">All Users ({users.length})</option>
             <option value="Backoffice">
@@ -301,7 +302,7 @@ export default function Users() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 max-h-[95vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -317,7 +318,7 @@ export default function Users() {
                     <h2 className="text-lg font-bold text-white">
                       Create New User
                     </h2>
-                    <p className="text-blue-100 text-xs">
+                    <p className="text-green-100 text-xs">
                       Add a new user to the system
                     </p>
                   </div>
@@ -365,7 +366,7 @@ export default function Users() {
                     placeholder="Enter NIC number"
                     value={form.nic}
                     onChange={(e) => setForm({ ...form, nic: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                     required
                   />
                 </div>
@@ -393,7 +394,7 @@ export default function Users() {
                     onChange={(e) =>
                       setForm({ ...form, fullName: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                     required
                   />
                 </div>
@@ -532,7 +533,7 @@ export default function Users() {
                       onChange={(e) =>
                         setForm({ ...form, assignedStationId: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                       required
                     >
                       <option value="">Select a station</option>
@@ -576,7 +577,7 @@ export default function Users() {
                     onChange={(e) =>
                       setForm({ ...form, password: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                     required
                   />
                 </div>
@@ -592,7 +593,7 @@ export default function Users() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
                   >
                     Create User
                   </button>
@@ -715,7 +716,7 @@ export default function Users() {
         >
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -735,7 +736,7 @@ export default function Users() {
                     <h2 className="text-lg font-bold text-white">
                       Update User Role
                     </h2>
-                    <p className="text-blue-100 text-xs">
+                    <p className="text-green-100 text-xs">
                       Change user's system role
                     </p>
                   </div>
@@ -768,6 +769,9 @@ export default function Users() {
                   <p className="text-sm text-gray-900"><span className="font-medium">Name:</span> {userToUpdate?.fullName}</p>
                   <p className="text-sm text-gray-900"><span className="font-medium">NIC:</span> {userToUpdate?.nic}</p>
                   <p className="text-sm text-gray-900"><span className="font-medium">Current Role:</span> {userToUpdate?.currentRole}</p>
+                  {userToUpdate?.currentRole === "Operator"  && (
+                    <p className="text-sm text-gray-900"><span className="font-medium">Assigned Station:</span> {userToUpdate?.assignedStationName}</p>
+                  )}
                 </div>
 
                 {/* Role Selection */}
@@ -876,8 +880,8 @@ export default function Users() {
                   </div>
                 </div>
 
-                {/* Station Assignment - For Operators (new or existing) */}
-                {(userToUpdate?.newRole === "Operator" || userToUpdate?.currentRole === "Operator") && (
+                {/* Station Assignment - Only for new Operator role */}
+                {userToUpdate?.newRole === "Operator" && (
                   <div>
                     <label className="flex items-center text-sm font-medium text-gray-700 mb-1.5">
                       <svg
@@ -898,7 +902,7 @@ export default function Users() {
                       onChange={(e) =>
                         setUserToUpdate({ ...userToUpdate, assignedStationId: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                       required
                     >
                       <option value="">Select a station</option>
@@ -939,7 +943,7 @@ export default function Users() {
                       (userToUpdate?.currentRole !== "Operator" || 
                        userToUpdate?.assignedStationId === (users.find(u => u.nic === userToUpdate?.nic)?.assignedStationId || ""))
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl transform hover:scale-105"
                     }`}
                   >
                     {userToUpdate?.newRole === userToUpdate?.currentRole && userToUpdate?.currentRole === "Operator" 
@@ -983,7 +987,7 @@ export default function Users() {
                   <select
                     value={roleFilter}
                     onChange={(e) => handleRoleFilterChange(e.target.value)}
-                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent w-full"
                   >
                     <option value="All">All ({users.length})</option>
                     <option value="Backoffice">
