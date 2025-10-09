@@ -71,7 +71,7 @@ export default function UpdateBookingModal({
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-t-2xl flex-shrink-0">
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 rounded-t-2xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -85,7 +85,7 @@ export default function UpdateBookingModal({
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">Update Booking</h2>
-                <p className="text-blue-100 text-xs">
+                <p className="text-green-100 text-xs">
                   Modify your reservation details
                 </p>
               </div>
@@ -110,11 +110,11 @@ export default function UpdateBookingModal({
           <div className="p-4">
             <form onSubmit={updateBooking} className="space-y-4">
               {/* Current Booking Info */}
-              <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 shadow-sm">
+              <div className="relative bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 shadow-sm">
                 {/* Header with Icon */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2">
+                    <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center mr-2">
                       <svg
                         className="w-3 h-3 text-white"
                         fill="currentColor"
@@ -127,13 +127,13 @@ export default function UpdateBookingModal({
                         />
                       </svg>
                     </div>
-                    <h3 className="text-sm font-semibold text-blue-900">
+                    <h3 className="text-sm font-semibold text-green-900">
                       Current Booking Details
                     </h3>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-blue-600 font-medium">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-medium">
                       Active
                     </span>
                   </div>
@@ -142,10 +142,10 @@ export default function UpdateBookingModal({
                 {/* Booking Information - Compact Grid */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {/* Owner */}
-                  <div className="bg-white/70 rounded-lg p-2 border border-blue-100">
+                  <div className="bg-white/70 rounded-lg p-2 border border-green-100">
                     <div className="flex items-center mb-1">
                       <svg
-                        className="w-3 h-3 text-blue-600 mr-1"
+                        className="w-3 h-3 text-green-600 mr-1"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -163,7 +163,7 @@ export default function UpdateBookingModal({
                   </div>
 
                   {/* Station */}
-                  <div className="bg-white/70 rounded-lg p-2 border border-blue-100">
+                  <div className="bg-white/70 rounded-lg p-2 border border-green-100">
                     <div className="flex items-center mb-1">
                       <svg
                         className="w-3 h-3 text-green-600 mr-1"
@@ -180,10 +180,10 @@ export default function UpdateBookingModal({
                   </div>
 
                   {/* Reservation */}
-                  <div className="bg-white/70 rounded-lg p-2 border border-blue-100">
+                  <div className="bg-white/70 rounded-lg p-2 border border-green-100">
                     <div className="flex items-center mb-1">
                       <svg
-                        className="w-3 h-3 text-purple-600 mr-1"
+                        className="w-3 h-3 text-green-600 mr-1"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -210,7 +210,7 @@ export default function UpdateBookingModal({
                   </div>
 
                   {/* Status */}
-                  <div className="bg-white/70 rounded-lg p-2 border border-blue-100">
+                  <div className="bg-white/70 rounded-lg p-2 border border-green-100">
                     <div className="flex items-center mb-1">
                       <svg
                         className="w-3 h-3 text-amber-600 mr-1"
@@ -304,7 +304,7 @@ export default function UpdateBookingModal({
                     onChange={(e) =>
                       setForm({ ...form, stationId: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 appearance-none bg-white text-sm"
                     required
                   >
                     <option value="" disabled>
@@ -353,7 +353,7 @@ export default function UpdateBookingModal({
                   type="date"
                   value={form.reservationDate}
                   onChange={handleDateChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   min={getMinDate()}
                   max={getMaxDate()}
                   disabled={!form.stationId}
@@ -390,7 +390,7 @@ export default function UpdateBookingModal({
                       reservationHour: parseInt(e.target.value),
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   required
                   disabled={
                     !form.stationId || !form.reservationDate || loadingHours
@@ -457,7 +457,7 @@ export default function UpdateBookingModal({
             <button
               type="submit"
               onClick={updateBooking}
-              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
+              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
             >
               <span className="flex items-center justify-center">
                 <svg
