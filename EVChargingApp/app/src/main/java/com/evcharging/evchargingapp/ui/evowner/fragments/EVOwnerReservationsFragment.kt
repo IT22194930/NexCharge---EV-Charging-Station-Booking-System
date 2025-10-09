@@ -61,7 +61,7 @@ class EVOwnerReservationsFragment : Fragment() {
         
         // Show loading screen while setting up
         LoadingManager.show(requireContext(), "Loading reservations...")
-        loadingCounter = 2 // We have 2 async operations to complete
+        loadingCounter = 2 // 2 async operations to complete
         
         setupRecyclerView()
         setupSearchFunctionality()
@@ -102,7 +102,6 @@ class EVOwnerReservationsFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.buttonCreateReservation.setOnClickListener {
-            // Ensure stations are loaded before showing dialog
             if (allStations.isEmpty()) {
                 // Show loading message and load stations
                 showError("Loading stations... Please try again.")
@@ -1089,9 +1088,9 @@ class EVOwnerReservationsFragment : Fragment() {
         val message = """
             Confirm your reservation details:
             
-            🔌 Station: $stationName
-            📅 Date: $date
-            ⏰ Time: $time
+            Station: $stationName
+            Date: $date
+            Time: $time
             
             Please review the information before proceeding.
         """.trimIndent()

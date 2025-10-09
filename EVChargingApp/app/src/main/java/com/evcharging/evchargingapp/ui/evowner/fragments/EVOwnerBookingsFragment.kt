@@ -2,7 +2,6 @@ package com.evcharging.evchargingapp.ui.evowner.fragments
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
@@ -10,13 +9,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.databinding.FragmentEvownerBookingsBinding
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
@@ -25,14 +22,11 @@ import com.evcharging.evchargingapp.data.model.Station
 import com.evcharging.evchargingapp.ui.evowner.adapters.BookingsPagerAdapter
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.ActiveBookingsTabFragment
 import com.evcharging.evchargingapp.ui.evowner.fragments.tabs.HistoryBookingsTabFragment
-import com.evcharging.evchargingapp.utils.TokenUtils
 import com.evcharging.evchargingapp.utils.LoadingManager
 import com.evcharging.evchargingapp.utils.DateTimeUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.*
 
 class EVOwnerBookingsFragment : Fragment() {

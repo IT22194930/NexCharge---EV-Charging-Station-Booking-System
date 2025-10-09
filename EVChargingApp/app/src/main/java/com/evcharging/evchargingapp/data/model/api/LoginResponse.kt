@@ -10,10 +10,3 @@ data class LoginResponse(
     val message: String?
 )
 
-// UserDetails can be kept if your API error responses include it or for other API calls,
-// but it's not part of the successful login response based on your logs.
-// data class UserDetails(
-//     val nic: String?,
-//     val name: String?,
-//     val role: String?
-// )

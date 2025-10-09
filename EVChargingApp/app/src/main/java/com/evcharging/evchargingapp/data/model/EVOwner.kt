@@ -14,9 +14,9 @@ data class EVOwner(
     val nic: String? = null,
     
     @SerializedName("NIC") 
-    val NIC: String? = null,  // Support both formats from API
+    val NIC: String? = null,
     
-    @SerializedName("fullName")  // API returns camelCase
+    @SerializedName("fullName")
     val FullName: String,
     
     @SerializedName("email")
@@ -25,13 +25,13 @@ data class EVOwner(
     @SerializedName("phone")
     val phone: String? = null,
     
-    @SerializedName("role")  // API returns camelCase
+    @SerializedName("role")
     val Role: String? = null,
     
-    @SerializedName("isActive")  // API returns camelCase
+    @SerializedName("isActive")
     val isActive: Boolean = true,
     
-    @SerializedName("createdAt")  // API returns camelCase
+    @SerializedName("createdAt")
     val createdAt: String? = null
 ) {
     // Computed properties for consistent access
@@ -42,14 +42,14 @@ data class EVOwner(
 
 data class EVOwnerCreateRequest(
     val nic: String,
-    val FullName: String,  // Changed to match API expectation
+    val FullName: String,
     val password: String,
     val email: String? = null,
     val phone: String? = null
 )
 
 data class EVOwnerUpdateRequest(
-    val FullName: String,  // Changed to match API expectation
+    val FullName: String,
     val Password: String? = null,
     val email: String? = null,
     val phone: String? = null

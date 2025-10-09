@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class Booking(
     val id: String,
-    @SerializedName("ownerNIC") // C# property OwnerNIC becomes ownerNIC in JSON (camelCase)
+    @SerializedName("ownerNIC")
     val ownerNic: String,
     val stationId: String,
     val stationName: String? = null,

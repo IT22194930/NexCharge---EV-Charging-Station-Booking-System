@@ -22,7 +22,7 @@ data class BookingUpdateRequest(
     val stationId: String
 )
 
-// New DTOs for availability checking
+// availability checking
 data class AvailableSlot(
     val hour: Int,
     val availableSlots: Int,

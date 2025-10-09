@@ -16,7 +16,7 @@ import com.evcharging.evchargingapp.R
 import com.evcharging.evchargingapp.data.network.RetrofitInstance
 import com.evcharging.evchargingapp.data.UserRole
 import com.evcharging.evchargingapp.data.model.api.RegisterRequest
-import com.evcharging.evchargingapp.data.model.api.RegisterApiResponse // Changed import from LoginResponse
+import com.evcharging.evchargingapp.data.model.api.RegisterApiResponse
 import com.evcharging.evchargingapp.databinding.ActivityRegistrationBinding
 import com.evcharging.evchargingapp.ui.evowner.EVOwnerHomeActivity
 import com.evcharging.evchargingapp.ui.stationoperator.StationOperatorHomeActivity
@@ -57,7 +57,7 @@ class RegistrationActivity : AppCompatActivity() {
         val contactNumber = binding.editTextRegisterContactNumber.text.toString().trim()
         val password = binding.editTextRegisterPassword.text.toString()
         val confirmPassword = binding.editTextRegisterConfirmPassword.text.toString()
-        val defaultRole = UserRole.EV_OWNER.name // Or however your API expects the role
+        val defaultRole = UserRole.EV_OWNER.name
 
         if (nic.isEmpty() || name.isEmpty() || contactNumber.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -74,7 +74,7 @@ class RegistrationActivity : AppCompatActivity() {
 
         val registerRequest = RegisterRequest(
             nic = nic,
-            FullName = name,  // Changed to match the model
+            FullName = name,
             contactNo = contactNumber,
             password = password,
             role = defaultRole
@@ -110,7 +110,7 @@ class RegistrationActivity : AppCompatActivity() {
                         navigateToDashboard(userRoleFromToken) // Prioritize role from token if token exists
                         finish()
                     } else if (roleFromApiResponse != null && roleFromApiResponse.isNotEmpty()) {
-                        // NO TOKEN, but ROLE is present in API response - WORKAROUND
+                        // NO TOKEN, but ROLE is present in API response
                         Toast.makeText(
                             applicationContext,
                             apiResponse?.message
@@ -121,12 +121,9 @@ class RegistrationActivity : AppCompatActivity() {
                             "RegistrationActivity",
                             "Registration successful but no token. Using role directly from API response: $roleFromApiResponse. User will not be authenticated."
                         )
-                        // IMPORTANT: User is NOT authenticated as no token is saved.
-                        // Subsequent API calls requiring authentication will fail.
                         navigateToDashboard(roleFromApiResponse)
                         finish()
                     } else {
-                        // No token and no role from API response (or response is problematic)
                         val message = apiResponse?.message
                             ?: "Registration failed. Unexpected response from server."
                         Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
@@ -186,7 +183,7 @@ class RegistrationActivity : AppCompatActivity() {
         return try {
             val jwt = JWT(token)
             Log.d("RegistrationActivity", "JWT Decoded. Claims: ${jwt.claims}")
-            val roleClaim = jwt.getClaim("role").asString() // Ensure your JWT claim name is 'role'
+            val roleClaim = jwt.getClaim("role").asString()
             Log.d("RegistrationActivity", "Role claim ('role') value from token: $roleClaim")
             roleClaim
         } catch (e: Exception) {
@@ -201,7 +198,6 @@ class RegistrationActivity : AppCompatActivity() {
             "EVOWNER" -> Intent(this, EVOwnerHomeActivity::class.java)
             "OPERATOR" -> Intent(this, StationOperatorHomeActivity::class.java)
 
-            // Add other roles here if needed, e.g., "BACKOFFICE"
             else -> {
                 Toast.makeText(
                     this,

@@ -19,8 +19,7 @@ class UserDao(context: Context) {
             put(UserDbHelper.COLUMN_NAME, user.name)
             put(UserDbHelper.COLUMN_CONTACT_NUMBER, user.contactNumber)
             put(UserDbHelper.COLUMN_PASSWORD_HASH, user.passwordHash)
-            // Assuming COLUMN_ROLE is defined in UserDbHelper and stores the role as a String
-            put(UserDbHelper.COLUMN_ROLE, user.role.name) // Store the UserRole as its String name
+            put(UserDbHelper.COLUMN_ROLE, user.role.name)
             put(UserDbHelper.COLUMN_IS_ACTIVE, if (user.isActive) 1 else 0)
         }
         val id = db.insert(UserDbHelper.TABLE_USERS, null, values)
@@ -46,24 +45,20 @@ class UserDao(context: Context) {
             val nameIndex = cursor.getColumnIndexOrThrow(UserDbHelper.COLUMN_NAME)
             val contactNumberIndex = cursor.getColumnIndexOrThrow(UserDbHelper.COLUMN_CONTACT_NUMBER)
             val passwordHashIndex = cursor.getColumnIndexOrThrow(UserDbHelper.COLUMN_PASSWORD_HASH)
-            // Assuming COLUMN_ROLE is defined in UserDbHelper
             val roleIndex = cursor.getColumnIndexOrThrow(UserDbHelper.COLUMN_ROLE)
             val isActiveIndex = cursor.getColumnIndexOrThrow(UserDbHelper.COLUMN_IS_ACTIVE)
 
             val name = cursor.getString(nameIndex)
             val contactNumber = cursor.getString(contactNumberIndex)
             val passwordHash = cursor.getString(passwordHashIndex)
-            val roleString = cursor.getString(roleIndex) // Get role as String from DB
+            val roleString = cursor.getString(roleIndex)
             val isActiveInt = cursor.getInt(isActiveIndex)
 
             // Convert roleString to UserRole enum
             val userRole = try {
-                UserRole.valueOf(roleString.uppercase()) // Assuming role is stored like "EV_OWNER" or "STATIONOPERATOR"
+                UserRole.valueOf(roleString.uppercase())
             } catch (e: IllegalArgumentException) {
-                // Handle cases where the role string from DB might be invalid or null
-                // For example, default to a role or log an error.
-                // This is a placeholder, adjust as needed.
-                if (nic.startsWith("EV")) UserRole.EV_OWNER else UserRole.STATION_OPERATOR // Example fallback, needs proper handling
+                if (nic.startsWith("EV")) UserRole.EV_OWNER else UserRole.STATION_OPERATOR
             }
 
             user = User(nic, name, contactNumber, passwordHash, userRole, isActiveInt == 1)
@@ -80,8 +75,7 @@ class UserDao(context: Context) {
             put(UserDbHelper.COLUMN_NAME, user.name)
             put(UserDbHelper.COLUMN_CONTACT_NUMBER, user.contactNumber)
             put(UserDbHelper.COLUMN_PASSWORD_HASH, user.passwordHash)
-            // Assuming COLUMN_ROLE is defined in UserDbHelper
-            put(UserDbHelper.COLUMN_ROLE, user.role.name) // Store the UserRole as its String name
+            put(UserDbHelper.COLUMN_ROLE, user.role.name)
             put(UserDbHelper.COLUMN_IS_ACTIVE, if (user.isActive) 1 else 0)
         }
         val rowsAffected = db.update(

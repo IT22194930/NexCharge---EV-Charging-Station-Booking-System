@@ -208,8 +208,6 @@ class LoginActivity : AppCompatActivity() {
     private fun getRoleFromToken(token: String): String? {
         try {
             val jwt = JWT(token)
-            // The claim name for role in your .NET code is ClaimTypes.Role,
-            // which translates to "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
             return jwt.getClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role").asString()
         } catch (e: Exception) {
             Log.e("LoginActivity", "Failed to decode JWT or get role claim: ${e.message}")
@@ -223,7 +221,6 @@ class LoginActivity : AppCompatActivity() {
             "EVOWNER" -> Intent(this, EVOwnerHomeActivity::class.java)
             "OPERATOR" -> Intent(this, StationOperatorHomeActivity::class.java)
 
-            // Add other roles here if needed, e.g., "BACKOFFICE"
             else -> {
                 Toast.makeText(this, "Role '$role' not recognized or null. Navigating to default home.", Toast.LENGTH_LONG).show()
                 Intent(this, HomeActivity::class.java) // Fallback activity

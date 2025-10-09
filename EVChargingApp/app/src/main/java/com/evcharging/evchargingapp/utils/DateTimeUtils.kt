@@ -94,8 +94,7 @@ object DateTimeUtils {
     fun formatToTime(dateTimeString: String): String {
         return try {
             var parsedDate: Date? = null
-            
-            // Try different input formats
+
             for (format in inputFormats) {
                 try {
                     parsedDate = format.parse(dateTimeString)
@@ -319,7 +318,6 @@ object DateTimeUtils {
                         dateTimeString.substringBefore(" ")
                     }
                     else -> {
-                        // Already in date format or unknown format
                         dateTimeString
                     }
                 }

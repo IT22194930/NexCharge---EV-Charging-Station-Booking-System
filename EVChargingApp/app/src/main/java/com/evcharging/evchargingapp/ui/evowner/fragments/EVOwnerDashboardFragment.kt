@@ -337,8 +337,6 @@ class EVOwnerDashboardFragment : Fragment(), OnMapReadyCallback {
                 
                 // Create custom stats with our calculated values
                 val customStats = DashboardStats(
-                    totalUsers = 0, // Not relevant for EV owner
-                    totalStations = 0, // Not relevant for EV owner
                     totalBookings = approvedFutureCount, // Now shows approved future reservations
                     activeBookings = pendingCount // Now shows pending reservations
                 )

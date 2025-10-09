@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class UserRepository(private val context: Context) { // Made context a private val
+class UserRepository(private val context: Context) {
     
     private val database = AppDatabase.getDatabase(context)
     private val userDao = database.userDao()
@@ -97,7 +97,7 @@ class UserRepository(private val context: Context) { // Made context a private v
                 val response = apiService.updateOwnProfile(request)
                 if (response.isSuccessful) {
                     // Update local database
-                    val currentUser = TokenUtils.getCurrentUserNic(context) // Corrected
+                    val currentUser = TokenUtils.getCurrentUserNic(context)
                     currentUser?.let { nic ->
                         val existingUser = userDao.getUserByNic(nic)
                         existingUser?.let { user ->
@@ -138,7 +138,7 @@ class UserRepository(private val context: Context) { // Made context a private v
                 val response = apiService.deactivateOwnAccount()
                 if (response.isSuccessful) {
                     // Update local database
-                    val currentUser = TokenUtils.getCurrentUserNic(context) // Corrected
+                    val currentUser = TokenUtils.getCurrentUserNic(context)
                     currentUser?.let { nic ->
                         userDao.updateUserActiveStatus(nic, false)
                     }
@@ -155,7 +155,7 @@ class UserRepository(private val context: Context) { // Made context a private v
     private suspend fun markProfileUpdateForSync(request: EVOwnerUpdateRequest) {
         withContext(Dispatchers.IO) {
             try {
-                val currentUser = TokenUtils.getCurrentUserNic(context) // Corrected
+                val currentUser = TokenUtils.getCurrentUserNic(context)
                 currentUser?.let { nic ->
                     val changes = gson.toJson(request)
                     userDao.markForSync(nic, changes)
@@ -182,7 +182,6 @@ class UserRepository(private val context: Context) { // Made context a private v
                         }
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to sync user ${user.nic}", e)
-                        // Continue with other users
                     }
                 }
             } catch (e: Exception) {
@@ -211,7 +210,7 @@ class UserRepository(private val context: Context) { // Made context a private v
     
     private suspend fun getProfileFromLocal(): EVOwner? {
         return try {
-            val currentUser = TokenUtils.getCurrentUserNic(context) // Corrected
+            val currentUser = TokenUtils.getCurrentUserNic(context)
             currentUser?.let { nic ->
                 val userEntity = userDao.getUserByNic(nic)
                 userEntity?.let {

@@ -93,7 +93,6 @@ interface ApiService {
     @GET("auth/profile")
     suspend fun getCurrentUserProfile(): Response<UserProfile>
 
-    // Deprecated endpoints - keeping for backward compatibility if needed
     @GET("users/{nic}")
     suspend fun getOwnerByNic(@Path("nic") nic: String): Response<EVOwner>
 }

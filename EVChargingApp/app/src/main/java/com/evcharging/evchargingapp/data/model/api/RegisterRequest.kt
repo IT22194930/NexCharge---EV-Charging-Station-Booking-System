@@ -6,16 +6,16 @@ data class RegisterRequest(
     @SerializedName("nic") 
     val nic: String,
 
-    @SerializedName("FullName") // Changed to match API expectation (PascalCase)
+    @SerializedName("FullName")
     val FullName: String,
 
     @SerializedName("contactNo") 
     val contactNo: String,
 
-    @SerializedName("password") // Ensure this matches the JSON key your API expects
+    @SerializedName("password")
     val password: String,
 
-    @SerializedName("role") // Ensure this matches the JSON key your API expects
-    val role: String? // Role can be optional or set by server, adjust as needed
+    @SerializedName("role")
+    val role: String?
 )
 
