@@ -1,5 +1,30 @@
-﻿// Author: Wickramasooriya W. A. A. L. (IT22126160)
-// Purpose: Station logic, check active bookings before deactivation
+﻿/*
+ * File: StationService.cs
+ * Author: Wickramasooriya W. A. A. L. (IT22126160)
+ * Description: Business logic service for EV charging station management operations.
+ *              Provides domain-specific functionality with validation rules and business
+ *              constraints. Acts as intermediary between controllers and data repositories.
+ * 
+ * Key Methods:
+ *   - CreateAsync: Create new charging stations
+ *   - GetByIdAsync: Retrieve station by unique identifier
+ *   - GetAllAsync: Fetch all available stations
+ *   - UpdateAsync: Update station details with field-level updates
+ *   - UpdateScheduleAsync: Modify station operating hours separately
+ *   - DeactivateAsync: Disable station with booking validation
+ *   - ActivateAsync: Enable station for operations
+ *   - DeleteAsync: Remove station with safety checks
+ * 
+ * Responsibilities:
+ *   - Enforce business rules for station lifecycle management
+ *   - Validate booking conflicts before station deactivation/deletion
+ *   - Preserve data integrity during partial updates
+ *   - Coordinate between station and booking repositories
+ *   - Handle operating hours management independently
+ *   - Ensure stations cannot be deactivated/deleted with active bookings
+ *   - Provide error handling with descriptive exception messages
+ */
+
 using EVChargingAPI.Models;
 using EVChargingAPI.Repositories;
 

@@ -1,5 +1,36 @@
-// Author: Wickramasooriya W. A. A. L. (IT22126160)
-// Purpose: Station management (Backoffice + Operator)
+/*
+ * File: StationsController.cs
+ * Author: Wickramasooriya W. A. A. L. (IT22126160)
+ * Description: Controller for managing EV charging stations with full CRUD operations.
+ *              Handles station creation, updates, schedule management, and status control
+ *              for both backoffice administrators and operators.
+ * 
+ * Endpoints:
+ *   GET    /api/stations           - Retrieve all stations (Public)
+ *   GET    /api/stations/{id}      - Retrieve station by ID (Public)
+ *   POST   /api/stations           - Create new station (Backoffice only)
+ *   PUT    /api/stations/{id}      - Update station details (Backoffice only)
+ *   PUT    /api/stations/{id}/schedule - Update station operating hours (Backoffice only)
+ *   DELETE /api/stations/{id}      - Delete station (Backoffice only)
+ *   POST   /api/stations/deactivate/{id} - Deactivate station (Backoffice only)
+ *   POST   /api/stations/activate/{id}   - Activate station (Backoffice only)
+ * 
+ * Security:
+ *   - JWT Bearer token authentication required for all operations except GET endpoints
+ *   - Role-based authorization: "Backoffice" role required for CUD operations
+ *   - Public read access for station information retrieval
+ *   - Fine-grained permissions per endpoint method
+ * 
+ * Business Rules:
+ *   - Only backoffice users can create, update, or delete stations
+ *   - Station information is publicly accessible for customer viewing
+ *   - Stations can be activated/deactivated without deletion for operational control
+ *   - Operating hours can be updated separately from other station details
+ *   - All stations must have required fields: Name, Location, Type, AvailableSlots
+ *   - Coordinates (Latitude/Longitude) are optional for mapping functionality
+ *   - New stations are created as active by default
+ */
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EVChargingAPI.Services;

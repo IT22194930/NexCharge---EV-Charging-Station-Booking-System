@@ -1,5 +1,27 @@
-// Author: Wickramasooriya W. A. A. L. (IT22126160)
-// Purpose: Charging station model
+/*
+ * File: Station.cs
+ * Author: Wickramasooriya W. A. A. L. (IT22126160)
+ * Description: MongoDB model class for EV charging stations. Represents charging station
+ *              entities with location data, operational details, and availability information.
+ *              Used for persisting station data in MongoDB database.
+ * 
+ * User Roles: This model is accessed by:
+ *   - Backoffice: Full CRUD operations for station management
+ *   - Operators: Read access for operational monitoring
+ *   - Customers: Read-only access for station discovery and booking
+ *   - Public API: Anonymous read access for station information
+ * 
+ * Typical Properties:
+ *   - Id: MongoDB ObjectId for unique identification
+ *   - Name: Display name of the charging station
+ *   - Location: Textual address or location description
+ *   - Latitude/Longitude: GPS coordinates for mapping (optional)
+ *   - Type: Charging type (AC/DC) indicating power delivery method
+ *   - AvailableSlots: Number of charging ports available
+ *   - IsActive: Operational status flag for enabling/disabling
+ *   - OperatingHours: Flexible object for storing schedule information
+ */
+
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
