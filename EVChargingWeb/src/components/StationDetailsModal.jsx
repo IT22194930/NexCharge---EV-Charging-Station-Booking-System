@@ -59,7 +59,7 @@ const StationDetailsModal = ({ visible, station, onClose }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white">
+        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-xl bg-white bg-opacity-20 flex items-center justify-center mr-3">
@@ -67,7 +67,7 @@ const StationDetailsModal = ({ visible, station, onClose }) => {
               </div>
               <div>
                 <h2 className="text-xl font-bold">Station Details</h2>
-                <p className="text-blue-100 text-sm">Comprehensive station information</p>
+                <p className="text-green-100 text-sm">Comprehensive station information</p>
               </div>
             </div>
             <button
@@ -122,7 +122,7 @@ const StationDetailsModal = ({ visible, station, onClose }) => {
                     <h4 className="font-medium text-gray-700">Available Slots</h4>
                   </div>
                   <div className="flex items-center mb-2">
-                    <span className="text-2xl font-bold text-blue-600">{station.availableSlots}</span>
+                    <span className="text-2xl font-bold text-green-600">{station.availableSlots}</span>
                     <span className="text-gray-500 ml-2">slots</span>
                   </div>
                   <p className="text-sm text-gray-500">
@@ -162,18 +162,18 @@ const StationDetailsModal = ({ visible, station, onClose }) => {
 
               {/* Location Details */}
               {(station.latitude && station.longitude) && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
                       <span className="text-xl mr-3">📍</span>
-                      <h4 className="font-medium text-blue-800">Location Coordinates</h4>
+                      <h4 className="font-medium text-green-800">Location Coordinates</h4>
                     </div>
                     <button 
                       onClick={() => {
                         const url = `https://www.google.com/maps?q=${station.latitude},${station.longitude}`;
                         window.open(url, '_blank');
                       }}
-                      className="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      className="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       <span className="mr-2">🗺️</span>
                       View on Google Maps
@@ -181,14 +181,14 @@ const StationDetailsModal = ({ visible, station, onClose }) => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="text-sm text-blue-600 font-medium">Latitude</span>
-                      <div className="font-mono text-sm text-blue-800 bg-white px-3 py-2 rounded border border-blue-200">
+                      <span className="text-sm text-green-600 font-medium">Latitude</span>
+                      <div className="font-mono text-sm text-green-800 bg-white px-3 py-2 rounded border border-green-200">
                         {station.latitude.toFixed(6)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-blue-600 font-medium">Longitude</span>
-                      <div className="font-mono text-sm text-blue-800 bg-white px-3 py-2 rounded border border-blue-200">
+                      <span className="text-sm text-green-600 font-medium">Longitude</span>
+                      <div className="font-mono text-sm text-green-800 bg-white px-3 py-2 rounded border border-green-200">
                         {station.longitude.toFixed(6)}
                       </div>
                     </div>

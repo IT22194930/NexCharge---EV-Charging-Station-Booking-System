@@ -220,9 +220,16 @@ export default function Stations() {
         <h1 className="text-2xl font-bold">Charging Station Management</h1>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
         >
-          Create New Station
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>Create New Station</span>
         </button>
       </div>
 
@@ -263,7 +270,7 @@ export default function Stations() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col transform transition-all">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl flex-shrink-0">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4 rounded-t-2xl flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-white/20 rounded-lg">
@@ -273,7 +280,7 @@ export default function Stations() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">Create New Station</h2>
-                    <p className="text-blue-100 text-xs">Add a new charging station to your network</p>
+                    <p className="text-green-100 text-xs">Add a new charging station to your network</p>
                   </div>
                 </div>
                 <button
@@ -585,11 +592,11 @@ export default function Stations() {
       )}
 
       {/* Update Station Modal */}
-      {showUpdateForm && (
+      {showUpdateForm && currentStation && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col transform transition-all">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl flex-shrink-0">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-6 py-4 rounded-t-2xl flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-white/20 rounded-lg">
@@ -599,7 +606,7 @@ export default function Stations() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">Update Station</h2>
-                    <p className="text-blue-100 text-xs">Modify station details and settings</p>
+                    <p className="text-green-100 text-xs">Modify station details and settings</p>
                   </div>
                 </div>
                 <button
@@ -830,7 +837,7 @@ export default function Stations() {
                   <div className="flex space-x-3">
                     <button
                       type="submit"
-                      className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-200 flex items-center justify-center space-x-2"
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2.5 px-4 rounded-xl font-medium hover:from-green-700 hover:to-emerald-700 focus:ring-4 focus:ring-green-300 transition-all duration-200 flex items-center justify-center space-x-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
