@@ -30,28 +30,6 @@ This system provides a complete solution for managing EV charging stations, user
 - QR code generation for approved bookings
 - Approval workflow system
 
-## 🏗️ Project Structure
-
-```
-EAD-Assignment/
-├── EAD Assignment.sln          # Visual Studio solution file
-├── EVChargingAPI/              # Backend (ASP.NET Core Web API)
-│   ├── Controllers/            # API controllers
-│   ├── Models/                 # Data models
-│   ├── Services/               # Business logic
-│   ├── Repositories/           # Data access layer
-│   ├── DTOs/                   # Data transfer objects
-│   └── Program.cs              # Application entry point
-└── EVChargingWeb/              # Frontend (React.js)
-    ├── src/
-    │   ├── components/         # Reusable components
-    │   ├── pages/              # Page components
-    │   ├── api/                # API integration
-    │   └── App.jsx             # Main application component
-    ├── package.json
-    └── vite.config.js          # Vite configuration
-```
-
 ## 🛠️ Technology Stack
 
 ### Backend
@@ -120,7 +98,7 @@ The web application will be available at `http://localhost:5173`
 | Role | NIC | Password | Access Level |
 |------|-----|----------|-------------|
 | Backoffice | 200233002002 | password | Full system administration |
-| Operator | 1234 | password | Booking management |
+| Operator | 123456789100 | password | Booking management |
 | EVOwner | 200233002034 | password | Personal bookings |
 
 ## 📚 API Documentation
@@ -150,22 +128,9 @@ Once the backend is running, visit `http://localhost:5274/swagger` for interacti
 - [x] Reservation creation and updates
 - [x] Cancellation functionality
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 👥 Authors
 
-- **IT22194930** - Peiris M. H. C. - *Initial work*
-
-## 🆘 Support
-
-If you encounter any issues or have questions, please open an issue in the GitHub repository.
+- **IT22194930** - Peiris M. H. C.
+- **IT22196910** - Welikanna S. T.
+- **IT22144430** - Liyanage N. S.
+- **IT22126160** - Wickramasooriya W. A. A. L.
