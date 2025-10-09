@@ -7,7 +7,7 @@
     android:padding="24dp"
     android:background="@color/nexcharge_surface">
 
-    <!-- Header Section with Rounded Corners -->
+    <!-- Header Section -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

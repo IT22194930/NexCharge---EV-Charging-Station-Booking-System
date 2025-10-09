@@ -12,8 +12,7 @@ object TokenUtils {
     private const val ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
     private const val NAME_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
     private const val NAMEIDENTIFIER_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
-    
-    // Common alternative claim names to try
+
     private val NIC_CLAIM_ALTERNATIVES = listOf(
         "nic",
         "sub",
@@ -121,14 +120,6 @@ object TokenUtils {
         try {
             val token = getToken(context)
             Log.d("TokenUtils", "Token available: ${token != null}")
-            Log.d("TokenUtils", "Current Base URL: http://192.168.1.63/EVChargingAPI/api/")
-            Log.d("TokenUtils", "=== Network Troubleshooting Guide ===")
-            Log.d("TokenUtils", "1. Make sure API is deployed and running on IIS/Web Server")
-            Log.d("TokenUtils", "2. Server should be accessible at: http://192.168.1.63/EVChargingAPI/")
-            Log.d("TokenUtils", "3. Check if both devices are on same network")
-            Log.d("TokenUtils", "4. Test in browser: http://192.168.1.63/EVChargingAPI/api/")
-            Log.d("TokenUtils", "5. Check Windows Firewall - allow HTTP (port 80)")
-            Log.d("TokenUtils", "6. Verify IIS is running and EVChargingAPI is deployed correctly")
             
             if (token != null) {
                 val jwt = JWT(token)

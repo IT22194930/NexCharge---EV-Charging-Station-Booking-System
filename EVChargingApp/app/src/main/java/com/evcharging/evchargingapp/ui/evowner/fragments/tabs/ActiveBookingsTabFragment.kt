@@ -31,7 +31,6 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
 import java.util.*
-import java.util.*
 
 class ActiveBookingsTabFragment : Fragment() {
     
