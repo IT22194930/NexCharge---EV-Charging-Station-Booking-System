@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../api/axios";
@@ -7,8 +7,14 @@ export default function Layout({ children }) {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const location = useLocation();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [userName, setUserName] = useState("");
+
+  // Helper function to check if current path matches the link
+  const isActiveLink = (path) => {
+    return location.pathname === path;
+  };
 
   // Fetch user profile to get the full name
   useEffect(() => {
@@ -119,7 +125,11 @@ export default function Layout({ children }) {
         <nav className="mt-8 px-4 space-y-2 relative z-10">
           <Link
             to="/dashboard"
-            className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-emerald-700/50 hover:text-white transition-all duration-200 group"
+            className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+              isActiveLink('/dashboard') 
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                : 'text-emerald-100 hover:bg-emerald-700/50 hover:text-white'
+            }`}
           >
             <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
@@ -131,7 +141,11 @@ export default function Layout({ children }) {
             <>
               <Link
                 to="/users"
-                className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                  isActiveLink('/users') 
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                    : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+                }`}
               >
                 <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
@@ -140,7 +154,11 @@ export default function Layout({ children }) {
               </Link>
               <Link
                 to="/owners"
-                className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                  isActiveLink('/owners') 
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                    : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+                }`}
               >
                 <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
@@ -149,7 +167,11 @@ export default function Layout({ children }) {
               </Link>
               <Link
                 to="/stations"
-                className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                  isActiveLink('/stations') 
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                    : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+                }`}
               >
                 <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -158,7 +180,11 @@ export default function Layout({ children }) {
               </Link>
               <Link
                 to="/bookings"
-                className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+                className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                  isActiveLink('/bookings') 
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                    : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+                }`}
               >
                 <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -171,7 +197,11 @@ export default function Layout({ children }) {
           {role === "Operator" && (
             <Link
               to="/bookings"
-              className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+              className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                isActiveLink('/bookings') 
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                  : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+              }`}
             >
               <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -183,7 +213,11 @@ export default function Layout({ children }) {
           {role === "EVOwner" && (
             <Link
               to="/bookings"
-              className="flex items-center px-4 py-3 text-emerald-100 rounded-xl hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white transition-all duration-200 group hover:shadow-lg"
+              className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
+                isActiveLink('/bookings') 
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' 
+                  : 'text-emerald-100 hover:bg-gradient-to-r hover:from-emerald-700/60 hover:to-teal-600/60 hover:text-white hover:shadow-lg'
+              }`}
             >
               <svg className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
@@ -197,7 +231,11 @@ export default function Layout({ children }) {
         <div className="absolute bottom-20 left-4 right-4 z-10">
           <Link
             to="/profile"
-            className="w-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 text-white py-3 px-4 rounded-xl hover:from-emerald-700 hover:via-teal-600 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center group"
+            className={`w-full py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center group ${
+              isActiveLink('/profile')
+                ? 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white'
+                : 'bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 text-white hover:from-emerald-700 hover:via-teal-600 hover:to-emerald-800'
+            }`}
           >
             <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />

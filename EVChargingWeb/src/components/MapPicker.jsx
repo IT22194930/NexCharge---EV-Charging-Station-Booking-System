@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { GOOGLE_MAPS_API_KEY } from '../config/maps';
 import { Loader } from '@googlemaps/js-api-loader';
 
@@ -16,45 +16,7 @@ export default function MapPicker({ lat, lng, onChange, height = '300px', mapTyp
   const markerRef = useRef(null);
   const loaderRef = useRef(null);
 
-  useEffect(() => {
-    if (!mapDivRef.current) return;
-    if (!loaderRef.current) {
-      loaderRef.current = new Loader({
-        apiKey: GOOGLE_MAPS_API_KEY,
-        version: 'weekly',
-        libraries: []
-      });
-    }
-
-    loaderRef.current.load().then((google) => {
-      if (!mapRef.current) {
-        mapRef.current = new google.maps.Map(mapDivRef.current, {
-          center: { lat: lat || 6.9271, lng: lng || 79.8612 }, // Colombo default
-          zoom: 11,
-          mapTypeId
-        });
-
-        mapRef.current.addListener('click', (e) => {
-          const clickedLat = e.latLng.lat();
-          const clickedLng = e.latLng.lng();
-          setMarker(clickedLat, clickedLng);
-          onChange && onChange({ lat: clickedLat, lng: clickedLng });
-        });
-      }
-
-      if (lat && lng) {
-        setMarker(lat, lng, true, google);
-      }
-    });
-  }, []); // init once
-
-  useEffect(() => {
-    if (mapRef.current && lat && lng) {
-      setMarker(lat, lng, true);
-    }
-  }, [lat, lng]);
-
-  function setMarker(latVal, lngVal, moveCenter = true, gOverride) {
+  const setMarker = useCallback((latVal, lngVal, moveCenter = true, gOverride) => {
     const g = gOverride || (window.google && window.google.maps);
     if (!g || !mapRef.current) return;
     if (!markerRef.current) {
@@ -71,7 +33,51 @@ export default function MapPicker({ lat, lng, onChange, height = '300px', mapTyp
       markerRef.current.setPosition({ lat: latVal, lng: lngVal });
     }
     if (moveCenter) mapRef.current.setCenter({ lat: latVal, lng: lngVal });
-  }
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!mapDivRef.current) return;
+    if (!loaderRef.current) {
+      loaderRef.current = new Loader({
+        apiKey: GOOGLE_MAPS_API_KEY,
+        version: 'weekly',
+        libraries: []
+      });
+    }
+
+    loaderRef.current.load().then((google) => {
+      if (!mapRef.current) {
+        mapRef.current = new google.maps.Map(mapDivRef.current, {
+          center: { lat: lat || 6.9271, lng: lng || 79.8612 }, // Colombo default
+          zoom: lat && lng ? 15 : 11, // Zoom in more if we have specific coordinates
+          mapTypeId
+        });
+
+        mapRef.current.addListener('click', (e) => {
+          const clickedLat = e.latLng.lat();
+          const clickedLng = e.latLng.lng();
+          setMarker(clickedLat, clickedLng);
+          onChange && onChange({ lat: clickedLat, lng: clickedLng });
+        });
+      } else {
+        // If map already exists, update center if we have new coordinates
+        if (lat && lng) {
+          mapRef.current.setCenter({ lat, lng });
+          mapRef.current.setZoom(15);
+        }
+      }
+
+      if (lat && lng) {
+        setMarker(lat, lng, true, google);
+      }
+    });
+  }, [lat, lng, mapTypeId, onChange, setMarker]);
+
+  useEffect(() => {
+    if (mapRef.current && lat && lng) {
+      setMarker(lat, lng, true);
+    }
+  }, [lat, lng, setMarker]);
 
   return (
     <div className="w-full">

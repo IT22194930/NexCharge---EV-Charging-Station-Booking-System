@@ -143,7 +143,7 @@ export default function Owners() {
         <h1 className="text-2xl font-bold">EV Owner Management</h1>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded hover:from-green-700 hover:to-emerald-700 transition-all duration-200"
         >
           Create New EV Owner
         </button>
